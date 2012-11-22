@@ -35,6 +35,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/source/Colorbar.o \
 	${OBJECTDIR}/source/Application.o \
 	${OBJECTDIR}/source/Utilities.o \
 	${OBJECTDIR}/source/Visualization.o \
@@ -65,6 +66,11 @@ LDLIBSOPTIONS=-Llibraries/fftw-2.1.5/lib64 -lrfftw -lfftw
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/smoke: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -framework OpenGL -framework GLUT -framework GLUI -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/smoke ${OBJECTFILES} ${LDLIBSOPTIONS} 
+
+${OBJECTDIR}/source/Colorbar.o: source/Colorbar.cpp 
+	${MKDIR} -p ${OBJECTDIR}/source
+	${RM} $@.d
+	$(COMPILE.cc) -g -Wall -Ilibraries/fftw-2.1.5/include -MMD -MP -MF $@.d -o ${OBJECTDIR}/source/Colorbar.o source/Colorbar.cpp
 
 ${OBJECTDIR}/source/Application.o: source/Application.cc 
 	${MKDIR} -p ${OBJECTDIR}/source

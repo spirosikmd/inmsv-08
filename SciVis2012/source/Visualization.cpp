@@ -11,11 +11,11 @@ using namespace std;
 
 Visualization::Visualization()
 {
-	vec_scale = 1000;
-	scalar_col = Rainbow;
-	options[UseDirectionColoring] = false;
-	options[DrawSmoke] = false;
-	options[DrawVectorField] = true;	
+    vec_scale = 1000;
+    scalar_col = Rainbow;
+    options[UseDirectionColoring] = false;
+    options[DrawSmoke] = false;
+    options[DrawVectorField] = true;
 }
 
 void Visualization::set_scalar_col(ColorMode colorMode)

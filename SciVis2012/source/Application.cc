@@ -3,6 +3,7 @@
 #include <GLUT/glut.h>
 #include "Utilities.h"
 #include <GLUI/glui.h>
+#include <OpenGL/gl.h>
 
 using namespace std;
 
@@ -163,34 +164,34 @@ void Application::drag(int mx, int my)
 
 void Application::buttonHandler(int id)
 {
-	switch(id)
-	{
-            case QuitButton : { quit(); } break;
-            case SelectColormap:
+    switch(id)
+    {
+        case QuitButton : { quit(); } break;
+        case SelectColormap:
+        {
+            switch(selectedColormap)
             {
-                switch(selectedColormap)
+                case Visualization::Rainbow:
                 {
-                    case Visualization::Rainbow:
-                    {
-                        visualization.set_scalar_col(Visualization::Rainbow);
-                    }
-                    break;
-                    case Visualization::Grayscale:
-                    {
-                        visualization.set_scalar_col(Visualization::Grayscale);
-                    }
-                    break;
-                    case Visualization::Custom:
-                    {
-                        visualization.set_scalar_col(Visualization::Custom); 
-                    }
-                    break;
-                    default: {} break;
+                    visualization.set_scalar_col(Visualization::Rainbow);
                 }
+                break;
+                case Visualization::Grayscale:
+                {
+                    visualization.set_scalar_col(Visualization::Grayscale);
+                }
+                break;
+                case Visualization::Custom:
+                {
+                    visualization.set_scalar_col(Visualization::Custom); 
+                }
+                break;
+                default: {} break;
             }
-            break;
-            default: {} break;
-	}
+        }
+        break;
+        default: {} break;
+    }
 }
 
 void Application::initUI()
