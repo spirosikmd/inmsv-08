@@ -11,3 +11,7 @@
 *.lai
 *.la
 *.a
+/example-code/build/
+/example-code/dist/
+/SciVis2012/build/
+/SciVis2012/dist/
