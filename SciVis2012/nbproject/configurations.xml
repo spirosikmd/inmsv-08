@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configurationDescriptor version="84">
+  <logicalFolder name="root" displayName="root" projectFiles="true" kind="ROOT">
+    <logicalFolder name="ResourceFiles"
+                   displayName="Resource Files"
+                   projectFiles="true">
+    </logicalFolder>
+    <logicalFolder name="SourceFiles"
+                   displayName="Source Files"
+                   projectFiles="true">
+      <itemPath>source/Application.cc</itemPath>
+      <itemPath>source/Application.h</itemPath>
+      <itemPath>source/Simulation.cc</itemPath>
+      <itemPath>source/Simulation.h</itemPath>
+      <itemPath>source/Utilities.cc</itemPath>
+      <itemPath>source/Utilities.h</itemPath>
+      <itemPath>source/Visualization.cpp</itemPath>
+      <itemPath>source/Visualization.h</itemPath>
+      <itemPath>source/main.cc</itemPath>
+    </logicalFolder>
+    <logicalFolder name="TestFiles"
+                   displayName="Test Files"
+                   projectFiles="false"
+                   kind="TEST_LOGICAL_FOLDER">
+    </logicalFolder>
+    <logicalFolder name="ExternalFiles"
+                   displayName="Important Files"
+                   projectFiles="false"
+                   kind="IMPORTANT_FILES_FOLDER">
+      <itemPath>Makefile</itemPath>
+      <itemPath>README.html</itemPath>
+    </logicalFolder>
+  </logicalFolder>
+  <projectmakefile>Makefile</projectmakefile>
+  <confs>
+    <conf name="Debug64bit" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>default</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <warningLevel>2</warningLevel>
+        </cTool>
+        <ccTool>
+          <architecture>2</architecture>
+          <incDir>
+            <pElem>libraries/fftw-2.1.5/include</pElem>
+          </incDir>
+          <commandLine>-ggdb -Wall -pipe</commandLine>
+          <warningLevel>2</warningLevel>
+        </ccTool>
+        <linkerTool>
+          <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/smoke</output>
+          <linkerAddLib>
+            <pElem>libraries/fftw-2.1.5/lib64</pElem>
+          </linkerAddLib>
+          <linkerLibItems>
+            <linkerOptionItem>-lrfftw -lfftw</linkerOptionItem>
+          </linkerLibItems>
+          <commandLine>-framework OpenGL -framework GLUT -framework GLUI</commandLine>
+        </linkerTool>
+      </compileType>
+    </conf>
+    <conf name="Debug32bit" type="1">
+      <toolsSet>
+        <remote-sources-mode>LOCAL_SOURCES</remote-sources-mode>
+        <compilerSet>default</compilerSet>
+      </toolsSet>
+      <compileType>
+        <cTool>
+          <warningLevel>2</warningLevel>
+        </cTool>
+        <ccTool>
+          <architecture>1</architecture>
+          <incDir>
+            <pElem>libraries/fftw-2.1.5/include</pElem>
+          </incDir>
+          <commandLine>-ggdb -Wall -pipe</commandLine>
+          <warningLevel>3</warningLevel>
+        </ccTool>
+        <linkerTool>
+          <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/smoke</output>
+          <linkerAddLib>
+            <pElem>libraries/fftw-2.1.5/lib</pElem>
+          </linkerAddLib>
+          <linkerLibItems>
+            <linkerOptionItem>-lglut -lrfftw -lfftw -lGLU</linkerOptionItem>
+            <linkerOptionItem>-lGL</linkerOptionItem>
+            <linkerOptionItem>-lglui</linkerOptionItem>
+          </linkerLibItems>
+        </linkerTool>
+      </compileType>
+    </conf>
+  </confs>
+</configurationDescriptor>
