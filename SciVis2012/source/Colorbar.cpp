@@ -54,6 +54,7 @@ void Colorbar::render()
     printtext(755, 266, "0.23");
     
     // draw title
+    glColor3f(1, 1, 1);
     printtext(730, 285, title);
 }
 
@@ -92,6 +93,7 @@ void Colorbar::colormap(float value)
         break;
         case Visualization::Rainbow:
         {
+            value = value/256;
             rainbow(value, &R, &G, &B);
         }
         break;
@@ -109,7 +111,6 @@ void Colorbar::colormap(float value)
 void Colorbar::rainbow(float value, float* R, float* G, float* B)
 {
     const float dx=0.8;
-    value = value/256;
     if (value<0) value=0; if (value>1) value=1;
     value = (6-2*dx)*value+dx;	
     *R = max(0.0, (3-fabs(value-4)-fabs(value-5)) / 2.0);
