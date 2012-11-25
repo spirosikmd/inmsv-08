@@ -9,17 +9,17 @@ using namespace std;
 
 int main(int argc, char** argv)
 {	
-	try
-	{		
-		Application::outputUsage();
-		Application::initialize(&argc, argv);
-	}
-	catch(exception &ex)
-	{
-		//cerr << "an exception occurred: " << ex.what() << '\n';		
-	}
-	catch(...)
-	{
-		cerr << "an exception occurred.\n";		
-	}
+    try
+    {		
+        Application::outputUsage();
+        Application::initialize(&argc, argv);
+    }
+    catch(exception &ex)
+    {
+        //cerr << "an exception occurred: " << ex.what() << '\n';		
+    }
+    catch(...)
+    {
+        cerr << "an exception occurred.\n";		
+    }
 }

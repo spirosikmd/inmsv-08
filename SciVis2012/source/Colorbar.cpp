@@ -6,24 +6,21 @@ using namespace std;
 Colorbar::Colorbar()
 {
     colorMode = Visualization::Grayscale;
-    texture = 0;
-    title = "Colorbar";
+    title = "Value";
+    N = 8;
 }
 
-Colorbar::~Colorbar()
-{
-    if (texture)
-        glDeleteTextures(1, &texture);
-}
+Colorbar::~Colorbar() {}
 
 void Colorbar::render()
 {
-    glTranslatef(500.0f, 100.0f, 0.0f);
+    glTranslatef(730.0f, 20.0f, 0.0f);
     
     size_t colorbarLength = 20;
     size_t colorbarHeight = 256;
     float step = colorbarHeight/N;
     
+    // draw colorbar
     glBegin(GL_QUADS);
     for (size_t i = 0; i != N; i++)
     {
@@ -35,8 +32,44 @@ void Colorbar::render()
     }
     glEnd();
     
-    glColor3f(0, 0, 0);
+    // draw border
+    glBegin(GL_LINES);
     
+    glEnd();
+    
+    // draw legend text
+    glColor3f(1, 1, 1);
+    printtext(755, 15, "-0.23");
+    printtext(755, 84, "-0.11");
+    printtext(755, 148, "0.00");
+    printtext(755, 216, "0.11");
+    printtext(755, 266, "0.23");
+    
+    // draw title
+    printtext(730, 285, title);
+}
+
+void Colorbar::printtext(int x, int y, string text)
+{
+    glMatrixMode(GL_PROJECTION);
+    glPushMatrix();
+    glLoadIdentity();
+    glOrtho(0, 1000, 0, 800, -1.0f, 1.0f);
+    glMatrixMode(GL_MODELVIEW);
+    glPushMatrix();
+    glLoadIdentity();
+    glPushAttrib(GL_DEPTH_TEST);
+    glDisable(GL_DEPTH_TEST);
+    glRasterPos2i(x,y);
+    for (size_t i=0; i!=text.size(); i++)
+    {
+        glutBitmapCharacter(GLUT_BITMAP_9_BY_15, text[i]);
+    }
+    glPopAttrib();
+    glMatrixMode(GL_PROJECTION);
+    glPopMatrix();
+    glMatrixMode(GL_MODELVIEW);
+    glPopMatrix();
 }
 
 void Colorbar::colormap(float value)
@@ -84,4 +117,9 @@ void Colorbar::setColorMode(Visualization::ColorMode colormode)
 void Colorbar::setN(size_t n)
 {
     N = n;
+}
+
+void Colorbar::setTitle(std::string t)
+{
+    title = t;
 }

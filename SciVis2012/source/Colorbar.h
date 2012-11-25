@@ -34,9 +34,10 @@ public:
     
     void rainbow(float value, float* R, float* G, float* B);
     
+    void printtext(int x, int y, std::string text);
+    
 protected:
     Visualization::ColorMode colorMode;
-    GLuint texture;
     std::string title;
     size_t N;
 };

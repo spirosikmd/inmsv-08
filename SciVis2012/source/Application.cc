@@ -52,7 +52,6 @@ void Application::initialize(int *argc, char** argv)
     initUI();
     
     colorbar = new Colorbar();
-    colorbar->setN(8);
 
     glutMainLoop();                                 // enter main loop
 }
