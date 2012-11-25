@@ -184,6 +184,7 @@ void Application::buttonHandler(int id)
                 case Visualization::Rainbow:
                 {
                     visualization.setScalarCol(Visualization::Rainbow);
+                    colorbar->setColorMode(Visualization::Rainbow);
                 }
                 break;
                 case Visualization::Grayscale:

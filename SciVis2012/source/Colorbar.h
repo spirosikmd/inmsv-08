@@ -30,7 +30,9 @@ public:
     
     void setN(size_t n);
     
-    void colormap(float value, float* R, float* G, float* B);
+    void colormap(float value);
+    
+    void rainbow(float value, float* R, float* G, float* B);
     
 protected:
     Visualization::ColorMode colorMode;

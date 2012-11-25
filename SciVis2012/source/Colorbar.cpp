@@ -1,6 +1,8 @@
 #include "Colorbar.h"
 #include "Application.h"
 
+using namespace std;
+
 Colorbar::Colorbar()
 {
     colorMode = Visualization::Grayscale;
@@ -25,9 +27,7 @@ void Colorbar::render()
     glBegin(GL_QUADS);
     for (size_t i = 0; i != N; i++)
     {
-        float R, G, B;
-        colormap(i*step, &R, &G, &B);
-        glColor3f(R, G, B);
+        colormap(i*step);
         glVertex3i(i*step, colorbarHeight, 0);              // Top Left
         glVertex3i((i*step)+step, colorbarHeight, 0);       // Top Right
         glVertex3i((i*step)+step, 0, 0);                    // Bottom Right
@@ -36,31 +36,41 @@ void Colorbar::render()
     glEnd();
 }
 
-void Colorbar::colormap(float value, float* R, float* G, float* B)
+void Colorbar::colormap(float value)
 {
+    float R, G, B;
     switch(colorMode)
     {
         case Visualization::Grayscale:
         {
-            *R = value/256.0;
-            *G = value/256.0;
-            *B = value/256.0;
+            R = G = B = value/256.0;
         }
         break;
         case Visualization::Rainbow:
         {
-            
+            rainbow(value, &R, &G, &B);
         }
         break;
         case Visualization::Custom:
         {
-            *R = 256;
-            *G = value/256.0;
-            *B = value/256.0;
+            R = 256;
+            G = B = value/256.0;
         }
         break;
         default: {} break;
     }
+    glColor3f(R, G, B);
+}
+
+void Colorbar::rainbow(float value, float* R, float* G, float* B)
+{
+    const float dx=0.8;
+    value = value/256;
+    if (value<0) value=0; if (value>1) value=1;
+    value = (6-2*dx)*value+dx;	
+    *R = max(0.0, (3-fabs(value-4)-fabs(value-5)) / 2.0);
+    *G = max(0.0, (4-fabs(value-2)-fabs(value-4)) / 2.0);
+    *B = max(0.0, (3-fabs(value-1)-fabs(value-2)) / 2.0);
 }
 
 void Colorbar::setColorMode(Visualization::ColorMode colormode)
