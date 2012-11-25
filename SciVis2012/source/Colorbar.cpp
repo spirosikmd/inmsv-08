@@ -33,8 +33,16 @@ void Colorbar::render()
     glEnd();
     
     // draw border
+    glColor3f(1, 1, 1);
     glBegin(GL_LINES);
-    
+    glVertex2f(0, 0);
+    glVertex2f(0, 256);
+    glVertex2f(0, 256);
+    glVertex2f(20, 256);
+    glVertex2f(20, 256);
+    glVertex2f(20, 0);
+    glVertex2f(20, 0);
+    glVertex2f(0, 0);
     glEnd();
     
     // draw legend text
