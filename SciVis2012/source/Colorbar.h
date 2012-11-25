@@ -13,8 +13,20 @@
 #include "Visualization.h"
 
 class Colorbar
-{   
+{       
 public:
+    
+    enum NUMCOLORS
+    {
+        COL_2 = 2,
+        COL_4 = 4,
+        COL_8 = 8,
+        COL_16 = 16,
+        COL_32 = 32,
+        COL_64 = 64,
+        COL_128 = 128,
+        COL_256 = 256,
+    };
     
     Colorbar();
     virtual ~Colorbar();

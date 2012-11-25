@@ -218,8 +218,8 @@ void Application::initUI()
     // options
     GLUI_Panel *options_panel = new GLUI_Panel(glui, "Options");
     options_panel->set_w(200);
-    new GLUI_Checkbox( options_panel, "Draw Vector Field", &visualization.options[Visualization::DrawVectorField]);
-    new GLUI_Checkbox( options_panel, "Draw Smoke", &visualization.options[Visualization::DrawSmoke]);
+    new GLUI_Checkbox(options_panel, "Draw Vector Field", &visualization.options[Visualization::DrawVectorField]);
+    new GLUI_Checkbox(options_panel, "Draw Smoke", &visualization.options[Visualization::DrawSmoke]);
 
     new GLUI_Button(glui, "Quit", QuitButton, buttonHandler);
 
@@ -228,14 +228,15 @@ void Application::initUI()
     colormap_list->add_item(Visualization::Rainbow, "Rainbow");
     colormap_list->add_item(Visualization::Custom, "Custom");
     
-    GLUI_Listbox *numOfColors = glui->add_listbox("NumColors", &selectedNumOfColors, SelectedNumOfColors, buttonHandler);
-    numOfColors->add_item(8, "8");
-    numOfColors->add_item(16, "16");
-    numOfColors->add_item(32, "32");
-    numOfColors->add_item(64, "64");
-    numOfColors->add_item(128, "128");
-    numOfColors->add_item(256, "256");
-
+    GLUI_Listbox *numOfColors = glui->add_listbox("Num of Colors", &selectedNumOfColors, SelectedNumOfColors, buttonHandler);
+    numOfColors->add_item(Colorbar::COL_2, "2");
+    numOfColors->add_item(Colorbar::COL_4, "4");
+    numOfColors->add_item(Colorbar::COL_8, "8");
+    numOfColors->add_item(Colorbar::COL_16, "16");
+    numOfColors->add_item(Colorbar::COL_32, "32");
+    numOfColors->add_item(Colorbar::COL_64, "64");
+    numOfColors->add_item(Colorbar::COL_128, "128");
+    numOfColors->add_item(Colorbar::COL_256, "256");
 }
 
 void Application::drawColorbar()
