@@ -20,20 +20,23 @@ void Colorbar::render()
 {
     glTranslatef(500.0f, 100.0f, 0.0f);
     
-    size_t colorbarLength = 256;
-    size_t colorbarHeight = 20;
-    float step = colorbarLength/N;
+    size_t colorbarLength = 20;
+    size_t colorbarHeight = 256;
+    float step = colorbarHeight/N;
     
     glBegin(GL_QUADS);
     for (size_t i = 0; i != N; i++)
     {
         colormap(i*step);
-        glVertex3i(i*step, colorbarHeight, 0);              // Top Left
-        glVertex3i((i*step)+step, colorbarHeight, 0);       // Top Right
-        glVertex3i((i*step)+step, 0, 0);                    // Bottom Right
-        glVertex3i(i*step, 0, 0);                           // Bottom Left
+        glVertex3i(0, (i*step)+step, 0);              // Top Left
+        glVertex3i(colorbarLength, (i*step)+step, 0);       // Top Right
+        glVertex3i(colorbarLength, i*step, 0);                    // Bottom Right
+        glVertex3i(0, i*step, 0);                           // Bottom Left
     }
     glEnd();
+    
+    glColor3f(0, 0, 0);
+    
 }
 
 void Colorbar::colormap(float value)
