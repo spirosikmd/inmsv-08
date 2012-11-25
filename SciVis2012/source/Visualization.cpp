@@ -12,7 +12,7 @@ using namespace std;
 Visualization::Visualization()
 {
     vec_scale = 1000;
-    scalar_col = Rainbow;
+    scalar_col = Grayscale;
     options[UseDirectionColoring] = false;
     options[DrawSmoke] = false;
     options[DrawVectorField] = true;
@@ -64,21 +64,30 @@ void Visualization::rainbow(float value, float* R, float* G, float* B)
     *B = max(0.0, (3-fabs(value-1)-fabs(value-2)) / 2.0);
 }
 
+void Visualization::grayscale(float value, float* R, float* G, float* B)
+{
+    if (value<0) value=0; if (value>1) value=1;
+    *R = *G = *B = value;
+}
+
+void Visualization::custom(float value, float* R, float* G, float* B)
+{
+    if (value<0) value=0; if (value>1) value=1;
+    *R = 1;
+    *G = *B = value;
+}
+
 //set_colormap: Sets three different types of colormaps
 void Visualization::set_colormap(float vy)
 {
     float R,G,B;
 
     if (scalar_col == Grayscale)
-        R = G = B = vy;
+        grayscale(vy, &R, &G,&B);
     else if (scalar_col == Rainbow)
         rainbow(vy, &R, &G,&B);
     else if (scalar_col == Custom)
-    {
-       const int NLEVELS = 7;
-       vy *= NLEVELS; vy = (int)(vy); vy /= NLEVELS;
-       rainbow(vy,&R,&G,&B);
-    }
+        custom(vy, &R, &G,&B);
     
     glColor3f(R,G,B);
 }

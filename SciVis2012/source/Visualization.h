@@ -38,6 +38,8 @@ class Visualization
 		float hedgehog_scale() const;
 		
 		void rainbow(float value, float* R, float* G, float* B);
+                void grayscale(float value, float* R, float* G, float* B);
+                void custom(float value, float* R, float* G, float* B);
 		void set_colormap(float vy);
 		void direction_to_color(float x, float y, int method);
 		

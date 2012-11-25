@@ -53,7 +53,7 @@ void Colorbar::colormap(float value)
         break;
         case Visualization::Custom:
         {
-            R = 256;
+            R = 1;
             G = B = value/256.0;
         }
         break;
