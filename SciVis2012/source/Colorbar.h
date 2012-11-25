@@ -9,6 +9,7 @@
 #define	COLORBAR_H
 
 #include <iostream>
+#include <OpenGL/gl.h>
 #include "Visualization.h"
 
 class Colorbar
@@ -26,9 +27,11 @@ public:
     void setColorMode(Visualization::ColorMode colorMode);
     Visualization::ColorMode *getColorMode();
     
+    void fillData(GLubyte (&data)[256][3]);
+    
 protected:
-    Visualization::ColorMode *colorMode;
-    GLuint *texture;
+    Visualization::ColorMode colorMode;
+    GLuint texture;
     std::string title;
 };
 

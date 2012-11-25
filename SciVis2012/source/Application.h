@@ -4,6 +4,7 @@
 #include <GLUI/glui.h>
 #include "Simulation.h"
 #include "Visualization.h"
+#include "Colorbar.h"
 
 class Application
 {
@@ -28,7 +29,8 @@ class Application
 		static void reshape(int w, int h);						// Handle window resizing (reshaping) events
 		static void keyboard(unsigned char key, int x, int y);	// Handle key presses
 		static void drag(int mx, int my);						// Handle mouse drag
-		static void visualize();		
+		static void visualize();
+                static void drawColorbar();
 		static void quit();		
 		static void buttonHandler(int id);
 		
@@ -43,7 +45,7 @@ class Application
 		static int main_window;
                 
                 static int selectedColormap;
-                
+                static Colorbar *colorbar;
 };
 
 #endif
