@@ -1,8 +1,9 @@
 #include "Colorbar.h"
+#include "Application.h"
 
 Colorbar::Colorbar()
 {
-    colorMode = Visualization::Rainbow;
+    colorMode = Visualization::Grayscale;
     texture = 0;
     title = "Colorbar";
 }
@@ -13,48 +14,61 @@ Colorbar::~Colorbar()
         glDeleteTextures(1, &texture);
 }
 
-void Colorbar::setup()
-{
-    if (texture)
-        glDeleteTextures(1, &texture);
-    glGenTextures(1, &texture);
-    glBindTexture(GL_TEXTURE_2D, texture);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
-    const int color_width = 256;
-    GLubyte data[color_width][3];
-    fillData(data);
-    glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, color_width, 1, 0, GL_RGB, GL_UNSIGNED_BYTE, data);
-}
-
 void Colorbar::render()
 {
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    glEnable(GL_TEXTURE_2D);
-    glBindTexture(GL_TEXTURE_1D, texture);
-    glColor4f(1, 1, 1, 0.8f);
-    glTranslatef(700.0f, 100.0f, 0.0f);
-    GLfloat px = 0;
-    GLfloat py = 0;
-    GLfloat sx = 10;
-    GLfloat sy = 100;
-    glBegin(GL_POLYGON);
-        glTexCoord2f(1, 0); glVertex2f(px, py);
-        glTexCoord2f(1, 0); glVertex2f(px+sx, py);
-        glTexCoord2f(0, 0); glVertex2f(px+sx, py-sy);
-        glTexCoord2f(0, 0); glVertex2f(px, py-sy);
+    glTranslatef(500.0f, 100.0f, 0.0f);
+    
+    size_t colorbarLength = 256;
+    size_t colorbarHeight = 20;
+    float step = colorbarLength/N;
+    
+    glBegin(GL_QUADS);
+    for (size_t i = 0; i != N; i++)
+    {
+        float R, G, B;
+        colormap(i*step, &R, &G, &B);
+        glColor3f(R, G, B);
+        glVertex3i(i*step, colorbarHeight, 0);              // Top Left
+        glVertex3i((i*step)+step, colorbarHeight, 0);       // Top Right
+        glVertex3i((i*step)+step, 0, 0);                    // Bottom Right
+        glVertex3i(i*step, 0, 0);                           // Bottom Left
+    }
     glEnd();
-    glDisable(GL_TEXTURE_2D);
 }
 
-void Colorbar::fillData(GLubyte (&data)[256][3])
-{    
-    for (size_t i = 0; i != 256; i++)
+void Colorbar::colormap(float value, float* R, float* G, float* B)
+{
+    switch(colorMode)
     {
-        data[i][0] = i;
-        data[i][1] = i;
-        data[i][2] = i;
+        case Visualization::Grayscale:
+        {
+            *R = value/256.0;
+            *G = value/256.0;
+            *B = value/256.0;
+        }
+        break;
+        case Visualization::Rainbow:
+        {
+            
+        }
+        break;
+        case Visualization::Custom:
+        {
+            *R = 256;
+            *G = value/256.0;
+            *B = value/256.0;
+        }
+        break;
+        default: {} break;
     }
+}
+
+void Colorbar::setColorMode(Visualization::ColorMode colormode)
+{
+    colorMode = colormode;
+}
+
+void Colorbar::setN(size_t n)
+{
+    N = n;
 }

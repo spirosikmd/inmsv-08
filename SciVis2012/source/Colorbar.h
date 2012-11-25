@@ -13,13 +13,12 @@
 #include "Visualization.h"
 
 class Colorbar
-{
+{   
 public:
     
     Colorbar();
     virtual ~Colorbar();
     
-    void setup();
     void render();
     
     void setTitle(std::string title);
@@ -27,12 +26,17 @@ public:
     void setColorMode(Visualization::ColorMode colorMode);
     Visualization::ColorMode *getColorMode();
     
-    void fillData(GLubyte (&data)[256][3]);
+    void fillData(GLubyte (&data)[8][3]);
+    
+    void setN(size_t n);
+    
+    void colormap(float value, float* R, float* G, float* B);
     
 protected:
     Visualization::ColorMode colorMode;
     GLuint texture;
     std::string title;
+    size_t N;
 };
 
 #endif	/* COLORBAR_H */

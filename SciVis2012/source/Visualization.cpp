@@ -18,7 +18,7 @@ Visualization::Visualization()
     options[DrawVectorField] = true;
 }
 
-void Visualization::set_scalar_col(ColorMode colorMode)
+void Visualization::setScalarCol(ColorMode colorMode)
 {
     scalar_col = colorMode;
 }
@@ -76,7 +76,7 @@ void Visualization::set_colormap(float vy)
     else if (scalar_col == Custom)
     {
        const int NLEVELS = 7;
-       vy *= NLEVELS; vy = (int)(vy); vy/= NLEVELS;
+       vy *= NLEVELS; vy = (int)(vy); vy /= NLEVELS;
        rainbow(vy,&R,&G,&B);
     }
     

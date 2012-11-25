@@ -29,7 +29,7 @@ class Visualization
 			OptionsCount			// (automatically assigned)
 		};
 		
-                void set_scalar_col(ColorMode colorMode);
+                void setScalarCol(ColorMode colorMode);
 		void toggle(Option option);
 		void enable(Option option);
 		void disable(Option option);

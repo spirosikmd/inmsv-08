@@ -1,3 +1,6 @@
+
+#include "Colorbar.h"
+
 #include "Application.h"
 #include <iostream>
 #include <GLUT/glut.h>
@@ -19,6 +22,8 @@ int Application::main_window;
 
 int Application::selectedColormap;
 Colorbar* Application::colorbar;
+
+int Application::selectedNumOfColors;
 
 void Application::update()
 {
@@ -47,6 +52,7 @@ void Application::initialize(int *argc, char** argv)
     initUI();
     
     colorbar = new Colorbar();
+    colorbar->setN(8);
 
     glutMainLoop();                                 // enter main loop
 }
@@ -177,23 +183,29 @@ void Application::buttonHandler(int id)
             {
                 case Visualization::Rainbow:
                 {
-                    visualization.set_scalar_col(Visualization::Rainbow);
+                    visualization.setScalarCol(Visualization::Rainbow);
                 }
                 break;
                 case Visualization::Grayscale:
                 {
-                    visualization.set_scalar_col(Visualization::Grayscale);
+                    visualization.setScalarCol(Visualization::Grayscale);
+                    colorbar->setColorMode(Visualization::Grayscale);
                 }
                 break;
                 case Visualization::Custom:
                 {
-                    visualization.set_scalar_col(Visualization::Custom); 
+                    visualization.setScalarCol(Visualization::Custom);
+                    colorbar->setColorMode(Visualization::Custom);
                 }
                 break;
                 default: {} break;
             }
         }
         break;
+        case SelectedNumOfColors:
+        {
+            colorbar->setN(selectedNumOfColors);
+        }
         default: {} break;
     }
 }
@@ -212,15 +224,22 @@ void Application::initUI()
     new GLUI_Button(glui, "Quit", QuitButton, buttonHandler);
 
     GLUI_Listbox *colormap_list = glui->add_listbox("Select Colormap", &selectedColormap, SelectColormap, buttonHandler);
-    colormap_list->add_item(Visualization::Rainbow, "Rainbow");
     colormap_list->add_item(Visualization::Grayscale, "Grayscale");
+    colormap_list->add_item(Visualization::Rainbow, "Rainbow");
     colormap_list->add_item(Visualization::Custom, "Custom");
+    
+    GLUI_Listbox *numOfColors = glui->add_listbox("NumColors", &selectedNumOfColors, SelectedNumOfColors, buttonHandler);
+    numOfColors->add_item(8, "8");
+    numOfColors->add_item(16, "16");
+    numOfColors->add_item(32, "32");
+    numOfColors->add_item(64, "64");
+    numOfColors->add_item(128, "128");
+    numOfColors->add_item(256, "256");
 
 }
 
 void Application::drawColorbar()
 {
-    colorbar->setup();
     colorbar->render();
 }
 

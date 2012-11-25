@@ -13,7 +13,7 @@ class Application
 		// GLUI control IDs
 		enum UiControlID
 		{
-                    QuitButton, SelectColormap
+                    QuitButton, SelectColormap, SelectedNumOfColors
 		};
 	
 	public:
@@ -46,6 +46,8 @@ class Application
                 
                 static int selectedColormap;
                 static Colorbar *colorbar;
+                
+                static int selectedNumOfColors;
 };
 
 #endif
