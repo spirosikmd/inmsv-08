@@ -146,7 +146,7 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
                 px = wn + (fftw_real)i * wn;
                 py = hn + (fftw_real)(j + 1) * hn;
                 idx = ((j + 1) * DIM) + i;
-                set_colormap(getDataset(simulation, idx)); //simulation.rho[idx]
+                set_colormap(simulation.rho[idx]);
                 glVertex2f(px, py);
                 px = wn + (fftw_real)(i + 1) * wn;
                 py = hn + (fftw_real)j * hn;
@@ -158,7 +158,7 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
             px = wn + (fftw_real)(DIM - 1) * wn;
             py = hn + (fftw_real)(j + 1) * hn;
             idx = ((j + 1) * DIM) + (DIM - 1);
-            set_colormap(simulation.rho[idx]);
+            set_colormap(simulation.rho[idx]); //
             glVertex2f(px, py);
             glEnd();
         }
@@ -166,43 +166,63 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
 
     if (options[DrawVectorField])
     {
-        glBegin(GL_LINES);				//draw velocities
-        for (i = 0; i < DIM; i++)
-            for (j = 0; j < DIM; j++)
-            {
-                idx = (j * DIM) + i;
-                direction_to_color(simulation.vx[idx], simulation.vy[idx], options[UseDirectionColoring]);
-                glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
-                glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.vx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.vy[idx]);
-            }
-        glEnd();
+        if (options[DrawVelocities])
+        {
+            glBegin(GL_LINES);				//draw velocities
+            for (i = 0; i < DIM; i++)
+                for (j = 0; j < DIM; j++)
+                {
+                    idx = (j * DIM) + i;
+                    direction_to_color(simulation.vx[idx], simulation.vy[idx], options[UseDirectionColoring]);
+                    glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
+                    glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.vx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.vy[idx]);
+                }
+            glEnd();
+        }
+        if (options[DrawForces])
+        {
+            glBegin(GL_LINES);				//draw forces
+            for (i = 0; i < DIM; i++)
+                for (j = 0; j < DIM; j++)
+                {
+                    idx = (j * DIM) + i;
+                    direction_to_color(simulation.fx[idx], simulation.fy[idx], options[UseDirectionColoring]);
+                    glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
+                    glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.fx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.fy[idx]);
+                }
+            glEnd();
+        }
     }
 }
 
-void Visualization::setDataset(Dataset ds)
-{
-    dataset = ds;
-}
-
-float Visualization::getDataset(Simulation const &simulation, size_t idx)
-{
-    switch(dataset)
-    {
-        case RHO:
-        {
-            return simulation.rho[idx];
-        }
-        break;
-        case V:
-        {
-            // compute the magnitude of V
-        }
-        break;
-        case F:
-        {
-            // compute the magnitude of F
-        }
-        break;
-        default: {return 0.0;} break;
-    }
-}
+//void Visualization::setDataset(Dataset ds)
+//{
+//    dataset = ds;
+//}
+//
+//float Visualization::getDatavalue(Simulation const &simulation, size_t idx)
+//{
+//    float value;
+//    switch(dataset)
+//    {
+//        case RHO:
+//        {
+//            value = simulation.rho[idx];         // direct available
+//        }
+//        break;
+//        case V:
+//        {
+//            // compute the magnitude of V with sqrt(vx^2 + vy^2)
+//            value = sqrt(pow(simulation.vx[idx], 2) + pow(simulation.vy[idx], 2));
+//        }
+//        break;
+//        case F:
+//        {
+//            // compute the magnitude of F with sqrt(fx^2 + fy^2)
+//            value = sqrt(pow(simulation.fx[idx], 2) + pow(simulation.fy[idx], 2));
+//        }
+//        break;
+//        default: {return 0.0;} break;
+//    }
+//    return value;
+//}

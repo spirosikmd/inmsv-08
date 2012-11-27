@@ -15,8 +15,8 @@ class Application
         {
             QuitButton,
             SelectColormap,
-            SelectedNumOfColors,
-            SelectedDataset
+            SelectedNumOfColors
+//            SelectedDataset
         };
 
     public:
@@ -52,7 +52,7 @@ class Application
 
         static int selectedNumOfColors;
         
-        static int selectedDataset;
+//        static int selectedDataset;
 };
 
 #endif

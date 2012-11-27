@@ -24,7 +24,7 @@ int Application::selectedColormap;
 Colorbar* Application::colorbar;
 
 int Application::selectedNumOfColors;
-int Application::selectedDataset;
+//int Application::selectedDataset;
 
 void Application::update()
 {
@@ -208,29 +208,29 @@ void Application::buttonHandler(int id)
             colorbar->setN(selectedNumOfColors);
         }
         break;
-        case SelectedDataset:
-        {
-            switch(selectedDataset)
-            {
-                case Visualization::RHO:
-                {
-                    visualization.setDataset(Visualization::RHO);
-                }
-                break;
-                case Visualization::V:
-                {
-                    visualization.setDataset(Visualization::V);
-                }
-                break;
-                case Visualization::F:
-                {
-                    visualization.setDataset(Visualization::F);
-                }
-                break;
-                default: {} break;
-            }
-        }
-        break;
+//        case SelectedDataset:
+//        {
+//            switch(selectedDataset)
+//            {
+//                case Visualization::RHO:
+//                {
+//                    visualization.setDataset(Visualization::RHO);
+//                }
+//                break;
+//                case Visualization::V:
+//                {
+//                    visualization.setDataset(Visualization::V);
+//                }
+//                break;
+//                case Visualization::F:
+//                {
+//                    visualization.setDataset(Visualization::F);
+//                }
+//                break;
+//                default: {} break;
+//            }
+//        }
+//        break;
         default: {} break;
     }
 }
@@ -243,7 +243,10 @@ void Application::initUI()
     // options
     GLUI_Panel *options_panel = new GLUI_Panel(glui, "Options");
     options_panel->set_w(200);
-    new GLUI_Checkbox(options_panel, "Draw Vector Field", &visualization.options[Visualization::DrawVectorField]);
+    new GLUI_Checkbox(options_panel, "Show Vector Field", &visualization.options[Visualization::DrawVectorField]);
+    new GLUI_Checkbox(options_panel, "Draw Vector Field", &visualization.options[Visualization::UseDirectionColoring]);
+    new GLUI_Checkbox(options_panel, "Draw Velocities", &visualization.options[Visualization::DrawVelocities]);
+    new GLUI_Checkbox(options_panel, "Draw Forces", &visualization.options[Visualization::DrawForces]);
     new GLUI_Checkbox(options_panel, "Draw Smoke", &visualization.options[Visualization::DrawSmoke]);
 
     new GLUI_Button(glui, "Quit", QuitButton, buttonHandler);
@@ -264,10 +267,10 @@ void Application::initUI()
     numOfColors->add_item(Colorbar::COL_256, "256");
     numOfColors->do_selection(Colorbar::COL_8);
     
-    GLUI_Listbox *dataset = glui->add_listbox("Dataset", &selectedDataset, SelectedDataset, buttonHandler);
-    dataset->add_item(Visualization::RHO, "RHO");
-    dataset->add_item(Visualization::V, "V");
-    dataset->add_item(Visualization::F, "F");
+//    GLUI_Listbox *dataset = glui->add_listbox("Dataset", &selectedDataset, SelectedDataset, buttonHandler);
+//    dataset->add_item(Visualization::RHO, "RHO");
+//    dataset->add_item(Visualization::V, "V");
+//    dataset->add_item(Visualization::F, "F");
 }
 
 void Application::drawColorbar()

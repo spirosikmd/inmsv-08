@@ -26,6 +26,8 @@ class Visualization
             DrawSmoke,				// draw the smoke or not
             DrawVectorField,		// draw the vector field or not
             UseDirectionColoring,	// use direction color-coding or not
+            DrawVelocities,
+            DrawForces,
             OptionsCount			// (automatically assigned)
         };
         
@@ -47,8 +49,8 @@ class Visualization
         void custom(float value, float* R, float* G, float* B);
         void set_colormap(float vy);
         void direction_to_color(float x, float y, int method);
-        void setDataset(Dataset dataset);
-        float getDataset(Simulation const &simulation, size_t idx);
+//        void setDataset(Dataset dataset);
+//        float getDatavalue(Simulation const &simulation, size_t idx);
 
     private:
 
