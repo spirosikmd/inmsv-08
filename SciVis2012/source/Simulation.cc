@@ -155,28 +155,28 @@ void Simulation::diffuse_matter()
 
 	for ( x=0.5f/n,i=0 ; i<n ; i++,x+=1.0f/n )
 	{
-		for ( y=0.5f/n,j=0 ; j<n ; j++,y+=1.0f/n )
-		{
-			x0 = n*(x-dt*vx[i+n*j])-0.5f;
-			y0 = n*(y-dt*vy[i+n*j])-0.5f;
-			i0 = clamp(x0);
-			s = x0-i0;
-			i0 = (n+(i0%n))%n;
-			i1 = (i0+1)%n;
-			j0 = clamp(y0);
-			t = y0-j0;
-			j0 = (n+(j0%n))%n;
-			j1 = (j0+1)%n;
-			rho[i+n*j] = (1-s)*((1-t)*rho0[i0+n*j0]+t*rho0[i0+n*j1])+s*((1-t)*rho0[i1+n*j0]+t*rho0[i1+n*j1]);
-		}
+            for ( y=0.5f/n,j=0 ; j<n ; j++,y+=1.0f/n )
+            {
+                x0 = n*(x-dt*vx[i+n*j])-0.5f;
+                y0 = n*(y-dt*vy[i+n*j])-0.5f;
+                i0 = clamp(x0);
+                s = x0-i0;
+                i0 = (n+(i0%n))%n;
+                i1 = (i0+1)%n;
+                j0 = clamp(y0);
+                t = y0-j0;
+                j0 = (n+(j0%n))%n;
+                j1 = (j0+1)%n;
+                rho[i+n*j] = (1-s)*((1-t)*rho0[i0+n*j0]+t*rho0[i0+n*j1])+s*((1-t)*rho0[i1+n*j0]+t*rho0[i1+n*j1]);
+            }       
 	}
 }
 
 void Simulation::insert_force(int X, int Y, double dx, double dy)
 {
-	fx[Y * DIM + X] += dx;
-	fy[Y * DIM + X] += dy;
-	rho[Y * DIM + X] = 10.0f;
+    fx[Y * DIM + X] += dx;
+    fy[Y * DIM + X] += dy;
+    rho[Y * DIM + X] = 10.0f;
 }
 
 // set_forces: copy user-controlled forces to the force vectors that are sent to the solver.
@@ -185,11 +185,11 @@ void Simulation::set_forces()
 {    
     for (int i = 0; i < DIM * DIM; i++)
     {
-		rho0[i]  = 0.995 * rho[i];
-		fx[i] *= 0.85;
-		fy[i] *= 0.85;
-		vx0[i]    = fx[i];
-		vy0[i]    = fy[i];
+        rho0[i]  = 0.995 * rho[i];
+        fx[i] *= 0.85;
+        fy[i] *= 0.85;
+        vx0[i]    = fx[i];
+        vy0[i]    = fy[i];
     }
 }
 

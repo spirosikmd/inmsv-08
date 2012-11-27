@@ -2,6 +2,7 @@
 #define	UTILITIES_H_INCLUDED
 
 int clamp(float x);
+void hsv2rgb(float h, float s, float v, float& r, float& g, float& b);
 
 #endif
 

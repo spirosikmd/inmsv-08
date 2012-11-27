@@ -14,7 +14,7 @@ Visualization::Visualization()
 {
     vec_scale = 1000;
     scalar_col = Grayscale;
-    dataset = RHO;
+//    dataset = RHO;
     options[UseDirectionColoring] = false;
     options[DrawSmoke] = false;
     options[DrawVectorField] = true;
@@ -55,6 +55,16 @@ float Visualization::hedgehog_scale() const
     return vec_scale;
 }
 
+void Visualization::set_hue(float h)
+{
+    hue = h;
+}
+
+void Visualization::set_saturation(float s)
+{
+    saturation = s;
+}
+
 //rainbow: Implements a color palette, mapping the scalar 'value' to a rainbow color RGB
 void Visualization::rainbow(float value, float* R, float* G, float* B)
 {
@@ -89,7 +99,8 @@ void Visualization::set_colormap(float vy)
     else if (scalar_col == Rainbow)
         rainbow(vy, &R, &G,&B);
     else if (scalar_col == Custom)
-        custom(vy, &R, &G,&B);
+        hsv2rgb(hue,saturation, vy, R, G, B);
+ 
     
     glColor3f(R,G,B);
 }
@@ -97,26 +108,84 @@ void Visualization::set_colormap(float vy)
 //direction_to_color: Set the current color by mapping a direction vector (x,y), using
 //                    the color mapping method 'method'. If method==1, map the vector direction
 //                    using a rainbow colormap. If method==0, simply use the white color
-void Visualization::direction_to_color(float x, float y, int method)
+void Visualization::direction_to_color(float x, float y)
 {
     float r,g,b,f;
-    if (method)
+    switch(scalar_col)
     {
-        f = atan2(y,x) / 3.1415927 + 1;
-	r = f;
-        if(r > 1) r = 2 - r;
-        g = f + .66667;
-        if(g > 2) g -= 2;
-        if(g > 1) g = 2 - g;
-        b = f + 2 * .66667;
-        if(b > 2) b -= 2;
-        if(b > 1) b = 2 - b;
+        case Visualization::Grayscale:
+        {
+            f = atan2(y,x) / 3.1415927 + 1;
+            r = g = b = f;
+        }
+        break;
+        case Visualization::Custom:
+        { 
+            
+        }
+        break;
+        case Visualization::Rainbow:
+        default:
+        {
+            f = atan2(y,x) / 3.1415927;
+            r = f;
+            if(r > 1) r = 2 - r;
+            g = f + .66667;
+            if(g > 2) g -= 2;
+            if(g > 1) g = 2 - g;
+            b = f + 2 * .66667;
+            if(b > 2) b -= 2;
+            if(b > 1) b = 2 - b;
+        }
+        break;
     }
-    else
-    { r = g = b = 1; }
     glColor3f(r,g,b);
 }
 
+void Visualization::magnitude_to_color(float x, float y)
+{
+    //static float maxf = 0.0;
+    float r,g,b,f;
+    f = sqrt(pow(x, 2) + pow(y, 2));
+    
+    
+//    if (f > maxf) {
+//        maxf = f;
+//        cout << maxf << '\n';
+//    }
+    
+    switch(scalar_col)
+    {
+        case Visualization::Grayscale:
+        {
+            f = f / 0.1;
+            r = g = b = f;
+        }
+        break;
+        case Visualization::Custom:
+        { 
+            
+        }
+        break;
+        case Visualization::Rainbow:
+        default:
+        {
+            f = sqrt(pow(x, 2) + pow(y, 2));
+            f = f / 0.1;
+            r = f;
+            if(r > 1) r = 2 - r;
+            g = f + .66667;
+            if(g > 2) g -= 2;
+            if(g > 1) g = 2 - g;
+            b = f + 2 * .66667;
+            if(b > 2) b -= 2;
+            if(b > 1) b = 2 - b;
+        }
+        break;
+    }
+    
+    glColor3f(r,g,b);
+}
 		
 //visualize: This is the main visualization function
 void Visualization::visualize(Simulation const &simulation, int winWidth, int winHeight)
@@ -164,34 +233,32 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
         }
     }
 
-    if (options[DrawVectorField])
+    if (options[DrawVelocities])
     {
-        if (options[DrawVelocities])
-        {
-            glBegin(GL_LINES);				//draw velocities
-            for (i = 0; i < DIM; i++)
-                for (j = 0; j < DIM; j++)
-                {
-                    idx = (j * DIM) + i;
-                    direction_to_color(simulation.vx[idx], simulation.vy[idx], options[UseDirectionColoring]);
-                    glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
-                    glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.vx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.vy[idx]);
-                }
-            glEnd();
-        }
-        if (options[DrawForces])
-        {
-            glBegin(GL_LINES);				//draw forces
-            for (i = 0; i < DIM; i++)
-                for (j = 0; j < DIM; j++)
-                {
-                    idx = (j * DIM) + i;
-                    direction_to_color(simulation.fx[idx], simulation.fy[idx], options[UseDirectionColoring]);
-                    glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
-                    glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.fx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.fy[idx]);
-                }
-            glEnd();
-        }
+        glBegin(GL_LINES);				//draw velocities
+        for (i = 0; i < DIM; i++)
+            for (j = 0; j < DIM; j++)
+            {
+                idx = (j * DIM) + i;
+                direction_to_color(simulation.vx[idx], simulation.vy[idx]);
+                magnitude_to_color(simulation.vx[idx], simulation.vy[idx]);
+                glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
+                glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.vx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.vy[idx]);
+            }
+        glEnd();
+    }
+    if (options[DrawForces])
+    {
+        glBegin(GL_LINES);				//draw forces
+        for (i = 0; i < DIM; i++)
+            for (j = 0; j < DIM; j++)
+            {
+                idx = (j * DIM) + i;
+                direction_to_color(simulation.fx[idx], simulation.fy[idx]);
+                glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
+                glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.fx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.fy[idx]);
+            }
+        glEnd();
     }
 }
 

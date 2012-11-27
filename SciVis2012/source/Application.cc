@@ -24,6 +24,8 @@ int Application::selectedColormap;
 Colorbar* Application::colorbar;
 
 int Application::selectedNumOfColors;
+float Application::hueValue;
+float Application::saturationValue;
 //int Application::selectedDataset;
 
 void Application::update()
@@ -208,6 +210,16 @@ void Application::buttonHandler(int id)
             colorbar->setN(selectedNumOfColors);
         }
         break;
+        case HueSpinner:
+        {
+            visualization.set_hue(hueValue);
+        }
+        break;
+        case SaturationSpinner:
+        {
+            visualization.set_saturation(saturationValue);
+        }
+        break;
 //        case SelectedDataset:
 //        {
 //            switch(selectedDataset)
@@ -243,8 +255,6 @@ void Application::initUI()
     // options
     GLUI_Panel *options_panel = new GLUI_Panel(glui, "Options");
     options_panel->set_w(200);
-    new GLUI_Checkbox(options_panel, "Show Vector Field", &visualization.options[Visualization::DrawVectorField]);
-    new GLUI_Checkbox(options_panel, "Draw Vector Field", &visualization.options[Visualization::UseDirectionColoring]);
     new GLUI_Checkbox(options_panel, "Draw Velocities", &visualization.options[Visualization::DrawVelocities]);
     new GLUI_Checkbox(options_panel, "Draw Forces", &visualization.options[Visualization::DrawForces]);
     new GLUI_Checkbox(options_panel, "Draw Smoke", &visualization.options[Visualization::DrawSmoke]);
@@ -266,6 +276,11 @@ void Application::initUI()
     numOfColors->add_item(Colorbar::COL_128, "128");
     numOfColors->add_item(Colorbar::COL_256, "256");
     numOfColors->do_selection(Colorbar::COL_8);
+    
+    GLUI_Spinner *hueSpinner = new GLUI_Spinner(glui, "Hue", &hueValue, HueSpinner, buttonHandler);
+    hueSpinner->set_float_limits(0.0,1.0,GLUI_LIMIT_CLAMP);
+    GLUI_Spinner *satSpinner = new GLUI_Spinner(glui, "Saturation", &saturationValue, SaturationSpinner, buttonHandler);
+    satSpinner->set_float_limits(0.0,1.0,GLUI_LIMIT_CLAMP);
     
 //    GLUI_Listbox *dataset = glui->add_listbox("Dataset", &selectedDataset, SelectedDataset, buttonHandler);
 //    dataset->add_item(Visualization::RHO, "RHO");

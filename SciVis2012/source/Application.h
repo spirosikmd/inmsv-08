@@ -15,7 +15,9 @@ class Application
         {
             QuitButton,
             SelectColormap,
-            SelectedNumOfColors
+            SelectedNumOfColors,
+            HueSpinner,
+            SaturationSpinner
 //            SelectedDataset
         };
 
@@ -51,6 +53,9 @@ class Application
         static Colorbar *colorbar;
 
         static int selectedNumOfColors;
+        
+        static float hueValue;
+        static float saturationValue;
         
 //        static int selectedDataset;
 };
