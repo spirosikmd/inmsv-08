@@ -23,10 +23,15 @@ class Visualization
 
         enum Option
         {
-                DrawSmoke,				// draw the smoke or not
-                DrawVectorField,		// draw the vector field or not
-                UseDirectionColoring,	// use direction color-coding or not
-                OptionsCount			// (automatically assigned)
+            DrawSmoke,				// draw the smoke or not
+            DrawVectorField,		// draw the vector field or not
+            UseDirectionColoring,	// use direction color-coding or not
+            OptionsCount			// (automatically assigned)
+        };
+        
+        enum Dataset
+        {
+            RHO, V, F
         };
 
         void setScalarCol(ColorMode colorMode);
@@ -42,12 +47,15 @@ class Visualization
         void custom(float value, float* R, float* G, float* B);
         void set_colormap(float vy);
         void direction_to_color(float x, float y, int method);
+        void setDataset(Dataset dataset);
+        float getDataset(Simulation const &simulation, size_t idx);
 
     private:
 
         float vec_scale;				// scaling of hedgehogs 
         int options[OptionsCount];		// options boolean array
         ColorMode scalar_col;			//method for scalar coloring
+        Dataset dataset;
 };
 
 #endif

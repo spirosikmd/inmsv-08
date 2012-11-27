@@ -24,6 +24,7 @@ int Application::selectedColormap;
 Colorbar* Application::colorbar;
 
 int Application::selectedNumOfColors;
+int Application::selectedDataset;
 
 void Application::update()
 {
@@ -206,6 +207,30 @@ void Application::buttonHandler(int id)
         {
             colorbar->setN(selectedNumOfColors);
         }
+        break;
+        case SelectedDataset:
+        {
+            switch(selectedDataset)
+            {
+                case Visualization::RHO:
+                {
+                    visualization.setDataset(Visualization::RHO);
+                }
+                break;
+                case Visualization::V:
+                {
+                    visualization.setDataset(Visualization::V);
+                }
+                break;
+                case Visualization::F:
+                {
+                    visualization.setDataset(Visualization::F);
+                }
+                break;
+                default: {} break;
+            }
+        }
+        break;
         default: {} break;
     }
 }
@@ -237,6 +262,12 @@ void Application::initUI()
     numOfColors->add_item(Colorbar::COL_64, "64");
     numOfColors->add_item(Colorbar::COL_128, "128");
     numOfColors->add_item(Colorbar::COL_256, "256");
+    numOfColors->do_selection(Colorbar::COL_8);
+    
+    GLUI_Listbox *dataset = glui->add_listbox("Dataset", &selectedDataset, SelectedDataset, buttonHandler);
+    dataset->add_item(Visualization::RHO, "RHO");
+    dataset->add_item(Visualization::V, "V");
+    dataset->add_item(Visualization::F, "F");
 }
 
 void Application::drawColorbar()

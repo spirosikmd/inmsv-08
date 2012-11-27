@@ -2,6 +2,7 @@
 #include <cmath>
 #include <rfftw.h>              //the numerical simulation FFTW library
 #include <GLUT/glut.h>
+#include <iostream>
 
 #include "Visualization.h"
 #include "Simulation.h"
@@ -13,6 +14,7 @@ Visualization::Visualization()
 {
     vec_scale = 1000;
     scalar_col = Grayscale;
+    dataset = RHO;
     options[UseDirectionColoring] = false;
     options[DrawSmoke] = false;
     options[DrawVectorField] = true;
@@ -144,7 +146,7 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
                 px = wn + (fftw_real)i * wn;
                 py = hn + (fftw_real)(j + 1) * hn;
                 idx = ((j + 1) * DIM) + i;
-                set_colormap(simulation.rho[idx]);
+                set_colormap(getDataset(simulation, idx)); //simulation.rho[idx]
                 glVertex2f(px, py);
                 px = wn + (fftw_real)(i + 1) * wn;
                 py = hn + (fftw_real)j * hn;
@@ -177,4 +179,30 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     }
 }
 
+void Visualization::setDataset(Dataset ds)
+{
+    dataset = ds;
+}
 
+float Visualization::getDataset(Simulation const &simulation, size_t idx)
+{
+    switch(dataset)
+    {
+        case RHO:
+        {
+            return simulation.rho[idx];
+        }
+        break;
+        case V:
+        {
+            // compute the magnitude of V
+        }
+        break;
+        case F:
+        {
+            // compute the magnitude of F
+        }
+        break;
+        default: {return 0.0;} break;
+    }
+}
