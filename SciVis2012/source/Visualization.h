@@ -52,15 +52,12 @@ class Visualization
         void set_colormap(float vy);
         void direction_to_color(float x, float y);
         void magnitude_to_color(float x, float y);
-//        void setDataset(Dataset dataset);
-//        float getDatavalue(Simulation const &simulation, size_t idx);
 
     private:
 
         float vec_scale;				// scaling of hedgehogs 
         int options[OptionsCount];		// options boolean array
         ColorMode scalar_col;			//method for scalar coloring
-        Dataset dataset;
         float hue, saturation;
 };
 

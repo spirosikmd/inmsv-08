@@ -14,7 +14,6 @@ Visualization::Visualization()
 {
     vec_scale = 1000;
     scalar_col = Grayscale;
-//    dataset = RHO;
     options[UseDirectionColoring] = false;
     options[DrawSmoke] = false;
     options[DrawVectorField] = true;
@@ -101,7 +100,6 @@ void Visualization::set_colormap(float vy)
     else if (scalar_col == Custom)
         hsv2rgb(hue,saturation, vy, R, G, B);
  
-    
     glColor3f(R,G,B);
 }
 
@@ -144,11 +142,9 @@ void Visualization::direction_to_color(float x, float y)
 
 void Visualization::magnitude_to_color(float x, float y)
 {
-    //static float maxf = 0.0;
     float r,g,b,f;
     f = sqrt(pow(x, 2) + pow(y, 2));
-    
-    
+    f = f / 0.1 + 0.5;
 //    if (f > maxf) {
 //        maxf = f;
 //        cout << maxf << '\n';
@@ -158,20 +154,17 @@ void Visualization::magnitude_to_color(float x, float y)
     {
         case Visualization::Grayscale:
         {
-            f = f / 0.1;
             r = g = b = f;
         }
         break;
         case Visualization::Custom:
         { 
-            
+            hsv2rgb(hue,saturation, f, r, g, b);
         }
         break;
         case Visualization::Rainbow:
         default:
         {
-            f = sqrt(pow(x, 2) + pow(y, 2));
-            f = f / 0.1;
             r = f;
             if(r > 1) r = 2 - r;
             g = f + .66667;
@@ -240,7 +233,6 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
             for (j = 0; j < DIM; j++)
             {
                 idx = (j * DIM) + i;
-                direction_to_color(simulation.vx[idx], simulation.vy[idx]);
                 magnitude_to_color(simulation.vx[idx], simulation.vy[idx]);
                 glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
                 glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.vx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.vy[idx]);
@@ -254,42 +246,10 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
             for (j = 0; j < DIM; j++)
             {
                 idx = (j * DIM) + i;
-                direction_to_color(simulation.fx[idx], simulation.fy[idx]);
+                magnitude_to_color(simulation.fx[idx], simulation.fy[idx]);
                 glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
                 glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.fx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.fy[idx]);
             }
         glEnd();
     }
 }
-
-//void Visualization::setDataset(Dataset ds)
-//{
-//    dataset = ds;
-//}
-//
-//float Visualization::getDatavalue(Simulation const &simulation, size_t idx)
-//{
-//    float value;
-//    switch(dataset)
-//    {
-//        case RHO:
-//        {
-//            value = simulation.rho[idx];         // direct available
-//        }
-//        break;
-//        case V:
-//        {
-//            // compute the magnitude of V with sqrt(vx^2 + vy^2)
-//            value = sqrt(pow(simulation.vx[idx], 2) + pow(simulation.vy[idx], 2));
-//        }
-//        break;
-//        case F:
-//        {
-//            // compute the magnitude of F with sqrt(fx^2 + fy^2)
-//            value = sqrt(pow(simulation.fx[idx], 2) + pow(simulation.fy[idx], 2));
-//        }
-//        break;
-//        default: {return 0.0;} break;
-//    }
-//    return value;
-//}

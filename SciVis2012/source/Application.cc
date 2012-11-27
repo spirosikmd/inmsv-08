@@ -26,7 +26,6 @@ Colorbar* Application::colorbar;
 int Application::selectedNumOfColors;
 float Application::hueValue;
 float Application::saturationValue;
-//int Application::selectedDataset;
 
 void Application::update()
 {
@@ -220,29 +219,6 @@ void Application::buttonHandler(int id)
             visualization.set_saturation(saturationValue);
         }
         break;
-//        case SelectedDataset:
-//        {
-//            switch(selectedDataset)
-//            {
-//                case Visualization::RHO:
-//                {
-//                    visualization.setDataset(Visualization::RHO);
-//                }
-//                break;
-//                case Visualization::V:
-//                {
-//                    visualization.setDataset(Visualization::V);
-//                }
-//                break;
-//                case Visualization::F:
-//                {
-//                    visualization.setDataset(Visualization::F);
-//                }
-//                break;
-//                default: {} break;
-//            }
-//        }
-//        break;
         default: {} break;
     }
 }
@@ -261,12 +237,12 @@ void Application::initUI()
 
     new GLUI_Button(glui, "Quit", QuitButton, buttonHandler);
 
-    GLUI_Listbox *colormap_list = glui->add_listbox("Select Colormap", &selectedColormap, SelectColormap, buttonHandler);
+    GLUI_Listbox *colormap_list = new GLUI_Listbox(glui, "Select Colormap", &selectedColormap, SelectColormap, buttonHandler);
     colormap_list->add_item(Visualization::Grayscale, "Grayscale");
     colormap_list->add_item(Visualization::Rainbow, "Rainbow");
     colormap_list->add_item(Visualization::Custom, "Custom");
     
-    GLUI_Listbox *numOfColors = glui->add_listbox("Num of Colors", &selectedNumOfColors, SelectedNumOfColors, buttonHandler);
+    GLUI_Listbox *numOfColors = new GLUI_Listbox(glui, "Num of Colors", &selectedNumOfColors, SelectedNumOfColors, buttonHandler);
     numOfColors->add_item(Colorbar::COL_2, "2");
     numOfColors->add_item(Colorbar::COL_4, "4");
     numOfColors->add_item(Colorbar::COL_8, "8");
@@ -281,11 +257,6 @@ void Application::initUI()
     hueSpinner->set_float_limits(0.0,1.0,GLUI_LIMIT_CLAMP);
     GLUI_Spinner *satSpinner = new GLUI_Spinner(glui, "Saturation", &saturationValue, SaturationSpinner, buttonHandler);
     satSpinner->set_float_limits(0.0,1.0,GLUI_LIMIT_CLAMP);
-    
-//    GLUI_Listbox *dataset = glui->add_listbox("Dataset", &selectedDataset, SelectedDataset, buttonHandler);
-//    dataset->add_item(Visualization::RHO, "RHO");
-//    dataset->add_item(Visualization::V, "V");
-//    dataset->add_item(Visualization::F, "F");
 }
 
 void Application::drawColorbar()

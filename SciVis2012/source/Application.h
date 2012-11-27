@@ -18,7 +18,6 @@ class Application
             SelectedNumOfColors,
             HueSpinner,
             SaturationSpinner
-//            SelectedDataset
         };
 
     public:
@@ -56,8 +55,6 @@ class Application
         
         static float hueValue;
         static float saturationValue;
-        
-//        static int selectedDataset;
 };
 
 #endif
