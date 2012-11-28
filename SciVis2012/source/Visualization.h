@@ -1,6 +1,8 @@
 #ifndef VISUALIZATION_H_INCLUDED
 #define	VISUALIZATION_H_INCLUDED
 
+#include <rfftw.h>              //the numerical simulation FFTW library
+
 class Simulation;
 
 class Visualization
@@ -31,9 +33,9 @@ class Visualization
             OptionsCount			// (automatically assigned)
         };
         
-        enum Dataset
+        enum MagnitudeMode
         {
-            RHO, V, F
+            Velocity, Force
         };
 
         void setScalarCol(ColorMode colorMode);
@@ -51,7 +53,7 @@ class Visualization
         void custom(float value, float* R, float* G, float* B);
         void set_colormap(float vy);
         void direction_to_color(float x, float y);
-        void magnitude_to_color(float x, float y);
+        void magnitude_to_color(float x, float y, MagnitudeMode mode);
 
     private:
 
@@ -59,6 +61,10 @@ class Visualization
         int options[OptionsCount];		// options boolean array
         ColorMode scalar_col;			//method for scalar coloring
         float hue, saturation;
+        
+        void drawSmoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+        void drawVelocities(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+        void drawForces(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
 };
 
 #endif

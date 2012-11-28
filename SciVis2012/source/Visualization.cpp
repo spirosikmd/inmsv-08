@@ -1,6 +1,5 @@
 #include <algorithm>
 #include <cmath>
-#include <rfftw.h>              //the numerical simulation FFTW library
 #include <GLUT/glut.h>
 #include <iostream>
 
@@ -125,7 +124,7 @@ void Visualization::direction_to_color(float x, float y)
         case Visualization::Rainbow:
         default:
         {
-            f = atan2(y,x) / 3.1415927;
+            f = atan2(y,x) / 3.1415927 + 1;
             r = f;
             if(r > 1) r = 2 - r;
             g = f + .66667;
@@ -140,29 +139,31 @@ void Visualization::direction_to_color(float x, float y)
     glColor3f(r,g,b);
 }
 
-void Visualization::magnitude_to_color(float x, float y)
+void Visualization::magnitude_to_color(float x, float y, MagnitudeMode mode)
 {
     float r,g,b,f;
+    
     f = sqrt(pow(x, 2) + pow(y, 2));
-    f = f / 0.1 + 0.5;
-//    if (f > maxf) {
-//        maxf = f;
-//        cout << maxf << '\n';
-//    }
+    
+    switch(mode)
+    {
+        case Velocity: { f = f / 0.01; } break;
+        case Force: { f = f / 0.2; } break;
+    }
     
     switch(scalar_col)
     {
-        case Visualization::Grayscale:
+        case Grayscale:
         {
             r = g = b = f;
         }
         break;
-        case Visualization::Custom:
+        case Custom:
         { 
             hsv2rgb(hue,saturation, f, r, g, b);
         }
         break;
-        case Visualization::Rainbow:
+        case Rainbow:
         default:
         {
             r = f;
@@ -183,73 +184,93 @@ void Visualization::magnitude_to_color(float x, float y)
 //visualize: This is the main visualization function
 void Visualization::visualize(Simulation const &simulation, int winWidth, int winHeight)
 {
-    int        i, j, idx; double px,py;
     const int DIM = Simulation::DIM;
     fftw_real  wn = (fftw_real)winWidth / (fftw_real)(DIM + 1);   // Grid cell width
     fftw_real  hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell heigh
 
     if (options[DrawSmoke])
     {
-        glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-        for (j = 0; j < DIM - 1; j++)			//draw smoke
-        {
-            glBegin(GL_TRIANGLE_STRIP);
-
-            i = 0;
-            px = wn + (fftw_real)i * wn;
-            py = hn + (fftw_real)j * hn;
-            idx = (j * DIM) + i;
-
-            glColor3f(0.0, 0.0, 0.0);
-            glVertex2f(px,py);
-
-            for (i = 0; i < DIM - 1; i++)
-            {
-                px = wn + (fftw_real)i * wn;
-                py = hn + (fftw_real)(j + 1) * hn;
-                idx = ((j + 1) * DIM) + i;
-                set_colormap(simulation.rho[idx]);
-                glVertex2f(px, py);
-                px = wn + (fftw_real)(i + 1) * wn;
-                py = hn + (fftw_real)j * hn;
-                idx = (j * DIM) + (i + 1);
-                set_colormap(simulation.rho[idx]);
-                glVertex2f(px, py);
-            }
-
-            px = wn + (fftw_real)(DIM - 1) * wn;
-            py = hn + (fftw_real)(j + 1) * hn;
-            idx = ((j + 1) * DIM) + (DIM - 1);
-            set_colormap(simulation.rho[idx]); //
-            glVertex2f(px, py);
-            glEnd();
-        }
+        drawSmoke(simulation, DIM, wn, hn);
     }
-
     if (options[DrawVelocities])
     {
-        glBegin(GL_LINES);				//draw velocities
-        for (i = 0; i < DIM; i++)
-            for (j = 0; j < DIM; j++)
-            {
-                idx = (j * DIM) + i;
-                magnitude_to_color(simulation.vx[idx], simulation.vy[idx]);
-                glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
-                glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.vx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.vy[idx]);
-            }
-        glEnd();
+        drawVelocities(simulation, DIM, wn, hn);
     }
     if (options[DrawForces])
     {
-        glBegin(GL_LINES);				//draw forces
-        for (i = 0; i < DIM; i++)
-            for (j = 0; j < DIM; j++)
-            {
-                idx = (j * DIM) + i;
-                magnitude_to_color(simulation.fx[idx], simulation.fy[idx]);
-                glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
-                glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.fx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.fy[idx]);
-            }
+        drawForces(simulation, DIM, wn, hn);
+    }
+}
+
+void Visualization::drawSmoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn)
+{
+    int i, j, idx;
+    double px,py;
+    
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    for (j = 0; j < DIM - 1; j++)			//draw smoke
+    {
+        glBegin(GL_TRIANGLE_STRIP);
+
+        i = 0;
+        px = wn + (fftw_real)i * wn;
+        py = hn + (fftw_real)j * hn;
+        idx = (j * DIM) + i;
+
+        glColor3f(0.0, 0.0, 0.0);
+        glVertex2f(px,py);
+
+        for (i = 0; i < DIM - 1; i++)
+        {
+            px = wn + (fftw_real)i * wn;
+            py = hn + (fftw_real)(j + 1) * hn;
+            idx = ((j + 1) * DIM) + i;
+            set_colormap(simulation.rho[idx]);
+            glVertex2f(px, py);
+            px = wn + (fftw_real)(i + 1) * wn;
+            py = hn + (fftw_real)j * hn;
+            idx = (j * DIM) + (i + 1);
+            set_colormap(simulation.rho[idx]);
+            glVertex2f(px, py);
+        }
+
+        px = wn + (fftw_real)(DIM - 1) * wn;
+        py = hn + (fftw_real)(j + 1) * hn;
+        idx = ((j + 1) * DIM) + (DIM - 1);
+        set_colormap(simulation.rho[idx]); //
+        glVertex2f(px, py);
         glEnd();
     }
+}
+
+void Visualization::drawVelocities(Simulation const &simulation, const int DIM, fftw_real wn, fftw_real hn)
+{
+    int i, j, idx;
+    
+    glBegin(GL_LINES);				//draw velocities
+    for (i = 0; i < DIM; i++)
+        for (j = 0; j < DIM; j++)
+        {
+            idx = (j * DIM) + i;
+            magnitude_to_color(simulation.vx[idx], simulation.vy[idx], Velocity);
+            glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
+            glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.vx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.vy[idx]);
+        }
+    glEnd();
+}
+
+void Visualization::drawForces(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn)
+{
+    int i, j, idx;
+    
+    glBegin(GL_LINES);				//draw forces
+    for (i = 0; i < DIM; i++)
+        for (j = 0; j < DIM; j++)
+        {
+            idx = (j * DIM) + i;
+            magnitude_to_color(simulation.fx[idx], simulation.fy[idx], Force);
+            glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
+            glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.fx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.fy[idx]);
+        }
+    glEnd();
 }
