@@ -20,33 +20,39 @@ class Visualization
             Grayscale,
             Rainbow,
             Custom,
-            ColorModeCount				// (automatically assigned)
+            ColorModeCount		// (automatically assigned)
         };
 
         enum Option
         {
-            DrawSmoke,				// draw the smoke or not
-            DrawVectorField,		// draw the vector field or not
-            UseDirectionColoring,	// use direction color-coding or not
-            DrawVelocities,
-            DrawForces,
-            OptionsCount			// (automatically assigned)
+            DrawSmoke,                  // draw the smoke or not
+            DrawVectorField,		// draw the vector field or not (not used for now)
+            UseDirectionColoring,	// use direction color-coding or not (not used for now)
+            DrawVelocities,             // draw the velocities or not 
+            DrawForces,                 // draw forces or nor
+            OptionsCount		// (automatically assigned)
         };
         
         enum MagnitudeMode
         {
             Velocity, Force
         };
+        
+        enum ApplicationMode
+        {
+            Scale, Clamp
+        };
 
-        void setScalarCol(ColorMode colorMode);
+        void set_scalar_col(ColorMode colorMode);
         void toggle(Option option);
         void enable(Option option);
         void disable(Option option);
         bool is_enabled(Option option) const;		
         void scale_hedgehogs(float scale);
         float hedgehog_scale() const;
-        void set_hue(float h);
-        void set_saturation(float s);
+        void set_hue(const float h);
+        void set_saturation(const float s);
+        void set_num_of_colors(const int n);
 
         void rainbow(float value, float* R, float* G, float* B);
         void grayscale(float value, float* R, float* G, float* B);
@@ -57,10 +63,11 @@ class Visualization
 
     private:
 
-        float vec_scale;				// scaling of hedgehogs 
-        int options[OptionsCount];		// options boolean array
-        ColorMode scalar_col;			//method for scalar coloring
+        float vec_scale;		// scaling of hedgehogs 
+        int options[OptionsCount];	// options boolean array
+        ColorMode scalar_col;		//method for scalar coloring
         float hue, saturation;
+        int N;                          // number of colors
         
         void drawSmoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
         void drawVelocities(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);

@@ -13,12 +13,14 @@ Visualization::Visualization()
 {
     vec_scale = 1000;
     scalar_col = Grayscale;
-    options[UseDirectionColoring] = false;
+    options[UseDirectionColoring] = false;              // not used for now
     options[DrawSmoke] = false;
-    options[DrawVectorField] = true;
+    options[DrawForces] = false;
+    options[DrawVelocities] = true;
+    options[DrawVectorField] = true;                    // not used for now
 }
 
-void Visualization::setScalarCol(ColorMode colorMode)
+void Visualization::set_scalar_col(ColorMode colorMode)
 {
     scalar_col = colorMode;
 }
@@ -53,14 +55,19 @@ float Visualization::hedgehog_scale() const
     return vec_scale;
 }
 
-void Visualization::set_hue(float h)
+void Visualization::set_hue(const float h)
 {
     hue = h;
 }
 
-void Visualization::set_saturation(float s)
+void Visualization::set_saturation(const float s)
 {
     saturation = s;
+}
+
+void Visualization::set_num_of_colors(const int n)
+{
+    N = n;
 }
 
 //rainbow: Implements a color palette, mapping the scalar 'value' to a rainbow color RGB
@@ -97,7 +104,7 @@ void Visualization::set_colormap(float vy)
     else if (scalar_col == Rainbow)
         rainbow(vy, &R, &G,&B);
     else if (scalar_col == Custom)
-        hsv2rgb(hue,saturation, vy, R, G, B);
+        hsv2rgb(hue, saturation, vy, R, G, B);
  
     glColor3f(R,G,B);
 }
@@ -145,6 +152,7 @@ void Visualization::magnitude_to_color(float x, float y, MagnitudeMode mode)
     
     f = sqrt(pow(x, 2) + pow(y, 2));
     
+    // check mode because velocities and forces have different value range
     switch(mode)
     {
         case Velocity: { f = f / 0.01; } break;

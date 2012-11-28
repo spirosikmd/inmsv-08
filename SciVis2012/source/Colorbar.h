@@ -33,25 +33,26 @@ public:
     
     void render();
     
-    void setTitle(std::string title);
+    void set_color_mode(Visualization::ColorMode colorMode);
+    Visualization::ColorMode *get_color_mode();
     
-    void setColorMode(Visualization::ColorMode colorMode);
-    Visualization::ColorMode *getColorMode();
-    
-    void fillData(GLubyte (&data)[8][3]);
-    
-    void setN(size_t n);
-    
-    void colormap(float value);
-    
+    void fill_data(GLubyte (&data)[8][3]);
+    void set_N(size_t n);
+    void set_title(std::string title);
+    void set_hue(float h);
+    void set_saturation(float s);
+    void put_color(float value);
     void rainbow(float value, float* R, float* G, float* B);
-    
-    void printtext(int x, int y, std::string text);
     
 protected:
     Visualization::ColorMode colorMode;
     std::string title;
     size_t N;
+    float hue, saturation;
+    
+private:
+    
+    void print_text(int x, int y, std::string text);
 };
 
 #endif	/* COLORBAR_H */

@@ -17,7 +17,8 @@ class Application
             SelectColormap,
             SelectedNumOfColors,
             HueSpinner,
-            SaturationSpinner
+            SaturationSpinner,
+            ApplicationMode
         };
 
     public:
@@ -48,13 +49,15 @@ class Application
         static GLUI *glui;						// user interface
         static int main_window;
 
-        static int selectedColormap;
+        static int selected_colormap;
         static Colorbar *colorbar;
 
-        static int selectedNumOfColors;
+        static int selected_num_of_colors;
         
-        static float hueValue;
-        static float saturationValue;
+        static float hue_value;
+        static float saturation_value;
+        
+        static int app_mode;
 };
 
 #endif

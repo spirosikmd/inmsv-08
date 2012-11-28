@@ -1,5 +1,6 @@
 #include "Colorbar.h"
 #include "Application.h"
+#include "Utilities.h"
 
 using namespace std;
 
@@ -24,7 +25,7 @@ void Colorbar::render()
     glBegin(GL_QUADS);
     for (size_t i = 0; i != N; i++)
     {
-        colormap(i*step);
+        put_color(i*step);
         glVertex3i(0, (i*step)+step, 0);              // Top Left
         glVertex3i(colorbarLength, (i*step)+step, 0);       // Top Right
         glVertex3i(colorbarLength, i*step, 0);                    // Bottom Right
@@ -47,18 +48,18 @@ void Colorbar::render()
     
     // draw legend text
     glColor3f(1, 1, 1);
-    printtext(755, 15, "-0.23");
-    printtext(755, 84, "-0.11");
-    printtext(755, 148, "0.00");
-    printtext(755, 216, "0.11");
-    printtext(755, 266, "0.23");
+    print_text(755, 15, "-0.23");
+    print_text(755, 84, "-0.11");
+    print_text(755, 148, "0.00");
+    print_text(755, 216, "0.11");
+    print_text(755, 266, "0.23");
     
     // draw title
     glColor3f(1, 1, 1);
-    printtext(730, 285, title);
+    print_text(730, 285, title);
 }
 
-void Colorbar::printtext(int x, int y, string text)
+void Colorbar::print_text(int x, int y, string text)
 {
     glMatrixMode(GL_PROJECTION);
     glPushMatrix();
@@ -81,7 +82,7 @@ void Colorbar::printtext(int x, int y, string text)
     glPopMatrix();
 }
 
-void Colorbar::colormap(float value)
+void Colorbar::put_color(float value)
 {
     float R, G, B;
     switch(colorMode)
@@ -93,14 +94,14 @@ void Colorbar::colormap(float value)
         break;
         case Visualization::Rainbow:
         {
-            value = value/256;
+            value = value/256.0;
             rainbow(value, &R, &G, &B);
         }
         break;
         case Visualization::Custom:
         {
-            R = 1;
-            G = B = value/256.0;
+            value = value/256.0;
+            hsv2rgb(hue, saturation, value, R, G, B);
         }
         break;
         default: {} break;
@@ -118,17 +119,27 @@ void Colorbar::rainbow(float value, float* R, float* G, float* B)
     *B = max(0.0, (3-fabs(value-1)-fabs(value-2)) / 2.0);
 }
 
-void Colorbar::setColorMode(Visualization::ColorMode colormode)
+void Colorbar::set_color_mode(Visualization::ColorMode colormode)
 {
     colorMode = colormode;
 }
 
-void Colorbar::setN(size_t n)
+void Colorbar::set_N(size_t n)
 {
     N = n;
 }
 
-void Colorbar::setTitle(std::string t)
+void Colorbar::set_title(std::string t)
 {
     title = t;
+}
+
+void Colorbar::set_hue(float h)
+{
+    hue = h;
+}
+
+void Colorbar::set_saturation(float s)
+{
+    saturation = s;
 }

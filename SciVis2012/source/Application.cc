@@ -20,12 +20,14 @@ int Application::winHeight;
 GLUI* Application::glui;						// user interface
 int Application::main_window;
 
-int Application::selectedColormap;
+int Application::selected_colormap;
 Colorbar* Application::colorbar;
 
-int Application::selectedNumOfColors;
-float Application::hueValue;
-float Application::saturationValue;
+int Application::selected_num_of_colors;
+float Application::hue_value;
+float Application::saturation_value;
+
+int Application::app_mode;
 
 void Application::update()
 {
@@ -180,24 +182,24 @@ void Application::buttonHandler(int id)
         case QuitButton : { quit(); } break;
         case SelectColormap:
         {
-            switch(selectedColormap)
+            switch(selected_colormap)
             {
                 case Visualization::Rainbow:
                 {
-                    visualization.setScalarCol(Visualization::Rainbow);
-                    colorbar->setColorMode(Visualization::Rainbow);
+                    visualization.set_scalar_col(Visualization::Rainbow);
+                    colorbar->set_color_mode(Visualization::Rainbow);
                 }
                 break;
                 case Visualization::Grayscale:
                 {
-                    visualization.setScalarCol(Visualization::Grayscale);
-                    colorbar->setColorMode(Visualization::Grayscale);
+                    visualization.set_scalar_col(Visualization::Grayscale);
+                    colorbar->set_color_mode(Visualization::Grayscale);
                 }
                 break;
                 case Visualization::Custom:
                 {
-                    visualization.setScalarCol(Visualization::Custom);
-                    colorbar->setColorMode(Visualization::Custom);
+                    visualization.set_scalar_col(Visualization::Custom);
+                    colorbar->set_color_mode(Visualization::Custom);
                 }
                 break;
                 default: {} break;
@@ -206,17 +208,20 @@ void Application::buttonHandler(int id)
         break;
         case SelectedNumOfColors:
         {
-            colorbar->setN(selectedNumOfColors);
+            colorbar->set_N(selected_num_of_colors);
+            visualization.set_num_of_colors(selected_num_of_colors);
         }
         break;
         case HueSpinner:
         {
-            visualization.set_hue(hueValue);
+            visualization.set_hue(hue_value);
+            colorbar->set_hue(hue_value);
         }
         break;
         case SaturationSpinner:
         {
-            visualization.set_saturation(saturationValue);
+            visualization.set_saturation(saturation_value);
+            colorbar->set_saturation(saturation_value);
         }
         break;
         default: {} break;
@@ -237,26 +242,30 @@ void Application::initUI()
 
     new GLUI_Button(glui, "Quit", QuitButton, buttonHandler);
 
-    GLUI_Listbox *colormap_list = new GLUI_Listbox(glui, "Select Colormap", &selectedColormap, SelectColormap, buttonHandler);
+    GLUI_Listbox *colormap_list = new GLUI_Listbox(glui, "Select Colormap", &selected_colormap, SelectColormap, buttonHandler);
     colormap_list->add_item(Visualization::Grayscale, "Grayscale");
     colormap_list->add_item(Visualization::Rainbow, "Rainbow");
     colormap_list->add_item(Visualization::Custom, "Custom");
     
-    GLUI_Listbox *numOfColors = new GLUI_Listbox(glui, "Num of Colors", &selectedNumOfColors, SelectedNumOfColors, buttonHandler);
-    numOfColors->add_item(Colorbar::COL_2, "2");
-    numOfColors->add_item(Colorbar::COL_4, "4");
-    numOfColors->add_item(Colorbar::COL_8, "8");
-    numOfColors->add_item(Colorbar::COL_16, "16");
-    numOfColors->add_item(Colorbar::COL_32, "32");
-    numOfColors->add_item(Colorbar::COL_64, "64");
-    numOfColors->add_item(Colorbar::COL_128, "128");
-    numOfColors->add_item(Colorbar::COL_256, "256");
-    numOfColors->do_selection(Colorbar::COL_8);
+    GLUI_Listbox *num_of_colors_list = new GLUI_Listbox(glui, "Num of Colors", &selected_num_of_colors, SelectedNumOfColors, buttonHandler);
+    num_of_colors_list->add_item(Colorbar::COL_2, "2");
+    num_of_colors_list->add_item(Colorbar::COL_4, "4");
+    num_of_colors_list->add_item(Colorbar::COL_8, "8");
+    num_of_colors_list->add_item(Colorbar::COL_16, "16");
+    num_of_colors_list->add_item(Colorbar::COL_32, "32");
+    num_of_colors_list->add_item(Colorbar::COL_64, "64");
+    num_of_colors_list->add_item(Colorbar::COL_128, "128");
+    num_of_colors_list->add_item(Colorbar::COL_256, "256");
+    num_of_colors_list->do_selection(Colorbar::COL_8);
     
-    GLUI_Spinner *hueSpinner = new GLUI_Spinner(glui, "Hue", &hueValue, HueSpinner, buttonHandler);
-    hueSpinner->set_float_limits(0.0,1.0,GLUI_LIMIT_CLAMP);
-    GLUI_Spinner *satSpinner = new GLUI_Spinner(glui, "Saturation", &saturationValue, SaturationSpinner, buttonHandler);
-    satSpinner->set_float_limits(0.0,1.0,GLUI_LIMIT_CLAMP);
+    GLUI_Spinner *hue_spinner = new GLUI_Spinner(glui, "Hue", &hue_value, HueSpinner, buttonHandler);
+    hue_spinner->set_float_limits(0.0,1.0,GLUI_LIMIT_CLAMP);
+    GLUI_Spinner *sat_spinner = new GLUI_Spinner(glui, "Saturation", &saturation_value, SaturationSpinner, buttonHandler);
+    sat_spinner->set_float_limits(0.0,1.0,GLUI_LIMIT_CLAMP);
+    
+    GLUI_Listbox *application_mode_list = new GLUI_Listbox(glui, "Application Mode", &app_mode, ApplicationMode, buttonHandler);
+    application_mode_list->add_item(Visualization::Scale, "scale");
+    application_mode_list->add_item(Visualization::Clamp, "clamp");
 }
 
 void Application::drawColorbar()
