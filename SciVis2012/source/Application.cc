@@ -224,6 +224,11 @@ void Application::buttonHandler(int id)
             colorbar->set_saturation(saturation_value);
         }
         break;
+        case ApplicationMode:
+        {
+            
+        }
+        break;
         default: {} break;
     }
 }

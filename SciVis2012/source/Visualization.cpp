@@ -13,6 +13,7 @@ Visualization::Visualization()
 {
     vec_scale = 1000;
     scalar_col = Grayscale;
+    N = 8;
     options[UseDirectionColoring] = false;              // not used for now
     options[DrawSmoke] = false;
     options[DrawForces] = false;
@@ -98,6 +99,8 @@ void Visualization::custom(float value, float* R, float* G, float* B)
 void Visualization::set_colormap(float vy)
 {
     float R,G,B;
+    
+    vy = round(vy*(N-1))/(N-1);
 
     if (scalar_col == Grayscale)
         grayscale(vy, &R, &G,&B);
@@ -117,18 +120,18 @@ void Visualization::direction_to_color(float x, float y)
     float r,g,b,f;
     switch(scalar_col)
     {
-        case Visualization::Grayscale:
+        case Grayscale:
         {
             f = atan2(y,x) / 3.1415927 + 1;
             r = g = b = f;
         }
         break;
-        case Visualization::Custom:
+        case Custom:
         { 
-            
+            hsv2rgb(hue, saturation, f, r, g, b);
         }
         break;
-        case Visualization::Rainbow:
+        case Rainbow:
         default:
         {
             f = atan2(y,x) / 3.1415927 + 1;
@@ -146,19 +149,15 @@ void Visualization::direction_to_color(float x, float y)
     glColor3f(r,g,b);
 }
 
-void Visualization::magnitude_to_color(float x, float y, MagnitudeMode mode)
+void Visualization::magnitude_to_color(float x, float y)
 {
     float r,g,b,f;
+    static float max_f = -1000.0;
     
     f = sqrt(pow(x, 2) + pow(y, 2));
-    
-    // check mode because velocities and forces have different value range
-    switch(mode)
-    {
-        case Velocity: { f = f / 0.01; } break;
-        case Force: { f = f / 0.2; } break;
-    }
-    
+    f = round(f*(N-1))/(N-1);
+    if (f > max_f) { cout << max_f << '\n'; max_f = f; }
+        
     switch(scalar_col)
     {
         case Grayscale:
@@ -168,7 +167,7 @@ void Visualization::magnitude_to_color(float x, float y, MagnitudeMode mode)
         break;
         case Custom:
         { 
-            hsv2rgb(hue,saturation, f, r, g, b);
+            hsv2rgb(hue, saturation, f, r, g, b);
         }
         break;
         case Rainbow:
@@ -260,7 +259,7 @@ void Visualization::drawVelocities(Simulation const &simulation, const int DIM, 
         for (j = 0; j < DIM; j++)
         {
             idx = (j * DIM) + i;
-            magnitude_to_color(simulation.vx[idx], simulation.vy[idx], Velocity);
+            magnitude_to_color(simulation.vx[idx], simulation.vy[idx]);
             glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
             glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.vx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.vy[idx]);
         }
@@ -276,7 +275,7 @@ void Visualization::drawForces(Simulation const &simulation, const int DIM, cons
         for (j = 0; j < DIM; j++)
         {
             idx = (j * DIM) + i;
-            magnitude_to_color(simulation.fx[idx], simulation.fy[idx], Force);
+            magnitude_to_color(simulation.fx[idx], simulation.fy[idx]);
             glVertex2f(wn + (fftw_real)i * wn, hn + (fftw_real)j * hn);
             glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.fx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.fy[idx]);
         }

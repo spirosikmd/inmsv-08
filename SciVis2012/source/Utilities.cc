@@ -1,6 +1,8 @@
+#include <cmath>
+
 int clamp(float x)
 { 
-	return ((x)>=0.0?((int)(x)):(-((int)(1-(x))))); 
+    return ((x)>=0.0?((int)(x)):(-((int)(1-(x))))); 
 }
 
 void hsv2rgb(float h, float s, float v, float& r, float& g, float& b)
@@ -20,4 +22,9 @@ void hsv2rgb(float h, float s, float v, float& r, float& g, float& b)
         case 4: r=lz;   g=lx;   b=v;    break;
         case 5: r=v;    g=lx;   b=ly;   break;
     }
+}
+
+double round(double r)
+{
+    return (r >= 0.0) ? floor(r + 0.5) : ceil(r - 0.5);
 }
