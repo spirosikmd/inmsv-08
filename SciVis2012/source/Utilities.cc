@@ -28,3 +28,8 @@ double round(double r)
 {
     return (r >= 0.0) ? floor(r + 0.5) : ceil(r - 0.5);
 }
+
+float scale(float v, float f_min, float f_max, float min, float max)
+{
+    return ((v-f_min)*(max-min)/(f_max-f_min)+min);
+}

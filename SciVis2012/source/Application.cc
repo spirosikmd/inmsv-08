@@ -27,7 +27,8 @@ int Application::selected_num_of_colors;
 float Application::hue_value;
 float Application::saturation_value;
 
-int Application::app_mode;
+Visualization::ApplicationMode Application::app_mode;
+Visualization::DrawMode Application::draw_mode;
 
 void Application::update()
 {
@@ -229,6 +230,11 @@ void Application::buttonHandler(int id)
             
         }
         break;
+        case DrawMode:
+        {
+            visualization.set_draw_mode(draw_mode);
+        }
+        break;
         default: {} break;
     }
 }
@@ -261,16 +267,21 @@ void Application::initUI()
     num_of_colors_list->add_item(Colorbar::COL_64, "64");
     num_of_colors_list->add_item(Colorbar::COL_128, "128");
     num_of_colors_list->add_item(Colorbar::COL_256, "256");
-    num_of_colors_list->do_selection(Colorbar::COL_8);
+    num_of_colors_list->do_selection(Colorbar::COL_256);
     
     GLUI_Spinner *hue_spinner = new GLUI_Spinner(glui, "Hue", &hue_value, HueSpinner, buttonHandler);
     hue_spinner->set_float_limits(0.0,1.0,GLUI_LIMIT_CLAMP);
     GLUI_Spinner *sat_spinner = new GLUI_Spinner(glui, "Saturation", &saturation_value, SaturationSpinner, buttonHandler);
     sat_spinner->set_float_limits(0.0,1.0,GLUI_LIMIT_CLAMP);
     
-    GLUI_Listbox *application_mode_list = new GLUI_Listbox(glui, "Application Mode", &app_mode, ApplicationMode, buttonHandler);
+    GLUI_Listbox *application_mode_list = new GLUI_Listbox(glui, "Application Mode", (int*)&app_mode, ApplicationMode, buttonHandler);
     application_mode_list->add_item(Visualization::Scale, "scale");
     application_mode_list->add_item(Visualization::Clamp, "clamp");
+    
+    GLUI_Listbox *draw_mode_list = new GLUI_Listbox(glui, "Draw Mode", (int*)&draw_mode, DrawMode, buttonHandler);
+    draw_mode_list->add_item(Visualization::Velocity, "Velocity");
+    draw_mode_list->add_item(Visualization::Force, "Force");
+    draw_mode_list->add_item(Visualization::Density, "Density");
 }
 
 void Application::drawColorbar()

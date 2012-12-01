@@ -36,6 +36,11 @@ public:
     {
         Scale, Clamp
     };
+    
+    enum DrawMode
+    {
+        Density, Velocity, Force
+    };
 
     void visualize(Simulation const &simulation, int winWidth, int winHeight);
     void set_scalar_col(ColorMode colorMode);
@@ -55,6 +60,7 @@ public:
     void set_colormap(float vy);
     void direction_to_color(float x, float y);
     void magnitude_to_color(float x, float y);
+    void set_draw_mode(DrawMode dm);
 
 private:
 
@@ -63,10 +69,12 @@ private:
     ColorMode scalar_col;		//method for scalar coloring
     float hue, saturation;
     int N;                          // number of colors
+    DrawMode draw_mode;
 
-    void drawSmoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+    void draw_smoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void drawVelocities(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void drawForces(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+    float pick_value(Simulation const &simulation, size_t idx);
 };
 
 #endif

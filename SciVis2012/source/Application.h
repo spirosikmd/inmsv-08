@@ -18,7 +18,8 @@ class Application
             SelectedNumOfColors,
             HueSpinner,
             SaturationSpinner,
-            ApplicationMode
+            ApplicationMode,
+            DrawMode
         };
 
     public:
@@ -57,7 +58,8 @@ class Application
         static float hue_value;
         static float saturation_value;
         
-        static int app_mode;
+        static Visualization::ApplicationMode app_mode;
+        static Visualization::DrawMode draw_mode;
 };
 
 #endif

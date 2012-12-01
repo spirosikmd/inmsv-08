@@ -13,11 +13,12 @@ Visualization::Visualization()
 {
     vec_scale = 1000;
     scalar_col = Grayscale;
-    N = 8;
+    N = 256;
+    draw_mode = Velocity;
     options[UseDirectionColoring] = false;              // not used for now
-    options[DrawSmoke] = false;
+    options[DrawSmoke] = true;
     options[DrawForces] = false;
-    options[DrawVelocities] = true;
+    options[DrawVelocities] = false;
     options[DrawVectorField] = true;                    // not used for now
 }
 
@@ -69,6 +70,11 @@ void Visualization::set_saturation(const float s)
 void Visualization::set_num_of_colors(const int n)
 {
     N = n;
+}
+
+void Visualization::set_draw_mode(DrawMode dm)
+{
+    draw_mode = dm;
 }
 
 //rainbow: Implements a color palette, mapping the scalar 'value' to a rainbow color RGB
@@ -152,11 +158,11 @@ void Visualization::direction_to_color(float x, float y)
 void Visualization::magnitude_to_color(float x, float y)
 {
     float r,g,b,f;
-    static float max_f = -1000.0;
+//    static float max_f = -1000.0;
     
     f = sqrt(pow(x, 2) + pow(y, 2));
     f = round(f*(N-1))/(N-1);
-    if (f > max_f) { cout << max_f << '\n'; max_f = f; }
+//    if (f > max_f) { cout << max_f << '\n'; max_f = f; }
         
     switch(scalar_col)
     {
@@ -197,7 +203,7 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
 
     if (options[DrawSmoke])
     {
-        drawSmoke(simulation, DIM, wn, hn);
+        draw_smoke(simulation, DIM, wn, hn);
     }
     if (options[DrawVelocities])
     {
@@ -209,7 +215,7 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     }
 }
 
-void Visualization::drawSmoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn)
+void Visualization::draw_smoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn)
 {
     int i, j, idx;
     double px,py;
@@ -232,22 +238,47 @@ void Visualization::drawSmoke(Simulation const &simulation, const int DIM, const
             px = wn + (fftw_real)i * wn;
             py = hn + (fftw_real)(j + 1) * hn;
             idx = ((j + 1) * DIM) + i;
-            set_colormap(simulation.rho[idx]);
+            set_colormap(pick_value(simulation, idx));
             glVertex2f(px, py);
             px = wn + (fftw_real)(i + 1) * wn;
             py = hn + (fftw_real)j * hn;
             idx = (j * DIM) + (i + 1);
-            set_colormap(simulation.rho[idx]);
+            set_colormap(pick_value(simulation, idx));
             glVertex2f(px, py);
         }
 
         px = wn + (fftw_real)(DIM - 1) * wn;
         py = hn + (fftw_real)(j + 1) * hn;
         idx = ((j + 1) * DIM) + (DIM - 1);
-        set_colormap(simulation.rho[idx]); //
+        set_colormap(pick_value(simulation, idx));
         glVertex2f(px, py);
         glEnd();
     }
+}
+
+float Visualization::pick_value(Simulation const &simulation, size_t idx)
+{
+    float value = 0.0;
+    static float max_f = 0.0;
+    switch(draw_mode)
+    {
+        case Velocity:
+        {
+            value = sqrt(pow(simulation.vx[idx], 2) + pow(simulation.vy[idx], 2));
+            value = scale(value, 0, 0.02, 0, 1);
+        }
+        break;
+        case Force:
+        {
+            value = sqrt(pow(simulation.fx[idx], 2) + pow(simulation.fy[idx], 2));
+            value = scale(value, 0, 0.2, 0, 1);
+        }
+        break;
+        case Density: { value = simulation.rho[idx]; }
+        default: break;
+    }
+    if (value > max_f) { cout << max_f << '\n'; max_f = value; }
+    return value;
 }
 
 void Visualization::drawVelocities(Simulation const &simulation, const int DIM, fftw_real wn, fftw_real hn)
