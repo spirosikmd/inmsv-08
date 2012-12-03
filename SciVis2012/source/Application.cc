@@ -279,9 +279,9 @@ void Application::initUI()
     application_mode_list->add_item(Visualization::Clamp, "clamp");
     
     GLUI_Listbox *draw_mode_list = new GLUI_Listbox(glui, "Draw Mode", (int*)&draw_mode, DrawMode, buttonHandler);
-    draw_mode_list->add_item(Visualization::Velocity, "Velocity");
-    draw_mode_list->add_item(Visualization::Force, "Force");
-    draw_mode_list->add_item(Visualization::Density, "Density");
+    draw_mode_list->add_item(Visualization::Velocity, "Velocity |v|");
+    draw_mode_list->add_item(Visualization::Force, "Force |f|");
+    draw_mode_list->add_item(Visualization::Density, "Density rho");
 }
 
 void Application::drawColorbar()

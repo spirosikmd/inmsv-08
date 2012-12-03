@@ -1,5 +1,7 @@
 #include <cmath>
 
+#include "Utilities.h"
+
 int clamp(float x)
 { 
     return ((x)>=0.0?((int)(x)):(-((int)(1-(x))))); 
@@ -32,4 +34,9 @@ double round(double r)
 float scale(float v, float f_min, float f_max, float min, float max)
 {
     return ((v-f_min)*(max-min)/(f_max-f_min)+min);
+}
+
+float magnitude(float x, float y)
+{
+    return sqrt(pow(x, 2) + pow(y, 2));
 }

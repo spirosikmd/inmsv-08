@@ -12,6 +12,8 @@
       <itemPath>source/Application.h</itemPath>
       <itemPath>source/Colorbar.cpp</itemPath>
       <itemPath>source/Colorbar.h</itemPath>
+      <itemPath>Colormap.cpp</itemPath>
+      <itemPath>Colormap.h</itemPath>
       <itemPath>source/Simulation.cc</itemPath>
       <itemPath>source/Simulation.h</itemPath>
       <itemPath>source/Utilities.cc</itemPath>

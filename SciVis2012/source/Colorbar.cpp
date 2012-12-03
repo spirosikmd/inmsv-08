@@ -8,7 +8,7 @@ Colorbar::Colorbar()
 {
     colorMode = Visualization::Grayscale;
     title = "Value";
-    N = 8;
+    N = 256;
 }
 
 Colorbar::~Colorbar() {}

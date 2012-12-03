@@ -224,13 +224,13 @@ void Visualization::draw_smoke(Simulation const &simulation, const int DIM, cons
     for (j = 0; j < DIM - 1; j++)			//draw smoke
     {
         glBegin(GL_TRIANGLE_STRIP);
-
+        
         i = 0;
         px = wn + (fftw_real)i * wn;
         py = hn + (fftw_real)j * hn;
         idx = (j * DIM) + i;
-
-        glColor3f(0.0, 0.0, 0.0);
+        
+        set_colormap(pick_value(simulation, idx));
         glVertex2f(px,py);
 
         for (i = 0; i < DIM - 1; i++)
@@ -260,17 +260,18 @@ float Visualization::pick_value(Simulation const &simulation, size_t idx)
 {
     float value = 0.0;
     static float max_f = 0.0;
+    
     switch(draw_mode)
     {
         case Velocity:
         {
-            value = sqrt(pow(simulation.vx[idx], 2) + pow(simulation.vy[idx], 2));
+            value = magnitude(simulation.vx[idx], simulation.vy[idx]);
             value = scale(value, 0, 0.02, 0, 1);
         }
         break;
         case Force:
         {
-            value = sqrt(pow(simulation.fx[idx], 2) + pow(simulation.fy[idx], 2));
+            value = magnitude(simulation.fx[idx], simulation.fy[idx]);
             value = scale(value, 0, 0.2, 0, 1);
         }
         break;
