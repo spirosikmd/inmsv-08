@@ -4,31 +4,35 @@
 
 using namespace std;
 
-Colorbar::Colorbar()
+Colorbar::Colorbar(int x, int y, int z, size_t w, size_t h)
 {
     colorMode = Visualization::Grayscale;
     title = "Value";
     N = 256;
+    pos_x = x;
+    pos_y = y;
+    pos_z = z;
+    width = w;
+    height = h;
 }
 
 Colorbar::~Colorbar() {}
 
 void Colorbar::render()
 {
-    glTranslatef(730.0f, 20.0f, 0.0f);
+    glTranslatef(pos_x, pos_y, pos_z);
     
-    size_t colorbarLength = 20;
-    size_t colorbarHeight = 256;
-    float step = colorbarHeight/N;
+    float step = height/N;
     
     // draw colorbar
     glBegin(GL_QUADS);
     for (size_t i = 0; i != N; i++)
     {
-        put_color(i*step);
+        put_color(i*step+step);
         glVertex3i(0, (i*step)+step, 0);              // Top Left
-        glVertex3i(colorbarLength, (i*step)+step, 0);       // Top Right
-        glVertex3i(colorbarLength, i*step, 0);                    // Bottom Right
+        glVertex3i(width, (i*step)+step, 0);       // Top Right
+        put_color(i*step);
+        glVertex3i(width, i*step, 0);                    // Bottom Right
         glVertex3i(0, i*step, 0);                           // Bottom Left
     }
     glEnd();
@@ -48,11 +52,11 @@ void Colorbar::render()
     
     // draw legend text
     glColor3f(1, 1, 1);
-    print_text(755, 15, "-0.23");
-    print_text(755, 84, "-0.11");
-    print_text(755, 148, "0.00");
-    print_text(755, 216, "0.11");
-    print_text(755, 266, "0.23");
+    print_text(pos_x+width+5, 15, "-0.23");
+    print_text(pos_x+width+5, 84, "-0.11");
+    print_text(pos_x+width+5, 148, "0.00");
+    print_text(pos_x+width+5, 216, "0.11");
+    print_text(pos_x+width+5, 266, "0.23");
     
     // draw title
     glColor3f(1, 1, 1);
@@ -129,7 +133,7 @@ void Colorbar::set_N(size_t n)
     N = n;
 }
 
-void Colorbar::set_title(std::string t)
+void Colorbar::set_title(string t)
 {
     title = t;
 }

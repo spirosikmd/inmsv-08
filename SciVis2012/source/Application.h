@@ -19,7 +19,8 @@ class Application
             HueSpinner,
             SaturationSpinner,
             ApplicationMode,
-            DrawMode
+            ScalarDrawMode,
+            VectorDrawMode
         };
 
     public:
@@ -59,7 +60,8 @@ class Application
         static float saturation_value;
         
         static Visualization::ApplicationMode app_mode;
-        static Visualization::DrawMode draw_mode;
+        static Visualization::ScalarDrawMode scalar_draw_mode;
+        static Visualization::VectorDrawMode vector_draw_mode;
 };
 
 #endif

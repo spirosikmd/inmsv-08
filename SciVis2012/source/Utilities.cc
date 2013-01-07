@@ -40,3 +40,8 @@ float magnitude(float x, float y)
 {
     return sqrt(pow(x, 2) + pow(y, 2));
 }
+
+float magnitude(float v[2])
+{
+    return sqrt(pow(v[0], 2) + pow(v[1], 2));
+}

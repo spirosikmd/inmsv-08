@@ -28,7 +28,8 @@ float Application::hue_value;
 float Application::saturation_value;
 
 Visualization::ApplicationMode Application::app_mode;
-Visualization::DrawMode Application::draw_mode;
+Visualization::ScalarDrawMode Application::scalar_draw_mode;
+Visualization::VectorDrawMode Application::vector_draw_mode;
 
 void Application::update()
 {
@@ -56,7 +57,7 @@ void Application::initialize(int *argc, char** argv)
     simulation.init_simulation(Simulation::DIM);	//initialize the simulation data structures
     initUI();
     
-    colorbar = new Colorbar();
+    colorbar = new Colorbar(720, 20, 0, 20, 256);
 
     glutMainLoop();                                 // enter main loop
 }
@@ -158,10 +159,10 @@ void Application::drag(int mx, int my)
     X = xi; Y = yi;
 
     if (X > (Simulation::DIM - 1))  
-            X = Simulation::DIM - 1; 
+        X = Simulation::DIM - 1; 
 
     if (Y > (Simulation::DIM - 1))  
-            Y = Simulation::DIM - 1;
+        Y = Simulation::DIM - 1;
 
     if (X < 0) X = 0; if (Y < 0) Y = 0;
 
@@ -230,9 +231,14 @@ void Application::buttonHandler(int id)
             
         }
         break;
-        case DrawMode:
+        case ScalarDrawMode:
         {
-            visualization.set_draw_mode(draw_mode);
+            visualization.set_scalar_draw_mode(scalar_draw_mode);
+        }
+        break;
+        case VectorDrawMode:
+        {
+            visualization.set_vector_draw_mode(vector_draw_mode);
         }
         break;
         default: {} break;
@@ -278,10 +284,14 @@ void Application::initUI()
     application_mode_list->add_item(Visualization::Scale, "scale");
     application_mode_list->add_item(Visualization::Clamp, "clamp");
     
-    GLUI_Listbox *draw_mode_list = new GLUI_Listbox(glui, "Draw Mode", (int*)&draw_mode, DrawMode, buttonHandler);
-    draw_mode_list->add_item(Visualization::Velocity, "Velocity |v|");
-    draw_mode_list->add_item(Visualization::Force, "Force |f|");
-    draw_mode_list->add_item(Visualization::Density, "Density rho");
+    GLUI_Listbox *scalar_field_mode = new GLUI_Listbox(glui, "Scalar Field", (int*)&scalar_draw_mode, ScalarDrawMode, buttonHandler);
+    scalar_field_mode->add_item(Visualization::Density, "Density rho");
+    scalar_field_mode->add_item(Visualization::VelocityMagnitude, "Velocity |v|");
+    scalar_field_mode->add_item(Visualization::ForceMagnitude, "Force |f|");
+    
+    GLUI_Listbox *vector_field_mode = new GLUI_Listbox(glui, "Vector Field", (int*)&vector_draw_mode, VectorDrawMode, buttonHandler);
+    vector_field_mode->add_item(Visualization::Velocity, "Velocity v");
+    vector_field_mode->add_item(Visualization::Force, "Force f");
 }
 
 void Application::drawColorbar()

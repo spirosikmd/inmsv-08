@@ -37,9 +37,14 @@ public:
         Scale, Clamp
     };
     
-    enum DrawMode
+    enum ScalarDrawMode
     {
-        Density, Velocity, Force
+        Density, VelocityMagnitude, ForceMagnitude
+    };
+    
+    enum VectorDrawMode
+    {
+        Velocity, Force
     };
 
     void visualize(Simulation const &simulation, int winWidth, int winHeight);
@@ -60,7 +65,8 @@ public:
     void set_colormap(float vy);
     void direction_to_color(float x, float y);
     void magnitude_to_color(float x, float y);
-    void set_draw_mode(DrawMode dm);
+    void set_scalar_draw_mode(ScalarDrawMode sdm);
+    void set_vector_draw_mode(VectorDrawMode vdm);
 
 private:
 
@@ -69,12 +75,16 @@ private:
     ColorMode scalar_col;		//method for scalar coloring
     float hue, saturation;
     int N;                          // number of colors
-    DrawMode draw_mode;
+    ScalarDrawMode scalar_draw_mode;
+    VectorDrawMode vector_draw_mode;
 
     void draw_smoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
-    void drawVelocities(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
-    void drawForces(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
-    float pick_value(Simulation const &simulation, size_t idx);
+    void draw_velocities(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+    void draw_forces(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+    float pick_scalar_field_value(Simulation const &simulation, size_t idx);
+    void pick_vector_field_value(Simulation const &simulation, size_t idx, float values[]);
+    void draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+    float pick_scaled_field(float v);
 };
 
 #endif

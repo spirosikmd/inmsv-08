@@ -13,7 +13,7 @@ class Simulation
 	
 	public:
 		
-		static const int DIM = 50;				//size of simulation grid
+		static const int DIM = 40;				//size of simulation grid
 				
 		Simulation();		
 		virtual ~Simulation();

@@ -28,7 +28,7 @@ public:
         COL_256 = 256,
     };
     
-    Colorbar();
+    Colorbar(int x, int y, int z, size_t w, size_t h);
     virtual ~Colorbar();
     
     void render();
@@ -36,7 +36,6 @@ public:
     void set_color_mode(Visualization::ColorMode colorMode);
     Visualization::ColorMode *get_color_mode();
     
-    void fill_data(GLubyte (&data)[8][3]);
     void set_N(size_t n);
     void set_title(std::string title);
     void set_hue(float h);
@@ -49,6 +48,8 @@ protected:
     std::string title;
     size_t N;
     float hue, saturation;
+    int pos_x, pos_y, pos_z;
+    size_t width, height;
     
 private:
     

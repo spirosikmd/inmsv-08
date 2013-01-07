@@ -14,7 +14,7 @@ Visualization::Visualization()
     vec_scale = 1000;
     scalar_col = Grayscale;
     N = 256;
-    draw_mode = Velocity;
+    scalar_draw_mode = Density;
     options[UseDirectionColoring] = false;              // not used for now
     options[DrawSmoke] = true;
     options[DrawForces] = false;
@@ -72,9 +72,14 @@ void Visualization::set_num_of_colors(const int n)
     N = n;
 }
 
-void Visualization::set_draw_mode(DrawMode dm)
+void Visualization::set_scalar_draw_mode(ScalarDrawMode sdm)
 {
-    draw_mode = dm;
+    scalar_draw_mode = sdm;
+}
+
+void Visualization::set_vector_draw_mode(VectorDrawMode vdm)
+{
+    vector_draw_mode = vdm;
 }
 
 //rainbow: Implements a color palette, mapping the scalar 'value' to a rainbow color RGB
@@ -158,11 +163,9 @@ void Visualization::direction_to_color(float x, float y)
 void Visualization::magnitude_to_color(float x, float y)
 {
     float r,g,b,f;
-//    static float max_f = -1000.0;
     
     f = sqrt(pow(x, 2) + pow(y, 2));
     f = round(f*(N-1))/(N-1);
-//    if (f > max_f) { cout << max_f << '\n'; max_f = f; }
         
     switch(scalar_col)
     {
@@ -207,11 +210,12 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     }
     if (options[DrawVelocities])
     {
-        drawVelocities(simulation, DIM, wn, hn);
+//        draw_velocities(simulation, DIM, wn, hn);
+        draw_glyphs(simulation, DIM, wn, hn);
     }
     if (options[DrawForces])
     {
-        drawForces(simulation, DIM, wn, hn);
+        draw_forces(simulation, DIM, wn, hn);
     }
 }
 
@@ -230,7 +234,7 @@ void Visualization::draw_smoke(Simulation const &simulation, const int DIM, cons
         py = hn + (fftw_real)j * hn;
         idx = (j * DIM) + i;
         
-        set_colormap(pick_value(simulation, idx));
+        set_colormap(pick_scalar_field_value(simulation, idx));
         glVertex2f(px,py);
 
         for (i = 0; i < DIM - 1; i++)
@@ -238,51 +242,47 @@ void Visualization::draw_smoke(Simulation const &simulation, const int DIM, cons
             px = wn + (fftw_real)i * wn;
             py = hn + (fftw_real)(j + 1) * hn;
             idx = ((j + 1) * DIM) + i;
-            set_colormap(pick_value(simulation, idx));
+            set_colormap(pick_scalar_field_value(simulation, idx));
             glVertex2f(px, py);
             px = wn + (fftw_real)(i + 1) * wn;
             py = hn + (fftw_real)j * hn;
             idx = (j * DIM) + (i + 1);
-            set_colormap(pick_value(simulation, idx));
+            set_colormap(pick_scalar_field_value(simulation, idx));
             glVertex2f(px, py);
         }
 
         px = wn + (fftw_real)(DIM - 1) * wn;
         py = hn + (fftw_real)(j + 1) * hn;
         idx = ((j + 1) * DIM) + (DIM - 1);
-        set_colormap(pick_value(simulation, idx));
+        set_colormap(pick_scalar_field_value(simulation, idx));
         glVertex2f(px, py);
         glEnd();
     }
 }
 
-float Visualization::pick_value(Simulation const &simulation, size_t idx)
+float Visualization::pick_scalar_field_value(Simulation const &simulation, size_t idx)
 {
     float value = 0.0;
-    static float max_f = 0.0;
     
-    switch(draw_mode)
+    switch(scalar_draw_mode)
     {
-        case Velocity:
+        case VelocityMagnitude:
         {
             value = magnitude(simulation.vx[idx], simulation.vy[idx]);
-            value = scale(value, 0, 0.02, 0, 1);
         }
         break;
-        case Force:
+        case ForceMagnitude:
         {
             value = magnitude(simulation.fx[idx], simulation.fy[idx]);
-            value = scale(value, 0, 0.2, 0, 1);
         }
         break;
         case Density: { value = simulation.rho[idx]; }
         default: break;
     }
-    if (value > max_f) { cout << max_f << '\n'; max_f = value; }
     return value;
 }
 
-void Visualization::drawVelocities(Simulation const &simulation, const int DIM, fftw_real wn, fftw_real hn)
+void Visualization::draw_velocities(Simulation const &simulation, const int DIM, fftw_real wn, fftw_real hn)
 {
     int i, j, idx;
     
@@ -298,7 +298,7 @@ void Visualization::drawVelocities(Simulation const &simulation, const int DIM, 
     glEnd();
 }
 
-void Visualization::drawForces(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn)
+void Visualization::draw_forces(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn)
 {
     int i, j, idx;
     
@@ -312,4 +312,80 @@ void Visualization::drawForces(Simulation const &simulation, const int DIM, cons
             glVertex2f((wn + (fftw_real)i * wn) + vec_scale * simulation.fx[idx], (hn + (fftw_real)j * hn) + vec_scale * simulation.fy[idx]);
         }
     glEnd();
+}
+
+void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn)
+{
+    int i, j, idx;
+    float magn;
+    float *values = new float[2];
+    
+    for (i = 0; i < DIM; i++)
+        for (j = 0; j < DIM; j++)
+        {
+            idx = (j * DIM) + i;
+            pick_vector_field_value(simulation, idx, values);
+            magn = magnitude(values);
+            magn = pick_scaled_field(magn);
+            GLfloat x_start = wn + (fftw_real)i * wn;
+            GLfloat y_start = hn + (fftw_real)j * hn;
+            GLfloat x = values[0];
+            GLfloat y = values[1];
+            GLfloat angle = 0.0;
+            angle = atan2(y, x) * 180 / M_PI;
+            glPushMatrix();
+            glTranslatef(x_start, y_start, 0.0);
+            glRotatef(angle, 0.0, 0.0, 1.0f);
+            glTranslatef(-x_start, -y_start, 0.0);
+            glBegin(GL_POLYGON);
+            set_colormap(pick_scalar_field_value(simulation, idx));
+            glVertex2f(x_start, y_start + 1);
+            glVertex2f(x_start + magn, y_start + 1);
+            glVertex2f(x_start + magn, y_start + 2);
+            glVertex2f(x_start + magn + 3, y_start);
+            glVertex2f(x_start + magn, y_start - 2);
+            glVertex2f(x_start + magn, y_start - 1);
+            glVertex2f(x_start, y_start - 1);
+            glEnd();
+            glPopMatrix();
+        }
+}
+
+void Visualization::pick_vector_field_value(Simulation const &simulation, size_t idx, float values[])
+{
+    switch(vector_draw_mode)
+    {
+        case Force:
+        {
+            values[0] = simulation.fx[idx];
+            values[1] = simulation.fy[idx];
+        }
+        break;
+        case Velocity:
+        {
+            values[0] = simulation.vx[idx];
+            values[1] = simulation.vy[idx];
+        }
+        default: break;
+    }
+}
+
+float Visualization::pick_scaled_field(float v)
+{
+    float value = 0.0;
+    
+    switch (vector_draw_mode)
+    {
+        case Force:
+        {
+            value = scale(v, 0, 1, 0, vec_scale);
+        }
+        break;
+        case Velocity:
+        {
+            value = scale(v, 0, 1, 0, vec_scale);
+        }
+        default: {} break;
+    }
+    return value;
 }
