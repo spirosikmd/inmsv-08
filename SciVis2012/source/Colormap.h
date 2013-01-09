@@ -56,7 +56,9 @@ private:
     Limitation limitation;
     float clampMin, clampMax;
     HSV colors[256];
-    std::vector<HSV> map; 
+    std::vector<HSV> map;
+    HSV interpolate(int at, int left, int right);
+    void computeColors();
 };
 
 #endif	/* COLORMAP_H */
