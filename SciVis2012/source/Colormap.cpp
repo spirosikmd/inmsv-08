@@ -34,4 +34,21 @@ Colormap::Colormap(const Colormap& orig) {
 Colormap::~Colormap() {
 }
 
+HSV Colormap::interpolate(int x, int x0, int x1) {
+    HSV interpolated;
 
+    HSV y0 = map[x0];
+    HSV y1 = map[x1];
+
+    interpolated.hue = y0.hue + (y1.hue - y0.hue) * ((x - x0) / (x1 - x0));
+    interpolated.saturation = y0.saturation + (y1.saturation - y0.saturation) * ((x - x0) / (x1 - x0));
+    interpolated.value = y0.value + (y1.value - y0.value) * ((x - x0) / (x1 - x0));
+
+    return interpolated;
+}
+
+void Colormap::computeColors() {
+    for (unsigned i = 0; i < map.size(); i++) {
+        
+    }
+}
