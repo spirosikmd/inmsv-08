@@ -16,13 +16,17 @@ Colormap::Colormap() {
     clampMin = 0.0;
     clampMax = 1.0;
     map.resize(COL_256);
+    map[0] = BLACK;
+    map[255] = WHITE;
+    computeColors();
 }
 
 void Colormap::putColor(HSV color, unsigned int position) {
     map[position] = color;
+    computeColors();
     for (unsigned i = 0; i < map.size(); i++) {
         if (map[i] != NULLHSV) {
-            std::cout << "["<<i<<"](" << map[i].hue << "," << map[i].saturation << "," << map[i].value << "), ";
+            std::cout << "[" << i << "](" << map[i].hue << "," << map[i].saturation << "," << map[i].value << "), ";
         }
     }
     std::cout << '\n';
@@ -34,7 +38,7 @@ Colormap::Colormap(const Colormap& orig) {
 Colormap::~Colormap() {
 }
 
-HSV Colormap::interpolate(int x, int x0, int x1) {
+HSV Colormap::interpolate(float x, float x0, float x1) {
     HSV interpolated;
 
     HSV y0 = map[x0];
@@ -48,7 +52,26 @@ HSV Colormap::interpolate(int x, int x0, int x1) {
 }
 
 void Colormap::computeColors() {
-    for (unsigned i = 0; i < map.size(); i++) {
-        
+    int left = 0;
+    int right = -1;
+    for (unsigned i = 1; i < map.size(); i++) {
+        if (map[i] != NULLHSV) {
+            right = i;
+            colors[right] = map[right];
+            for (int pos = left + 1; pos < right; pos++) {
+                colors[pos] = interpolate(pos, left, right);
+            }
+            left = right;
+            right = -1;
+        }
     }
+    colors[0] = map[0];
+    colors[255] = map[255];
+}
+
+void Colormap::printColors() {
+    for (unsigned i = 0; i < 256; i++) {
+        std::cout << "[" << i << "](" << colors[i].hue << "," << colors[i].saturation << "," << colors[i].value << "), ";
+    }
+    std::cout << '\n';
 }

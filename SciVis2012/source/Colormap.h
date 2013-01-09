@@ -31,15 +31,19 @@ public:
     float hue;
     float saturation;
     float value;
+
     HSV() : hue(-1), saturation(-1), value(-1) {
     }
+
     HSV(float h, float s, float v) : hue(h), saturation(s), value(v) {
     }
-    bool operator== (const HSV &other) {
-        return (hue == other.hue && saturation==other.saturation && value == other.value);
-   }
-    bool operator!= (const HSV &other) {
-        return (hue != other.hue || saturation!=other.saturation || value != other.value);
+
+    bool operator==(const HSV & other) {
+        return (hue == other.hue && saturation == other.saturation && value == other.value);
+    }
+
+    bool operator!=(const HSV & other) {
+        return (hue != other.hue || saturation != other.saturation || value != other.value);
     }
 };
 
@@ -47,7 +51,7 @@ public:
 
 static const struct HSV BLACK(0, 0, 0);
 static const struct HSV WHITE(0, 1.0, 1.0);
-static const struct HSV NULLHSV(-1,-1,-1);
+static const struct HSV NULLHSV(-1, -1, -1);
 
 class Colormap {
 public:
@@ -55,7 +59,7 @@ public:
     Colormap(const Colormap& orig);
     virtual ~Colormap();
     void putColor(HSV color, unsigned int position);
-
+    void printColors();
 private:
     float hue;
     float saturation;
@@ -64,8 +68,9 @@ private:
     float clampMin, clampMax;
     HSV colors[256];
     std::vector<HSV> map;
-    HSV interpolate(int at, int left, int right);
+    HSV interpolate(float at, float left, float right);
     void computeColors();
+
 };
 
 #endif	/* COLORMAP_H */

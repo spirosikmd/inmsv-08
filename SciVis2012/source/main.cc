@@ -12,7 +12,8 @@ int main(int argc, char** argv)
 {	
     
     Colormap *rainbow = new Colormap();
-    rainbow->putColor(WHITE,255);
+//    rainbow->putColor(WHITE,10);
+    rainbow->printColors();
     //rainbow->putColor(WHITE,2);
     //rainbow->putColor(WHITE,4);
     //rainbow->putColor(WHITE,6);
