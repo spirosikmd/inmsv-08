@@ -16,9 +16,9 @@ Visualization::Visualization()
     N = 256;
     scalar_draw_mode = Density;
     options[UseDirectionColoring] = false;              // not used for now
-    options[DrawSmoke] = true;
+    options[DrawSmoke] = false;
     options[DrawForces] = false;
-    options[DrawVelocities] = false;
+    options[DrawVelocities] = true;
     options[DrawVectorField] = true;                    // not used for now
 }
 
@@ -201,8 +201,13 @@ void Visualization::magnitude_to_color(float x, float y)
 void Visualization::visualize(Simulation const &simulation, int winWidth, int winHeight)
 {
     const int DIM = Simulation::DIM;
-    fftw_real  wn = (fftw_real)winWidth / (fftw_real)(DIM + 1);   // Grid cell width
-    fftw_real  hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell heigh
+    fftw_real wn = (fftw_real)winWidth / (fftw_real)(DIM + 1);   // Grid cell width
+    fftw_real hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell heigh
+    
+    const int xn = 12;
+    const int yn = 12;
+    fftw_real wn_sample = (fftw_real)winWidth / (fftw_real)(xn + 1);   // Grid cell width 
+    fftw_real hn_sample = (fftw_real)winHeight / (fftw_real)(yn + 1);  // Grid cell heigh
 
     if (options[DrawSmoke])
     {
@@ -211,7 +216,7 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     if (options[DrawVelocities])
     {
 //        draw_velocities(simulation, DIM, wn, hn);
-        draw_glyphs(simulation, DIM, wn, hn);
+        draw_glyphs(simulation, DIM, wn, hn, xn, yn, wn_sample, hn_sample);
     }
     if (options[DrawForces])
     {
@@ -314,11 +319,63 @@ void Visualization::draw_forces(Simulation const &simulation, const int DIM, con
     glEnd();
 }
 
-void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn)
+void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const int xn, const int yn, const fftw_real wn_sample, const fftw_real hn_sample)
 {
     int i, j, idx;
     float magn;
     float *values = new float[2];
+    
+    // construct a grid with computational points
+    for (i = 0; i < DIM; i++)
+        for (j = 0; j < DIM; j++)
+        {
+            idx = (j * DIM) + i;
+            GLfloat x_start = wn + (fftw_real)i * wn;
+            GLfloat y_start = hn + (fftw_real)j * hn;
+            glBegin(GL_POINTS);
+                glColor3f(255, 255, 255);
+                glVertex2f(x_start, y_start);
+            glEnd();
+        }
+    
+    // draw the glyphs on the sample points. if the sample points do not coincide 
+    // with the grid points then use interpolation
+    for (i = 0; i < xn; i++)
+        for (j = 0; j < yn; j++)
+        {
+            idx = (j * yn) + i;
+            float *sample_values = new float[2];
+            pick_vector_field_value(simulation, idx, sample_values);
+            GLfloat x_start = wn_sample + (fftw_real)i * wn_sample;
+            GLfloat y_start = hn_sample + (fftw_real)j * hn_sample;
+            // interpolate the sample values with the values of the computational grid points
+            int idx_x1_y1, idx_x2_y2, idx_x3_y3, idx_x4_y4;
+            // divide the x,y of the sample point with the step of the computational grid (wn or hn),
+            // ceil and then we get the coordinates of the 4 points of the computational grid to use
+            // for bilinear interpolation
+            int x_point = ceil(x_start/wn);
+            int y_point = ceil(y_start/hn);
+            idx_x1_y1 = ((y_point-1) * DIM) + (x_point-1);
+            idx_x2_y2 = ((y_point-2) * DIM) + (x_point-1);
+            idx_x3_y3 = ((y_point-1) * DIM) + (x_point-2);
+            idx_x4_y4 = ((y_point-2) * DIM) + (x_point-2);
+//            if (i == 5 && j == 5)
+//                cout << idx_x1_y1 << " " << idx_x2_y2 << " " << idx_x3_y3 << " " << idx_x4_y4 << endl;
+            float *sample_values_x1_y1 = new float[2];
+            pick_vector_field_value(simulation, idx_x1_y1, sample_values_x1_y1);
+            float *sample_values_x2_y2 = new float[2];
+            pick_vector_field_value(simulation, idx_x2_y2, sample_values_x2_y2);
+            float *sample_values_x3_y3 = new float[2];
+            pick_vector_field_value(simulation, idx_x3_y3, sample_values_x3_y3);
+            float *sample_values_x4_y4 = new float[2];
+            pick_vector_field_value(simulation, idx_x4_y4, sample_values_x4_y4);
+            // bilinear interpolation
+            
+            glBegin(GL_POINTS);
+                glColor3f(255, 0, 0);
+                glVertex2f(x_start, y_start);
+            glEnd();
+        }
     
     for (i = 0; i < DIM; i++)
         for (j = 0; j < DIM; j++)
@@ -338,14 +395,14 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
             glRotatef(angle, 0.0, 0.0, 1.0f);
             glTranslatef(-x_start, -y_start, 0.0);
             glBegin(GL_POLYGON);
-            set_colormap(pick_scalar_field_value(simulation, idx));
-            glVertex2f(x_start, y_start + 1);
-            glVertex2f(x_start + magn, y_start + 1);
-            glVertex2f(x_start + magn, y_start + 2);
-            glVertex2f(x_start + magn + 3, y_start);
-            glVertex2f(x_start + magn, y_start - 2);
-            glVertex2f(x_start + magn, y_start - 1);
-            glVertex2f(x_start, y_start - 1);
+                set_colormap(pick_scalar_field_value(simulation, idx));
+                glVertex2f(x_start, y_start + 1);
+                glVertex2f(x_start + magn, y_start + 1);
+                glVertex2f(x_start + magn, y_start + 2);
+                glVertex2f(x_start + magn + 3, y_start);
+                glVertex2f(x_start + magn, y_start - 2);
+                glVertex2f(x_start + magn, y_start - 1);
+                glVertex2f(x_start, y_start - 1);
             glEnd();
             glPopMatrix();
         }
