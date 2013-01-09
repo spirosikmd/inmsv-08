@@ -4,7 +4,6 @@
 #include "Application.h"
 #include <iostream>
 #include <GLUT/glut.h>
-#include "Utilities.h"
 #include <GLUI/glui.h>
 #include <OpenGL/gl.h>
 
@@ -22,7 +21,7 @@ int Application::main_window;
 
 int Application::selected_colormap;
 Colorbar* Application::colorbar;
-
+Colormap* Application::rainbow;
 int Application::selected_num_of_colors;
 float Application::hue_value;
 float Application::saturation_value;
@@ -60,7 +59,13 @@ void Application::initialize(int *argc, char** argv)
     initUI();
     
     colorbar = new Colorbar(720, 20, 0, 20, 256);
-
+    rainbow = new Colormap();
+    rainbow->putColor(HSV(0,1,1),255);
+    rainbow->putColor(HSV(.29,1,1),127);
+    rainbow->putColor(HSV(.7,1,1),0);
+    rainbow->printColors();
+    
+    
     glutMainLoop();                                 // enter main loop
 }
 
@@ -91,6 +96,7 @@ void Application::display()
     glLoadIdentity();
     visualization.visualize(simulation, winWidth, winHeight);
     drawColorbar();
+    rainbow->render();
     glFlush();
     glutSwapBuffers();
 }

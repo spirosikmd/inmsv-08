@@ -11,6 +11,7 @@
 #include <iostream>
 #include <OpenGL/gl.h>
 #include "Visualization.h"
+#include "Utilities.h"
 
 class Colorbar
 {       

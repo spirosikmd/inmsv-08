@@ -5,6 +5,7 @@
 #include "Simulation.h"
 #include "Visualization.h"
 #include "Colorbar.h"
+#include "Colormap.h"
 
 class Application
 {
@@ -55,7 +56,7 @@ class Application
 
         static int selected_colormap;
         static Colorbar *colorbar;
-
+        static Colormap *rainbow;
         static int selected_num_of_colors;
         
         static float hue_value;

@@ -6,6 +6,7 @@
  */
 
 #include <vector>
+#include "Utilities.h"
 
 #ifndef COLORMAP_H
 #define	COLORMAP_H
@@ -50,7 +51,7 @@ public:
 
 
 static const struct HSV BLACK(0, 0, 0);
-static const struct HSV WHITE(0, 1.0, 1.0);
+static const struct HSV WHITE(0, 0.0, 1.0);
 static const struct HSV NULLHSV(-1, -1, -1);
 
 class Colormap {
@@ -60,6 +61,7 @@ public:
     virtual ~Colormap();
     void putColor(HSV color, unsigned int position);
     void printColors();
+    void render();
 private:
     float hue;
     float saturation;

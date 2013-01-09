@@ -1,6 +1,5 @@
 #include "Colorbar.h"
 #include "Application.h"
-#include "Utilities.h"
 
 using namespace std;
 

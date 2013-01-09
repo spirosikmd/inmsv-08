@@ -7,6 +7,7 @@
 
 #include "Colormap.h"
 #include <iostream>
+#include <OpenGL/gl.h>
 
 Colormap::Colormap() {
     hue = 0.0f;
@@ -74,4 +75,24 @@ void Colormap::printColors() {
         std::cout << "[" << i << "](" << colors[i].hue << "," << colors[i].saturation << "," << colors[i].value << "), ";
     }
     std::cout << '\n';
+}
+
+void Colormap::render() {
+    float R, G, B;
+    int step = 1;
+    int width= 50;
+    glTranslatef(-50,0,0);
+    glBegin(GL_QUADS);
+    for (size_t i = 0; i != 256; i++)
+    {   
+        hsv2rgb(colors[i].hue, colors[i].saturation, colors[i].value, R, G, B);
+        glColor3f(R, G, B);
+        glVertex3i(0, (i*step)+step, 0);              // Top Left
+        glVertex3i(width, (i*step)+step, 0);       // Top Right
+        glColor3f(R, G, B);
+        glVertex3i(width, i*step, 0);                    // Bottom Right
+        glVertex3i(0, i*step, 0);                           // Bottom Left
+    }
+    glEnd();
+    
 }
