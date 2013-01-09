@@ -38,6 +38,7 @@ OBJECTFILES= \
 	${OBJECTDIR}/source/Colorbar.o \
 	${OBJECTDIR}/source/Application.o \
 	${OBJECTDIR}/source/Utilities.o \
+	${OBJECTDIR}/source/Colormap.o \
 	${OBJECTDIR}/source/Visualization.o \
 	${OBJECTDIR}/source/main.o \
 	${OBJECTDIR}/source/Simulation.o
@@ -81,6 +82,11 @@ ${OBJECTDIR}/source/Utilities.o: source/Utilities.cc
 	${MKDIR} -p ${OBJECTDIR}/source
 	${RM} $@.d
 	$(COMPILE.cc) -g -Werror -Ilibraries/fftw-2.1.5/include -MMD -MP -MF $@.d -o ${OBJECTDIR}/source/Utilities.o source/Utilities.cc
+
+${OBJECTDIR}/source/Colormap.o: source/Colormap.cpp 
+	${MKDIR} -p ${OBJECTDIR}/source
+	${RM} $@.d
+	$(COMPILE.cc) -g -Werror -Ilibraries/fftw-2.1.5/include -MMD -MP -MF $@.d -o ${OBJECTDIR}/source/Colormap.o source/Colormap.cpp
 
 ${OBJECTDIR}/source/Visualization.o: source/Visualization.cpp 
 	${MKDIR} -p ${OBJECTDIR}/source

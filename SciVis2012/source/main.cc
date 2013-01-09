@@ -4,11 +4,20 @@
 
 #include <iostream>
 #include "Application.h"
+#include "Colormap.h"
 
 using namespace std;
 
 int main(int argc, char** argv)
 {	
+    
+    Colormap *rainbow = new Colormap();
+    rainbow->putColor(WHITE,255);
+    //rainbow->putColor(WHITE,2);
+    //rainbow->putColor(WHITE,4);
+    //rainbow->putColor(WHITE,6);
+    //rainbow->putColor(WHITE,8);
+    //rainbow->putColor(BLACK,0);
     try
     {		
         Application::outputUsage();
