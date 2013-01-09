@@ -60,10 +60,16 @@ void Application::initialize(int *argc, char** argv)
     
     colorbar = new Colorbar(720, 20, 0, 20, 256);
     rainbow = new Colormap();
-    rainbow->putColor(HSV(0,1,1),255);
-    rainbow->putColor(HSV(.29,1,1),127);
-    rainbow->putColor(HSV(.7,1,1),0);
-    rainbow->printColors();
+    for (int i = 0; i < 256 ; i=i+2) {
+        rainbow->putColor(WHITE,i);
+    }
+    for (int i = 1; i < 256 ; i=i+2) {
+        rainbow->putColor(BLACK,i);
+    }
+    
+    //rainbow->putColor(HSV(0.3,1,1),127);
+    //rainbow->putColor(HSV(0.9,1,1),0);
+    //rainbow->printColors();
     
     
     glutMainLoop();                                 // enter main loop
