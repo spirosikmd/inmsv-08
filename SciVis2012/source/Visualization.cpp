@@ -204,8 +204,8 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     fftw_real wn = (fftw_real)winWidth / (fftw_real)(DIM + 1);   // Grid cell width
     fftw_real hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell heigh
     
-    const int xn = 12;
-    const int yn = 12;
+    const int xn = 20;
+    const int yn = 20;
     fftw_real wn_sample = (fftw_real)winWidth / (fftw_real)(xn + 1);   // Grid cell width 
     fftw_real hn_sample = (fftw_real)winHeight / (fftw_real)(yn + 1);  // Grid cell heigh
 
@@ -359,8 +359,6 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
             idx_x2_y2 = ((y_point-2) * DIM) + (x_point-1);
             idx_x3_y3 = ((y_point-1) * DIM) + (x_point-2);
             idx_x4_y4 = ((y_point-2) * DIM) + (x_point-2);
-//            if (i == 5 && j == 5)
-//                cout << idx_x1_y1 << " " << idx_x2_y2 << " " << idx_x3_y3 << " " << idx_x4_y4 << endl;
             float *sample_values_x1_y1 = new float[2];
             pick_vector_field_value(simulation, idx_x1_y1, sample_values_x1_y1);
             float *sample_values_x2_y2 = new float[2];
@@ -370,7 +368,41 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
             float *sample_values_x4_y4 = new float[2];
             pick_vector_field_value(simulation, idx_x4_y4, sample_values_x4_y4);
             // bilinear interpolation
-            
+            GLfloat x1, y1, x2, y2;
+            x1 = wn + (fftw_real)(x_point-1) * wn;
+            y1 = hn + (fftw_real)(y_point-1) * hn;
+            x2 = wn + (fftw_real)(x_point-2) * wn;
+            y2 = hn + (fftw_real)(y_point-2) * hn;
+            float x, y;
+            GLfloat f1x = sample_values_x4_y4[0]*(x2-x_start)*(y2-y_start);
+            GLfloat f2x = sample_values_x2_y2[0]*(x_start-x1)*(y2-y_start);
+            GLfloat f3x = sample_values_x3_y3[0]*(x2-x_start)*(y_start-y1);
+            GLfloat f4x = sample_values_x1_y1[0]*(x_start-x1)*(y_start-y1);
+            x = (1/((x2-x1)*(y2-y1)))*(f1x+f2x+f3x+f4x);
+            GLfloat f1y = sample_values_x4_y4[1]*(x2-x_start)*(y2-y_start);
+            GLfloat f2y = sample_values_x2_y2[1]*(x_start-x1)*(y2-y_start);
+            GLfloat f3y = sample_values_x3_y3[1]*(x2-x_start)*(y_start-y1);
+            GLfloat f4y = sample_values_x1_y1[1]*(x_start-x1)*(y_start-y1);
+            y = (1/((x2-x1)*(y2-y1)))*(f1y+f2y+f3y+f4y);
+            GLfloat angle = atan2(y, x) * 180 / M_PI;
+            magn = magnitude(x, y);
+            magn = pick_scaled_field(magn);
+            glPushMatrix();
+            glTranslatef(x_start, y_start, 0.0);
+            glRotatef(angle, 0.0, 0.0, 1.0f);
+            glTranslatef(-x_start, -y_start, 0.0);
+            // draw the glyph (this needs to be refactored in order to draw other glyphs
+            glBegin(GL_POLYGON);
+                set_colormap(pick_scalar_field_value(simulation, idx));
+                glVertex2f(x_start, y_start + 1);
+                glVertex2f(x_start + magn, y_start + 1);
+                glVertex2f(x_start + magn, y_start + 2);
+                glVertex2f(x_start + magn + 3, y_start);
+                glVertex2f(x_start + magn, y_start - 2);
+                glVertex2f(x_start + magn, y_start - 1);
+                glVertex2f(x_start, y_start - 1);
+            glEnd();
+            glPopMatrix();
             glBegin(GL_POINTS);
                 glColor3f(255, 0, 0);
                 glVertex2f(x_start, y_start);
