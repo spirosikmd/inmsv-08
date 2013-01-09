@@ -7,6 +7,7 @@
 #include "Utilities.h"
 #include <GLUI/glui.h>
 #include <OpenGL/gl.h>
+#include <GLUI.framework/headers/glui.h>
 
 using namespace std;
 
@@ -26,6 +27,8 @@ Colorbar* Application::colorbar;
 int Application::selected_num_of_colors;
 float Application::hue_value;
 float Application::saturation_value;
+int Application::sample_x;
+int Application::sample_y;
 
 Visualization::ApplicationMode Application::app_mode;
 Visualization::ScalarDrawMode Application::scalar_draw_mode;
@@ -241,6 +244,16 @@ void Application::buttonHandler(int id)
             visualization.set_vector_draw_mode(vector_draw_mode);
         }
         break;
+        case XSample:
+        {
+            visualization.set_sample_x(sample_x);
+        }
+        break;
+        case YSample:
+        {
+            visualization.set_sample_y(sample_y);
+        }
+        break;
         default: {} break;
     }
 }
@@ -292,6 +305,11 @@ void Application::initUI()
     GLUI_Listbox *vector_field_mode = new GLUI_Listbox(glui, "Vector Field", (int*)&vector_draw_mode, VectorDrawMode, buttonHandler);
     vector_field_mode->add_item(Visualization::Velocity, "Velocity v");
     vector_field_mode->add_item(Visualization::Force, "Force f");
+    
+    GLUI_Spinner *sample_x_spinner = new GLUI_Spinner(glui, "X Sample", &sample_x, XSample, buttonHandler);
+    sample_x_spinner->set_int_val(20);
+    GLUI_Spinner *sample_y_spinner = new GLUI_Spinner(glui, "Y Sample", &sample_y, YSample, buttonHandler);
+    sample_y_spinner->set_int_val(20);
 }
 
 void Application::drawColorbar()

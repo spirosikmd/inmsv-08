@@ -14,6 +14,8 @@ Visualization::Visualization()
     vec_scale = 1000;
     scalar_col = Grayscale;
     N = 256;
+    sample_x = 20;
+    sample_y = 20;
     scalar_draw_mode = Density;
     options[UseDirectionColoring] = false;              // not used for now
     options[DrawSmoke] = false;
@@ -80,6 +82,16 @@ void Visualization::set_scalar_draw_mode(ScalarDrawMode sdm)
 void Visualization::set_vector_draw_mode(VectorDrawMode vdm)
 {
     vector_draw_mode = vdm;
+}
+
+void Visualization::set_sample_x(int x)
+{
+    sample_x = x;
+}
+
+void Visualization::set_sample_y(int y)
+{
+    sample_y = y;
 }
 
 //rainbow: Implements a color palette, mapping the scalar 'value' to a rainbow color RGB
@@ -204,10 +216,8 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     fftw_real wn = (fftw_real)winWidth / (fftw_real)(DIM + 1);   // Grid cell width
     fftw_real hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell heigh
     
-    const int xn = 20;
-    const int yn = 20;
-    fftw_real wn_sample = (fftw_real)winWidth / (fftw_real)(xn + 1);   // Grid cell width 
-    fftw_real hn_sample = (fftw_real)winHeight / (fftw_real)(yn + 1);  // Grid cell heigh
+    fftw_real wn_sample = (fftw_real)winWidth / (fftw_real)(sample_x + 1);   // Grid cell width 
+    fftw_real hn_sample = (fftw_real)winHeight / (fftw_real)(sample_y + 1);  // Grid cell heigh
 
     if (options[DrawSmoke])
     {
@@ -216,7 +226,7 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     if (options[DrawVelocities])
     {
 //        draw_velocities(simulation, DIM, wn, hn);
-        draw_glyphs(simulation, DIM, wn, hn, xn, yn, wn_sample, hn_sample);
+        draw_glyphs(simulation, DIM, wn, hn, wn_sample, hn_sample);
     }
     if (options[DrawForces])
     {
@@ -319,11 +329,17 @@ void Visualization::draw_forces(Simulation const &simulation, const int DIM, con
     glEnd();
 }
 
-void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const int xn, const int yn, const fftw_real wn_sample, const fftw_real hn_sample)
+void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample)
 {
     int i, j, idx;
     float magn;
     float *values = new float[2];
+    float *sample_values = new float[2];
+    float *sample_values_x1_y1 = new float[2];
+    float *sample_values_x2_y2 = new float[2];
+    float *sample_values_x3_y3 = new float[2];
+    float *sample_values_x4_y4 = new float[2];
+    int idx_x1_y1, idx_x2_y2, idx_x3_y3, idx_x4_y4;
     
     // construct a grid with computational points
     for (i = 0; i < DIM; i++)
@@ -340,16 +356,14 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
     
     // draw the glyphs on the sample points. if the sample points do not coincide 
     // with the grid points then use interpolation
-    for (i = 0; i < xn; i++)
-        for (j = 0; j < yn; j++)
+    for (i = 0; i < sample_x; i++)
+        for (j = 0; j < sample_y; j++)
         {
-            idx = (j * yn) + i;
-            float *sample_values = new float[2];
+            idx = (j * sample_y) + i;
             pick_vector_field_value(simulation, idx, sample_values);
             GLfloat x_start = wn_sample + (fftw_real)i * wn_sample;
             GLfloat y_start = hn_sample + (fftw_real)j * hn_sample;
             // interpolate the sample values with the values of the computational grid points
-            int idx_x1_y1, idx_x2_y2, idx_x3_y3, idx_x4_y4;
             // divide the x,y of the sample point with the step of the computational grid (wn or hn),
             // ceil and then we get the coordinates of the 4 points of the computational grid to use
             // for bilinear interpolation
@@ -359,13 +373,9 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
             idx_x2_y2 = ((y_point-2) * DIM) + (x_point-1);
             idx_x3_y3 = ((y_point-1) * DIM) + (x_point-2);
             idx_x4_y4 = ((y_point-2) * DIM) + (x_point-2);
-            float *sample_values_x1_y1 = new float[2];
             pick_vector_field_value(simulation, idx_x1_y1, sample_values_x1_y1);
-            float *sample_values_x2_y2 = new float[2];
             pick_vector_field_value(simulation, idx_x2_y2, sample_values_x2_y2);
-            float *sample_values_x3_y3 = new float[2];
             pick_vector_field_value(simulation, idx_x3_y3, sample_values_x3_y3);
-            float *sample_values_x4_y4 = new float[2];
             pick_vector_field_value(simulation, idx_x4_y4, sample_values_x4_y4);
             // bilinear interpolation
             GLfloat x1, y1, x2, y2;
@@ -373,7 +383,7 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
             y1 = hn + (fftw_real)(y_point-1) * hn;
             x2 = wn + (fftw_real)(x_point-2) * wn;
             y2 = hn + (fftw_real)(y_point-2) * hn;
-            float x, y;
+            GLfloat x, y;
             GLfloat f1x = sample_values_x4_y4[0]*(x2-x_start)*(y2-y_start);
             GLfloat f2x = sample_values_x2_y2[0]*(x_start-x1)*(y2-y_start);
             GLfloat f3x = sample_values_x3_y3[0]*(x2-x_start)*(y_start-y1);
@@ -391,7 +401,7 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
             glTranslatef(x_start, y_start, 0.0);
             glRotatef(angle, 0.0, 0.0, 1.0f);
             glTranslatef(-x_start, -y_start, 0.0);
-            // draw the glyph (this needs to be refactored in order to draw other glyphs
+            // draw the glyph (this needs to be refactored in order to draw other glyphs)
             glBegin(GL_POLYGON);
                 set_colormap(pick_scalar_field_value(simulation, idx));
                 glVertex2f(x_start, y_start + 1);
@@ -409,35 +419,35 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
             glEnd();
         }
     
-    for (i = 0; i < DIM; i++)
-        for (j = 0; j < DIM; j++)
-        {
-            idx = (j * DIM) + i;
-            pick_vector_field_value(simulation, idx, values);
-            magn = magnitude(values);
-            magn = pick_scaled_field(magn);
-            GLfloat x_start = wn + (fftw_real)i * wn;
-            GLfloat y_start = hn + (fftw_real)j * hn;
-            GLfloat x = values[0];
-            GLfloat y = values[1];
-            GLfloat angle = 0.0;
-            angle = atan2(y, x) * 180 / M_PI;
-            glPushMatrix();
-            glTranslatef(x_start, y_start, 0.0);
-            glRotatef(angle, 0.0, 0.0, 1.0f);
-            glTranslatef(-x_start, -y_start, 0.0);
-            glBegin(GL_POLYGON);
-                set_colormap(pick_scalar_field_value(simulation, idx));
-                glVertex2f(x_start, y_start + 1);
-                glVertex2f(x_start + magn, y_start + 1);
-                glVertex2f(x_start + magn, y_start + 2);
-                glVertex2f(x_start + magn + 3, y_start);
-                glVertex2f(x_start + magn, y_start - 2);
-                glVertex2f(x_start + magn, y_start - 1);
-                glVertex2f(x_start, y_start - 1);
-            glEnd();
-            glPopMatrix();
-        }
+//    for (i = 0; i < DIM; i++)
+//        for (j = 0; j < DIM; j++)
+//        {
+//            idx = (j * DIM) + i;
+//            pick_vector_field_value(simulation, idx, values);
+//            magn = magnitude(values);
+//            magn = pick_scaled_field(magn);
+//            GLfloat x_start = wn + (fftw_real)i * wn;
+//            GLfloat y_start = hn + (fftw_real)j * hn;
+//            GLfloat x = values[0];
+//            GLfloat y = values[1];
+//            GLfloat angle = 0.0;
+//            angle = atan2(y, x) * 180 / M_PI;
+//            glPushMatrix();
+//            glTranslatef(x_start, y_start, 0.0);
+//            glRotatef(angle, 0.0, 0.0, 1.0f);
+//            glTranslatef(-x_start, -y_start, 0.0);
+//            glBegin(GL_POLYGON);
+//                set_colormap(pick_scalar_field_value(simulation, idx));
+//                glVertex2f(x_start, y_start + 1);
+//                glVertex2f(x_start + magn, y_start + 1);
+//                glVertex2f(x_start + magn, y_start + 2);
+//                glVertex2f(x_start + magn + 3, y_start);
+//                glVertex2f(x_start + magn, y_start - 2);
+//                glVertex2f(x_start + magn, y_start - 1);
+//                glVertex2f(x_start, y_start - 1);
+//            glEnd();
+//            glPopMatrix();
+//        }
 }
 
 void Visualization::pick_vector_field_value(Simulation const &simulation, size_t idx, float values[])

@@ -67,6 +67,8 @@ public:
     void magnitude_to_color(float x, float y);
     void set_scalar_draw_mode(ScalarDrawMode sdm);
     void set_vector_draw_mode(VectorDrawMode vdm);
+    void set_sample_x(int x);
+    void set_sample_y(int y);
 
 private:
 
@@ -77,13 +79,14 @@ private:
     int N;                          // number of colors
     ScalarDrawMode scalar_draw_mode;
     VectorDrawMode vector_draw_mode;
+    int sample_x, sample_y;
 
     void draw_smoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_velocities(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_forces(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     float pick_scalar_field_value(Simulation const &simulation, size_t idx);
     void pick_vector_field_value(Simulation const &simulation, size_t idx, float values[]);
-    void draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const int xn, const int yn, const fftw_real wn_sample, const fftw_real hn_sample);
+    void draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
     float pick_scaled_field(float v);
 };
 
