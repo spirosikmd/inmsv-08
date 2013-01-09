@@ -27,7 +27,7 @@ public:
         DrawSmoke,                  // draw the smoke or not
         DrawVectorField,		// draw the vector field or not (not used for now)
         UseDirectionColoring,	// use direction color-coding or not (not used for now)
-        DrawVelocities,             // draw the velocities or not 
+        DrawGlyphs,             // draw the velocities or not 
         DrawForces,                 // draw forces or nor
         OptionsCount		// (automatically assigned)
     };

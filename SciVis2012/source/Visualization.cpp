@@ -20,7 +20,7 @@ Visualization::Visualization()
     options[UseDirectionColoring] = false;              // not used for now
     options[DrawSmoke] = false;
     options[DrawForces] = false;
-    options[DrawVelocities] = true;
+    options[DrawGlyphs] = true;
     options[DrawVectorField] = true;                    // not used for now
 }
 
@@ -223,7 +223,7 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     {
         draw_smoke(simulation, DIM, wn, hn);
     }
-    if (options[DrawVelocities])
+    if (options[DrawGlyphs])
     {
 //        draw_velocities(simulation, DIM, wn, hn);
         draw_glyphs(simulation, DIM, wn, hn, wn_sample, hn_sample);
@@ -421,35 +421,35 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
             glEnd();
         }
     
-//    for (i = 0; i < DIM; i++)
-//        for (j = 0; j < DIM; j++)
-//        {
-//            idx = (j * DIM) + i;
-//            pick_vector_field_value(simulation, idx, values);
-//            magn = magnitude(values);
-//            magn = pick_scaled_field(magn);
-//            GLfloat x_start = wn + (fftw_real)i * wn;
-//            GLfloat y_start = hn + (fftw_real)j * hn;
-//            GLfloat x = values[0];
-//            GLfloat y = values[1];
-//            GLfloat angle = 0.0;
-//            angle = atan2(y, x) * 180 / M_PI;
-//            glPushMatrix();
-//            glTranslatef(x_start, y_start, 0.0);
-//            glRotatef(angle, 0.0, 0.0, 1.0f);
-//            glTranslatef(-x_start, -y_start, 0.0);
-//            glBegin(GL_POLYGON);
-//                set_colormap(pick_scalar_field_value(simulation, idx));
-//                glVertex2f(x_start, y_start + 1);
-//                glVertex2f(x_start + magn, y_start + 1);
-//                glVertex2f(x_start + magn, y_start + 2);
-//                glVertex2f(x_start + magn + 3, y_start);
-//                glVertex2f(x_start + magn, y_start - 2);
-//                glVertex2f(x_start + magn, y_start - 1);
-//                glVertex2f(x_start, y_start - 1);
-//            glEnd();
-//            glPopMatrix();
-//        }
+    for (i = 0; i < DIM; i++)
+        for (j = 0; j < DIM; j++)
+        {
+            idx = (j * DIM) + i;
+            pick_vector_field_value(simulation, idx, values);
+            magn = magnitude(values);
+            magn = pick_scaled_field(magn);
+            GLfloat x_start = wn + (fftw_real)i * wn;
+            GLfloat y_start = hn + (fftw_real)j * hn;
+            GLfloat x = values[0];
+            GLfloat y = values[1];
+            GLfloat angle = 0.0;
+            angle = atan2(y, x) * 180 / M_PI;
+            glPushMatrix();
+            glTranslatef(x_start, y_start, 0.0);
+            glRotatef(angle, 0.0, 0.0, 1.0f);
+            glTranslatef(-x_start, -y_start, 0.0);
+            glBegin(GL_POLYGON);
+                set_colormap(pick_scalar_field_value(simulation, idx));
+                glVertex2f(x_start, y_start + 1);
+                glVertex2f(x_start + magn, y_start + 1);
+                glVertex2f(x_start + magn, y_start + 2);
+                glVertex2f(x_start + magn + 3, y_start);
+                glVertex2f(x_start + magn, y_start - 2);
+                glVertex2f(x_start + magn, y_start - 1);
+                glVertex2f(x_start, y_start - 1);
+            glEnd();
+            glPopMatrix();
+        }
 }
 
 void Visualization::pick_vector_field_value(Simulation const &simulation, size_t idx, float values[])

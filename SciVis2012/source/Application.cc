@@ -7,7 +7,6 @@
 #include "Utilities.h"
 #include <GLUI/glui.h>
 #include <OpenGL/gl.h>
-#include <GLUI.framework/headers/glui.h>
 
 using namespace std;
 
@@ -266,7 +265,7 @@ void Application::initUI()
     // options
     GLUI_Panel *options_panel = new GLUI_Panel(glui, "Options");
     options_panel->set_w(200);
-    new GLUI_Checkbox(options_panel, "Draw Velocities", &visualization.options[Visualization::DrawVelocities]);
+    new GLUI_Checkbox(options_panel, "Draw Glyphs", &visualization.options[Visualization::DrawGlyphs]);
     new GLUI_Checkbox(options_panel, "Draw Forces", &visualization.options[Visualization::DrawForces]);
     new GLUI_Checkbox(options_panel, "Draw Smoke", &visualization.options[Visualization::DrawSmoke]);
 
