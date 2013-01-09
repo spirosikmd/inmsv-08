@@ -18,10 +18,12 @@ Colormap::Colormap() {
     map.resize(COL_256);
 }
 
-void Colormap::putColor(HSV color,unsigned int position) {   
+void Colormap::putColor(HSV color, unsigned int position) {
     map[position] = color;
-    for (unsigned i=0; i<map.size(); i++) {
-        std::cout << "(" << map[i].hue << "," << map[i].saturation << "," << map[i].value << "), ";
+    for (unsigned i = 0; i < map.size(); i++) {
+        if (map[i] != NULLHSV) {
+            std::cout << "["<<i<<"](" << map[i].hue << "," << map[i].saturation << "," << map[i].value << "), ";
+        }
     }
     std::cout << '\n';
 }

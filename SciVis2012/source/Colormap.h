@@ -31,9 +31,15 @@ public:
     float hue;
     float saturation;
     float value;
-    HSV() : hue(0.0), saturation(0.0), value(0.0) {
+    HSV() : hue(-1), saturation(-1), value(-1) {
     }
     HSV(float h, float s, float v) : hue(h), saturation(s), value(v) {
+    }
+    bool operator== (const HSV &other) {
+        return (hue == other.hue && saturation==other.saturation && value == other.value);
+   }
+    bool operator!= (const HSV &other) {
+        return (hue != other.hue || saturation!=other.saturation || value != other.value);
     }
 };
 
@@ -41,6 +47,7 @@ public:
 
 static const struct HSV BLACK(0, 0, 0);
 static const struct HSV WHITE(0, 1.0, 1.0);
+static const struct HSV NULLHSV(-1,-1,-1);
 
 class Colormap {
 public:
