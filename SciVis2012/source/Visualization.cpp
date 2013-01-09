@@ -213,11 +213,11 @@ void Visualization::magnitude_to_color(float x, float y)
 void Visualization::visualize(Simulation const &simulation, int winWidth, int winHeight)
 {
     const int DIM = Simulation::DIM;
-    fftw_real wn = (fftw_real)winWidth / (fftw_real)(DIM + 1);   // Grid cell width
-    fftw_real hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Grid cell heigh
+    fftw_real wn = (fftw_real)winWidth / (fftw_real)(DIM + 1);   // Computational Grid cell width
+    fftw_real hn = (fftw_real)winHeight / (fftw_real)(DIM + 1);  // Computational Grid cell heigh
     
-    fftw_real wn_sample = (fftw_real)winWidth / (fftw_real)(sample_x + 1);   // Grid cell width 
-    fftw_real hn_sample = (fftw_real)winHeight / (fftw_real)(sample_y + 1);  // Grid cell heigh
+    fftw_real wn_sample = (fftw_real)winWidth / (fftw_real)(sample_x + 1);   // Sample Grid cell width 
+    fftw_real hn_sample = (fftw_real)winHeight / (fftw_real)(sample_y + 1);  // Sample Grid cell heigh
 
     if (options[DrawSmoke])
     {
@@ -402,6 +402,8 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
             glRotatef(angle, 0.0, 0.0, 1.0f);
             glTranslatef(-x_start, -y_start, 0.0);
             // draw the glyph (this needs to be refactored in order to draw other glyphs)
+            // the glyphs need to be designed to scale, then we can use a scaling factor
+            // for now I hardcoded the glyphs
             glBegin(GL_POLYGON);
                 set_colormap(pick_scalar_field_value(simulation, idx));
                 glVertex2f(x_start, y_start + 1);
