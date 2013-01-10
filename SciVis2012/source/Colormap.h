@@ -62,6 +62,11 @@ public:
     void putColor(HSV color, unsigned int position);
     void printColors();
     void render();
+    
+    static Colormap* Rainbow();
+    static Colormap* Grayscale();
+    static Colormap* Zebra();
+    
 private:
     float hue;
     float saturation;

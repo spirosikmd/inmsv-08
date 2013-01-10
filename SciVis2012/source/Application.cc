@@ -21,7 +21,7 @@ int Application::main_window;
 
 int Application::selected_colormap;
 Colorbar* Application::colorbar;
-Colormap* Application::rainbow;
+Colormap* Application::colormap;
 int Application::selected_num_of_colors;
 float Application::hue_value;
 float Application::saturation_value;
@@ -59,18 +59,7 @@ void Application::initialize(int *argc, char** argv)
     initUI();
     
     colorbar = new Colorbar(720, 20, 0, 20, 256);
-    rainbow = new Colormap();
-    for (int i = 0; i < 256 ; i=i+2) {
-        rainbow->putColor(WHITE,i);
-    }
-    for (int i = 1; i < 256 ; i=i+2) {
-        rainbow->putColor(BLACK,i);
-    }
-    
-    //rainbow->putColor(HSV(0.3,1,1),127);
-    //rainbow->putColor(HSV(0.9,1,1),0);
-    //rainbow->printColors();
-    
+    colormap = Colormap::Grayscale();
     
     glutMainLoop();                                 // enter main loop
 }
@@ -102,7 +91,7 @@ void Application::display()
     glLoadIdentity();
     visualization.visualize(simulation, winWidth, winHeight);
     drawColorbar();
-    rainbow->render();
+    colormap->render();
     glFlush();
     glutSwapBuffers();
 }
