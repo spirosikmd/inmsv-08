@@ -57,7 +57,7 @@
         <linkerTool>
           <output>${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/smoke</output>
           <linkerAddLib>
-            <pElem>libraries/fftw-2.1.5/lib64</pElem>
+            <pElem>libraries/fftw-2.1.5/</pElem>
           </linkerAddLib>
           <linkerLibItems>
             <linkerOptionItem>-lrfftw -lfftw</linkerOptionItem>

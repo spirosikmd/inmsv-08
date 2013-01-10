@@ -1,7 +1,9 @@
 #ifndef VISUALIZATION_H_INCLUDED
 #define	VISUALIZATION_H_INCLUDED
 
-#include <rfftw.h>              //the numerical simulation FFTW library
+#include <rfftw.h>
+
+#include "Colormap.h"              //the numerical simulation FFTW library
 
 class Simulation;
 
@@ -48,7 +50,7 @@ public:
     };
 
     void visualize(Simulation const &simulation, int winWidth, int winHeight);
-    void set_scalar_col(ColorMode colorMode);
+    //void set_scalar_col(ColorMode colorMode);
     void toggle(Option option);
     void enable(Option option);
     void disable(Option option);
@@ -58,11 +60,13 @@ public:
     void set_hue(const float h);
     void set_saturation(const float s);
     void set_num_of_colors(const int n);
-
-    void rainbow(float value, float* R, float* G, float* B);
-    void grayscale(float value, float* R, float* G, float* B);
-    void custom(float value, float* R, float* G, float* B);
-    void set_colormap(float vy);
+//
+//    void rainbow(float value, float* R, float* G, float* B);
+//    void grayscale(float value, float* R, float* G, float* B);
+//    void custom(float value, float* R, float* G, float* B);
+    Colormap* getColormap();
+    void setColormap(Colormap*);
+    void setColor(float vy);
     void direction_to_color(float x, float y);
     void magnitude_to_color(float x, float y);
     void set_scalar_draw_mode(ScalarDrawMode sdm);
@@ -74,9 +78,8 @@ private:
 
     float vec_scale;		// scaling of hedgehogs 
     int options[OptionsCount];	// options boolean array
-    ColorMode scalar_col;		//method for scalar coloring
+    Colormap* colormap;
     float hue, saturation;
-    int N;                          // number of colors
     ScalarDrawMode scalar_draw_mode;
     VectorDrawMode vector_draw_mode;
     int sample_x, sample_y;

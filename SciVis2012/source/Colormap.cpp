@@ -7,37 +7,133 @@
 
 #include "Colormap.h"
 #include <iostream>
-#include <OpenGL/gl.h>
 #include <cmath>
 
 Colormap::Colormap() {
     hue = 0.0f;
     saturation = 1.0;
     numberOfColors = COL_256;
-    limitation = CLAMPING;
-    clampMin = 0.0;
-    clampMax = 1.0;
+    mode = CLAMPING;
+    min = 0;
+    max = 3;
     map.resize(COL_256);
     map[0] = BLACK;
     map[255] = WHITE;
     computeColors();
 }
 
-void Colormap::putColor(HSV color, unsigned int position) {
-    map[position] = color;
-    computeColors();
-    //    for (unsigned i = 0; i < map.size(); i++) {
-    //        if (map[i] != NULLHSV) {
-    //            std::cout << "[" << i << "](" << map[i].hue << "," << map[i].saturation << "," << map[i].value << "), ";
-    //        }
-    //    }
-    //    std::cout << '\n';
-}
-
 Colormap::Colormap(const Colormap& orig) {
 }
 
 Colormap::~Colormap() {
+}
+
+Colormap* Colormap::Rainbow() {
+    static Colormap* colormap = new Colormap();
+    colormap->putColor(RED, 255);
+    colormap->putColor(GREEN, 127);
+    colormap->putColor(BLUE, 0);
+
+    return colormap;
+}
+
+Colormap* Colormap::Grayscale() {
+    static Colormap* colormap = new Colormap();
+    colormap->putColor(WHITE, 255);
+    colormap->putColor(BLACK, 0);
+    colormap->setSaturation(0);
+    return colormap;
+}
+
+Colormap* Colormap::Zebra() {
+    static Colormap* colormap = new Colormap();
+
+    for (int i = 0; i < 256; i = i + 2) {
+        colormap->putColor(WHITE, i);
+    }
+    for (int i = 1; i < 256; i = i + 2) {
+        colormap->putColor(BLACK, i);
+    }
+
+    return colormap;
+}
+
+void Colormap::setHue(float h) {
+    hue = h;
+    computeColors();
+}
+
+float Colormap::getHue() {
+    return hue;
+}
+
+void Colormap::setSaturation(float s) {
+    saturation = s;
+    computeColors();
+}
+
+float Colormap::getSaturation() {
+    return saturation;
+}
+
+void Colormap::setNumberOfColors(int n) {
+    numberOfColors = n;
+    computeColors();
+}
+
+int Colormap::getNumberOfColors() {
+    return numberOfColors;
+}
+
+void Colormap::putColor(HSV color, unsigned int position) {
+    map[position] = color;
+    computeColors();
+}
+
+void Colormap::printColors() {
+    for (unsigned i = 0; i < 256; i++) {
+        std::cout << "[" << i << "](" << colors[i].hue << "," << colors[i].saturation << "," << colors[i].value << "), ";
+    }
+    std::cout << '\n';
+}
+
+HSV Colormap::apply(float v) {
+
+    switch (mode) {
+        case CLAMPING:
+            if (v > max) v = max;
+            if (v < min) v = min;
+            break;
+        case SCALING:
+            if (v > max) max = v;
+            if (v < min) min = v;
+    }
+
+    int colorIndex = scale(v, min, max, 0, 255);
+
+    if (colorIndex < 0 || colorIndex > 255) {
+        std::cout << v << " " << colorIndex << '\n';
+    }
+
+    return colors[colorIndex];
+}
+
+void Colormap::render() {
+    float R, G, B;
+    int step = 1;
+    int width = 50;
+
+    glBegin(GL_QUADS);
+    for (size_t i = 0; i < 256; i++) {
+        hsv2rgb(colors[i].hue, colors[i].saturation, colors[i].value, R, G, B);
+        glColor3f(R, G, B);
+        glVertex3i(0, (i * step) + step, 0); // Top Left
+        glVertex3i(width, (i * step) + step, 0); // Top Right
+        glColor3f(R, G, B);
+        glVertex3i(width, i* step, 0); // Bottom Right
+        glVertex3i(0, i * step, 0); // Bottom Left
+    }
+    glEnd();
 }
 
 HSV Colormap::interpolate(float x, float x0, float x1) {
@@ -69,88 +165,47 @@ void Colormap::computeColors() {
     }
     colors[0] = map[0];
     colors[255] = map[255];
-}
 
-void Colormap::printColors() {
     for (unsigned i = 0; i < 256; i++) {
-        std::cout << "[" << i << "](" << colors[i].hue << "," << colors[i].saturation << "," << colors[i].value << "), ";
+        colors[i].hue = fmod(colors[i].hue + hue, 1.0);
+        colors[i].saturation = colors[i].saturation * saturation;
+
     }
-    std::cout << '\n';
-}
 
-void Colormap::setHue(float h) {
-    hue = h;
-}
+    int step = 256 / numberOfColors;
+    for (size_t i = 0; i < 256; i++) {
 
-float Colormap::getHue() {return hue;}
-
-void Colormap::setSaturation(float s) {
-    saturation = s;
-}
-
-float Colormap::getSaturation() {return saturation;}
-
-void Colormap::setNumberOfColors(int n ) {
-    numberOfColors  = n;
-}
-
-void Colormap::render() {
-    float R, G, B;
-    int step = 256/numberOfColors;
-    int width = 50;
-    
-    glBegin(GL_QUADS);
-    for (size_t i = 0,j=0; i != 256; i= i+step,j++) {
-        int c = i;
-        
-        if (c>=127) {
-            c=c+step-1;
+        int c = step * (int) floor(i / step);
+        if (i >= 128) {
+            c = c + step - 1;
         }
-        
-        float h = fmod(colors[c].hue + hue , 1.0);
-        float s = colors[c].saturation * saturation;
-        hsv2rgb(h, s, colors[c].value, R, G, B);
-        glColor3f(R, G, B);
-
-        
-        glVertex3i(0, (j * step) + step, 0); // Top Left
-        glVertex3i(width, (j * step) + step, 0); // Top Right
-        glColor3f(R, G, B);
-        glVertex3i(width, j* step, 0); // Bottom Right
-        glVertex3i(0, j * step, 0); // Bottom Left
-        
+        colors[i] = colors[c];
     }
-    glEnd();
 }
 
-Colormap* Colormap::Rainbow() {
-    static Colormap* colormap = new Colormap();
-
-    colormap->putColor(HSV(0, 1, 1), 255);
-    colormap->putColor(HSV((1.0 / 360.0)  * 120.0, 1, 1), 127);
-    colormap->putColor(BLUE, 0);
-
-    return colormap;
-}
-
-Colormap* Colormap::Grayscale() {
-    static Colormap* colormap = new Colormap();
-
-    colormap->putColor(WHITE, 256);
-    colormap->putColor(BLACK, 0);
-    colormap->setSaturation(0);
-    return colormap;
-}
-
-Colormap* Colormap::Zebra() {
-    static Colormap* colormap = new Colormap();
-
-    for (int i = 0; i < 256; i = i + 2) {
-        colormap->putColor(WHITE, i);
-    }
-    for (int i = 1; i < 256; i = i + 2) {
-        colormap->putColor(BLACK, i);
+void Colormap::loadColormapTexture() {
+    GLfloat roygbiv_image[256][3];
+    GLfloat R, G, B;
+    for (int i = 0 ; i < 256; i++) {
+        hsv2rgb(colors[i].hue, colors[i].saturation, colors[i].value, R, G, B);
+        roygbiv_image[i][0] = R;
+        roygbiv_image[i][1] = G;
+        roygbiv_image[i][2] = B;
     }
 
-    return colormap;
+    
+    GLuint texture;
+    // allocate a texture name
+    glGenTextures(1, &texture);
+    glBindTexture(GL_TEXTURE_1D, texture);
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    
+    glTexImage1D(GL_TEXTURE_1D, 0, 3, 256, 0, GL_RGB, GL_FLOAT, roygbiv_image); // array with color values
+    
+    
 }

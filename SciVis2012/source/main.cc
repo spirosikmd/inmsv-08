@@ -4,13 +4,11 @@
 
 #include <iostream>
 #include "Application.h"
-#include "Colormap.h"
 
 using namespace std;
 
 int main(int argc, char** argv)
 {	
-   
     try
     {		
         Application::outputUsage();

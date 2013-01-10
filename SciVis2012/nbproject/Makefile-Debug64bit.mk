@@ -58,7 +58,7 @@ FFLAGS=
 ASFLAGS=
 
 # Link Libraries and Options
-LDLIBSOPTIONS=-Llibraries/fftw-2.1.5/lib64 -lrfftw -lfftw
+LDLIBSOPTIONS=-Llibraries/fftw-2.1.5/ -lrfftw -lfftw
 
 # Build Targets
 .build-conf: ${BUILD_SUBPROJECTS}

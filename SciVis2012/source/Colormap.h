@@ -7,11 +7,12 @@
 
 #include <vector>
 #include "Utilities.h"
+#include <OpenGL/gl.h>
 
 #ifndef COLORMAP_H
 #define	COLORMAP_H
 
-enum Limitation {
+enum Mode {
     SCALING,
     CLAMPING
 };
@@ -79,21 +80,27 @@ public:
     void setSaturation(float);
     float getSaturation();
     void setNumberOfColors(int);
+    int getNumberOfColors();
+    void loadColormapTexture();
+    HSV apply(float);
+    
+    
     static Colormap* Rainbow();
     static Colormap* Grayscale();
     static Colormap* Zebra();
 
 private:
+    void applyHueAndSaturation(HSV&);
     float hue;
     float saturation;
     int numberOfColors;
-    Limitation limitation;
-    float clampMin, clampMax;
+    Mode mode;
+    float min, max;
     HSV colors[256];
     std::vector<HSV> map;
+    GLuint textureId;
     HSV interpolate(float at, float left, float right);
     void computeColors();
-
 };
 
 #endif	/* COLORMAP_H */
