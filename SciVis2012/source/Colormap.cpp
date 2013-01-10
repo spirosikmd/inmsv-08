@@ -26,12 +26,12 @@ Colormap::Colormap() {
 void Colormap::putColor(HSV color, unsigned int position) {
     map[position] = color;
     computeColors();
-//    for (unsigned i = 0; i < map.size(); i++) {
-//        if (map[i] != NULLHSV) {
-//            std::cout << "[" << i << "](" << map[i].hue << "," << map[i].saturation << "," << map[i].value << "), ";
-//        }
-//    }
-//    std::cout << '\n';
+    //    for (unsigned i = 0; i < map.size(); i++) {
+    //        if (map[i] != NULLHSV) {
+    //            std::cout << "[" << i << "](" << map[i].hue << "," << map[i].saturation << "," << map[i].value << "), ";
+    //        }
+    //    }
+    //    std::cout << '\n';
 }
 
 Colormap::Colormap(const Colormap& orig) {
@@ -98,32 +98,32 @@ void Colormap::render() {
 
 Colormap* Colormap::Rainbow() {
     Colormap* colormap = new Colormap();
-    
-    colormap->putColor(HSV(0,1,1),256);
-    colormap->putColor(HSV(0.7,1,1),127);
-    colormap->putColor(HSV(1,1,1),0);
-    
+
+    colormap->putColor(HSV(0, 1, 1), 256);
+    colormap->putColor(HSV(0.7, 1, 1), 127);
+    colormap->putColor(HSV(1, 1, 1), 0);
+
     return colormap;
 }
 
 Colormap* Colormap::Grayscale() {
     Colormap* colormap = new Colormap();
-    
-    colormap->putColor(HSV(0,0,1),256);
-    colormap->putColor(HSV(0,0,0),0);
-    
+
+    colormap->putColor(HSV(0, 0, 1), 256);
+    colormap->putColor(HSV(0, 0, 0), 0);
+
     return colormap;
 }
 
 Colormap* Colormap::Zebra() {
     Colormap* colormap = new Colormap();
-    
-    for (int i = 0; i < 256 ; i=i+2) {
-        colormap->putColor(WHITE,i);
+
+    for (int i = 0; i < 256; i = i + 2) {
+        colormap->putColor(WHITE, i);
     }
-    for (int i = 1; i < 256 ; i=i+2) {
-        colormap->putColor(BLACK,i);
+    for (int i = 1; i < 256; i = i + 2) {
+        colormap->putColor(BLACK, i);
     }
-    
+
     return colormap;
 }
