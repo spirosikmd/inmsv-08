@@ -6,9 +6,9 @@
  */
 
 #include "Colormap.h"
-#include "Colorbar.h"
 #include <iostream>
 #include <OpenGL/gl.h>
+#include <cmath>
 
 Colormap::Colormap() {
     hue = 0.0f;
@@ -78,45 +78,72 @@ void Colormap::printColors() {
     std::cout << '\n';
 }
 
+void Colormap::setHue(float h) {
+    hue = h;
+}
+
+float Colormap::getHue() {return hue;}
+
+void Colormap::setSaturation(float s) {
+    saturation = s;
+}
+
+float Colormap::getSaturation() {return saturation;}
+
+void Colormap::setNumberOfColors(int n ) {
+    numberOfColors  = n;
+}
+
 void Colormap::render() {
     float R, G, B;
-    int step = 1;
+    int step = 256/numberOfColors;
     int width = 50;
-    glTranslatef(-50, 0, 0);
+    
     glBegin(GL_QUADS);
-    for (size_t i = 0; i != 256; i++) {
-        hsv2rgb(colors[i].hue, colors[i].saturation, colors[i].value, R, G, B);
+    for (size_t i = 0,j=0; i != 256; i= i+step,j++) {
+        int c = i;
+        
+        if (c>=127) {
+            c=c+step-1;
+        }
+        
+        float h = fmod(colors[c].hue + hue , 1.0);
+        float s = colors[c].saturation * saturation;
+        hsv2rgb(h, s, colors[c].value, R, G, B);
         glColor3f(R, G, B);
-        glVertex3i(0, (i * step) + step, 0); // Top Left
-        glVertex3i(width, (i * step) + step, 0); // Top Right
+
+        
+        glVertex3i(0, (j * step) + step, 0); // Top Left
+        glVertex3i(width, (j * step) + step, 0); // Top Right
         glColor3f(R, G, B);
-        glVertex3i(width, i*step, 0); // Bottom Right
-        glVertex3i(0, i*step, 0); // Bottom Left
+        glVertex3i(width, j* step, 0); // Bottom Right
+        glVertex3i(0, j * step, 0); // Bottom Left
+        
     }
     glEnd();
 }
 
 Colormap* Colormap::Rainbow() {
-    Colormap* colormap = new Colormap();
+    static Colormap* colormap = new Colormap();
 
-    colormap->putColor(HSV(0, 1, 1), 256);
-    colormap->putColor(HSV(0.7, 1, 1), 127);
-    colormap->putColor(HSV(1, 1, 1), 0);
+    colormap->putColor(HSV(0, 1, 1), 255);
+    colormap->putColor(HSV((1.0 / 360.0)  * 120.0, 1, 1), 127);
+    colormap->putColor(BLUE, 0);
 
     return colormap;
 }
 
 Colormap* Colormap::Grayscale() {
-    Colormap* colormap = new Colormap();
+    static Colormap* colormap = new Colormap();
 
-    colormap->putColor(HSV(0, 0, 1), 256);
-    colormap->putColor(HSV(0, 0, 0), 0);
-
+    colormap->putColor(WHITE, 256);
+    colormap->putColor(BLACK, 0);
+    colormap->setSaturation(0);
     return colormap;
 }
 
 Colormap* Colormap::Zebra() {
-    Colormap* colormap = new Colormap();
+    static Colormap* colormap = new Colormap();
 
     for (int i = 0; i < 256; i = i + 2) {
         colormap->putColor(WHITE, i);
