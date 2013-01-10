@@ -102,15 +102,9 @@ void Visualization::set_sample_y(int y) {
 //set_colormap: Sets three different types of colormaps
 
 void Visualization::setColor(float vy) {
-    /*float R, G, B;
-    //vy = round(vy*(N-1))/(N-1);
-    HSV hsv = colormap->apply(vy);
-    hsv2rgb(hsv.hue, hsv.saturation, hsv.value, R, G, B);
-    glColor3f(R, G, B);*/
-  
     if (vy > 1) vy = 1;
     if (vy < 0) vy = 0;
-    float colorIndex = scale(vy, 0, 1, 0, 1);    
+    float colorIndex = scale(vy, 0, 1, 0, 1);
     glTexCoord1f(colorIndex);
 }
 
@@ -156,7 +150,7 @@ void Visualization::direction_to_color(float x, float y) {
     //        }
     //        break;
     //    }
- //   glColor3f(r, g, b);
+    //   glColor3f(r, g, b);
 }
 
 void Visualization::magnitude_to_color(float x, float y) {
@@ -227,7 +221,7 @@ void Visualization::draw_smoke(Simulation const &simulation, const int DIM, cons
         std::cout << error << '\n';
     }
     colormap->loadColormapTexture();
-    
+
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     for (j = 0; j < DIM - 1; j++) //draw smoke
     {
@@ -331,7 +325,7 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
             GLfloat x_start = wn + (fftw_real) i * wn;
             GLfloat y_start = hn + (fftw_real) j * hn;
             glBegin(GL_POINTS);
-           // glColor3f(255, 255, 255);
+            // glColor3f(255, 255, 255);
             glVertex2f(x_start, y_start);
             glEnd();
         }

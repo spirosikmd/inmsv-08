@@ -13,9 +13,6 @@ Colormap::Colormap() {
     hue = 0.0f;
     saturation = 1.0;
     numberOfColors = COL_256;
-    mode = CLAMPING;
-    min = 0;
-    max = 3;
     map.resize(COL_256);
     map[0] = BLACK;
     map[255] = WHITE;
@@ -48,11 +45,15 @@ Colormap* Colormap::Grayscale() {
 Colormap* Colormap::Zebra() {
     static Colormap* colormap = new Colormap();
 
-    for (int i = 0; i < 256; i = i + 2) {
-        colormap->putColor(WHITE, i);
+    for (int i = 0; i < 256; i = i + 64) {
+        for (int j = 0; j < 32; j++) {
+            colormap->putColor(WHITE, i + j);
+        }
     }
-    for (int i = 1; i < 256; i = i + 2) {
-        colormap->putColor(BLACK, i);
+    for (int i = 32; i < 256; i = i + 64) {
+        for (int j = 0; j < 32; j++) {
+            colormap->putColor(BLACK, i + j);
+        }
     }
 
     return colormap;
@@ -97,25 +98,8 @@ void Colormap::printColors() {
     std::cout << '\n';
 }
 
-HSV Colormap::apply(float v) {
-
-    switch (mode) {
-        case CLAMPING:
-            if (v > max) v = max;
-            if (v < min) v = min;
-            break;
-        case SCALING:
-            if (v > max) max = v;
-            if (v < min) min = v;
-    }
-
-    int colorIndex = scale(v, min, max, 0, 255);
-
-    if (colorIndex < 0 || colorIndex > 255) {
-        std::cout << v << " " << colorIndex << '\n';
-    }
-
-    return colors[colorIndex];
+HSV Colormap::getColorAt(int index) {
+    return colors[index];
 }
 
 void Colormap::render() {
@@ -186,26 +170,26 @@ void Colormap::computeColors() {
 void Colormap::loadColormapTexture() {
     GLfloat roygbiv_image[256][3];
     GLfloat R, G, B;
-    for (int i = 0 ; i < 256; i++) {
+    for (int i = 0; i < 256; i++) {
         hsv2rgb(colors[i].hue, colors[i].saturation, colors[i].value, R, G, B);
         roygbiv_image[i][0] = R;
         roygbiv_image[i][1] = G;
         roygbiv_image[i][2] = B;
     }
 
-    
+
     GLuint texture;
     // allocate a texture name
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_1D, texture);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-    
+
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    
+
     glTexImage1D(GL_TEXTURE_1D, 0, 3, 256, 0, GL_RGB, GL_FLOAT, roygbiv_image); // array with color values
-    
-    
+
+
 }

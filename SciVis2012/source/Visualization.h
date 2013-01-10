@@ -7,8 +7,7 @@
 
 class Simulation;
 
-class Visualization
-{
+class Visualization {
     friend class Application;
 
 public:
@@ -16,36 +15,37 @@ public:
     Visualization();
 
     //different types of color mapping: black-and-white, rainbow, banded
-    enum ColorMode
-    {
+
+    enum ColorMode {
         Grayscale,
         Rainbow,
         Custom,
-        ColorModeCount		// (automatically assigned)
+        ColorModeCount // (automatically assigned)
     };
 
-    enum Option
-    {
-        DrawSmoke,                  // draw the smoke or not
-        DrawVectorField,		// draw the vector field or not (not used for now)
-        UseDirectionColoring,	// use direction color-coding or not (not used for now)
-        DrawGlyphs,             // draw the velocities or not 
-        DrawForces,                 // draw forces or nor
-        OptionsCount		// (automatically assigned)
+    enum Mode {
+        SCALING,
+        CLAMPING
     };
 
-    enum ApplicationMode
-    {
+    enum Option {
+        DrawSmoke, // draw the smoke or not
+        DrawVectorField, // draw the vector field or not (not used for now)
+        UseDirectionColoring, // use direction color-coding or not (not used for now)
+        DrawGlyphs, // draw the velocities or not 
+        DrawForces, // draw forces or nor
+        OptionsCount // (automatically assigned)
+    };
+
+    enum ApplicationMode {
         Scale, Clamp
     };
-    
-    enum ScalarDrawMode
-    {
+
+    enum ScalarDrawMode {
         Density, VelocityMagnitude, ForceMagnitude
     };
-    
-    enum VectorDrawMode
-    {
+
+    enum VectorDrawMode {
         Velocity, Force
     };
 
@@ -54,16 +54,16 @@ public:
     void toggle(Option option);
     void enable(Option option);
     void disable(Option option);
-    bool is_enabled(Option option) const;		
+    bool is_enabled(Option option) const;
     void scale_hedgehogs(float scale);
     float hedgehog_scale() const;
     void set_hue(const float h);
     void set_saturation(const float s);
     void set_num_of_colors(const int n);
-//
-//    void rainbow(float value, float* R, float* G, float* B);
-//    void grayscale(float value, float* R, float* G, float* B);
-//    void custom(float value, float* R, float* G, float* B);
+    //
+    //    void rainbow(float value, float* R, float* G, float* B);
+    //    void grayscale(float value, float* R, float* G, float* B);
+    //    void custom(float value, float* R, float* G, float* B);
     Colormap* getColormap();
     void setColormap(Colormap*);
     void setColor(float vy);
@@ -76,8 +76,8 @@ public:
 
 private:
 
-    float vec_scale;		// scaling of hedgehogs 
-    int options[OptionsCount];	// options boolean array
+    float vec_scale; // scaling of hedgehogs 
+    int options[OptionsCount]; // options boolean array
     Colormap* colormap;
     float hue, saturation;
     ScalarDrawMode scalar_draw_mode;
