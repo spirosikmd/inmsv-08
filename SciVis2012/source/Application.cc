@@ -21,8 +21,6 @@ GLUI* Application::glui; // user interface
 int Application::main_window;
 
 int Application::selected_colormap;
-std::map<Visualization::ColorMode, Colormap*> Application::colormaps;
-Colormap* Application::colormap;
 int Application::selected_num_of_colors;
 float Application::hue_value;
 float Application::saturation_value;
@@ -58,10 +56,10 @@ void Application::initialize(int *argc, char** argv) {
 
     simulation.init_simulation(Simulation::DIM); //initialize the simulation data structures
 
-    initializeColormaps();
-    
-    colormap = colormaps[Visualization::GRADIENT];
-    visualization.setColormap(colormap);
+    visualization.initializeColormaps();
+
+    visualization.loadColormap(Visualization::GRADIENT);
+    Colormap* colormap = visualization.getColormap();
     hue_value = colormap->getHue();
     saturation_value = colormap->getSaturation();
     selected_num_of_colors = colormap->getNumberOfColors();
@@ -69,36 +67,6 @@ void Application::initialize(int *argc, char** argv) {
     initUI();
     glutMainLoop(); // enter main loop
 }
-
-void Application::initializeColormaps() {
-
-    Colormap* rainbow = new Colormap();
-    rainbow->putColor(RED, 255);
-    rainbow->putColor(GREEN, 127);
-    rainbow->putColor(BLUE, 0);
-
-    Colormap* gradient = new Colormap();
-    gradient->putColor(WHITE, 255);
-    gradient->putColor(BLACK, 0);
-    gradient->setSaturation(0);
-
-    Colormap* zebra = new Colormap();
-    for (int i = 0; i < 256; i = i + 64) {
-        for (int j = 0; j < 32; j++) {
-            zebra->putColor(WHITE, i + j);
-        }
-    }
-    for (int i = 32; i < 256; i = i + 64) {
-        for (int j = 0; j < 32; j++) {
-            zebra->putColor(BLACK, i + j);
-        }
-    }
-
-    colormaps.insert(make_pair(Visualization::RAINBOW, rainbow));
-    colormaps.insert(make_pair(Visualization::GRADIENT, gradient));
-    colormaps.insert(make_pair(Visualization::ZEBRA, zebra));
-}
-
 // output usage instructions
 
 void Application::outputUsage() {
@@ -128,6 +96,7 @@ void Application::display() {
     visualization.visualize(simulation, winWidth, winHeight);
     glDisable(GL_TEXTURE_1D);
     glTranslatef(0, 0, 0);
+    Colormap* colormap = visualization.getColormap();
     colormap->render();
     glFlush();
     glutSwapBuffers();
@@ -267,6 +236,7 @@ void Application::drag(int mx, int my) {
 }
 
 void Application::buttonHandler(int id) {
+    Colormap* colormap = visualization.getColormap();
     switch (id) {
         case QuitButton:
         {
@@ -278,17 +248,17 @@ void Application::buttonHandler(int id) {
             switch (selected_colormap) {
                 case Visualization::RAINBOW:
                 {   
-                    colormap = colormaps[Visualization::RAINBOW];
+                    visualization.loadColormap(Visualization::RAINBOW);
                 }
                     break;
                 case Visualization::GRADIENT:
                 {
-                    colormap = colormaps[Visualization::GRADIENT];
+                    visualization.loadColormap(Visualization::GRADIENT);
                 }
                     break;
                 case Visualization::ZEBRA:
                 {
-                    colormap = colormaps[Visualization::ZEBRA];
+                    visualization.loadColormap(Visualization::ZEBRA);
                 }
                     break;
                 default:
@@ -296,13 +266,13 @@ void Application::buttonHandler(int id) {
                 }
                     break;
             }
+            Colormap* colormap = visualization.getColormap();
             hue_value = colormap->getHue();
             saturation_value = colormap->getSaturation();
             selected_num_of_colors = colormap->getNumberOfColors();
-            visualization.setColormap(colormap);
             glui->sync_live();
         }
-            break;
+        break;
         case SelectedNumOfColors:
         {
             colormap->setNumberOfColors(selected_num_of_colors);

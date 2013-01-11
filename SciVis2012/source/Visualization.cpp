@@ -9,6 +9,8 @@
 
 using namespace std;
 
+//std::map<Visualization::ColorMode, Colormap*> Visualization::colormaps;
+
 Visualization::Visualization() {
     vec_scale = 1000;
     sample_x = 20;
@@ -20,6 +22,36 @@ Visualization::Visualization() {
     options[DrawGlyphs] = true;
     options[DrawVectorField] = true; // not used for now
 }
+
+void Visualization::initializeColormaps() {
+
+    Colormap* rainbow = new Colormap();
+    rainbow->putColor(RED, 255);
+    rainbow->putColor(GREEN, 127);
+    rainbow->putColor(BLUE, 0);
+
+    Colormap* gradient = new Colormap();
+    gradient->putColor(WHITE, 255);
+    gradient->putColor(BLACK, 0);
+    gradient->setSaturation(0);
+
+    Colormap* zebra = new Colormap();
+    for (int i = 0; i < 256; i = i + 64) {
+        for (int j = 0; j < 32; j++) {
+            zebra->putColor(WHITE, i + j);
+        }
+    }
+    for (int i = 32; i < 256; i = i + 64) {
+        for (int j = 0; j < 32; j++) {
+            zebra->putColor(BLACK, i + j);
+        }
+    }
+
+    colormaps.insert(make_pair(Visualization::RAINBOW, rainbow));
+    colormaps.insert(make_pair(Visualization::GRADIENT, gradient));
+    colormaps.insert(make_pair(Visualization::ZEBRA, zebra));
+}
+
 //
 //void Visualization::set_scalar_col(ColorMode colorMode)
 //{
@@ -111,8 +143,8 @@ Colormap* Visualization::getColormap() {
     return colormap;
 }
 
-void Visualization::setColormap(Colormap* cm) {
-    colormap = cm;
+void Visualization::loadColormap(ColorMode cm) {
+    colormap = colormaps[cm];
 }
 
 //direction_to_color: Set the current color by mapping a direction vector (x,y), using

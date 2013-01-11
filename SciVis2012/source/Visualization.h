@@ -2,7 +2,7 @@
 #define	VISUALIZATION_H_INCLUDED
 
 #include <rfftw.h>
-
+#include <map>
 #include "Colormap.h"              //the numerical simulation FFTW library
 
 class Simulation;
@@ -65,7 +65,7 @@ public:
     //    void grayscale(float value, float* R, float* G, float* B);
     //    void custom(float value, float* R, float* G, float* B);
     Colormap* getColormap();
-    void setColormap(Colormap*);
+    void loadColormap(ColorMode);
     void setColor(float vy);
     void direction_to_color(float x, float y);
     void magnitude_to_color(float x, float y);
@@ -76,6 +76,9 @@ public:
 
 private:
 
+    void initializeColormaps();
+    std::map<ColorMode, Colormap*> colormaps;
+    
     float vec_scale; // scaling of hedgehogs 
     int options[OptionsCount]; // options boolean array
     Colormap* colormap;

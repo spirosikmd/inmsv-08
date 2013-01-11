@@ -57,9 +57,6 @@ private:
 
     static int selected_colormap;
     
-    static void initializeColormaps();
-    static std::map<Visualization::ColorMode, Colormap*> colormaps;
-    static Colormap *colormap;
     static int selected_num_of_colors;
     static int scalarDataset;
     static int vectorDataset;
