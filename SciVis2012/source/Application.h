@@ -23,7 +23,9 @@ class Application
             ScalarDrawMode,
             VectorDrawMode,
             XSample,
-            YSample
+            YSample,
+            ScalarDataset,
+            VectorDataset
         };
 
     public:
@@ -58,6 +60,9 @@ class Application
         static Colorbar *colorbar;
         static Colormap *colormap;
         static int selected_num_of_colors;
+        
+        static int scalarDataset;
+        static int vectorDataset;
         
         static float hue_value;
         static float saturation_value;
