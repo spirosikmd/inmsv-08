@@ -55,20 +55,20 @@ private:
     static GLUI *glui; // user interface
     static int main_window;
 
-    static Visualization::ColorMode selected_colormap;
+    static Visualization::ColorMode selectedColormap;
     
     static void initializeColormaps();
     static std::map<Visualization::ColorMode, Colormap*> colormaps;
     static Colormap *colormap;
-    static int selected_num_of_colors;
+    static int selectedNumOfColors;
     static int scalarDataset;
     static int vectorDataset;
 
-    static float hue_value;
-    static float saturation_value;
+    static float hueValue;
+    static float saturationValue;
     static int sample_x, sample_y;
 
-    static Visualization::ApplicationMode app_mode;
+    static Visualization::ApplicationMode appMode;
     static Visualization::ScalarDrawMode scalar_draw_mode;
     static Visualization::VectorDrawMode vector_draw_mode;
 
