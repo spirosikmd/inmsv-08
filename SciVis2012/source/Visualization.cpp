@@ -329,72 +329,74 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
             glVertex2f(x_start, y_start);
             glEnd();
         }
+    
+    colormap->loadColormapTexture();
 
     // draw the glyphs on the sample points. if the sample points do not coincide 
     // with the grid points then use interpolation
-    for (i = 0; i < sample_x; i++)
-        for (j = 0; j < sample_y; j++) {
-            idx = (j * sample_y) + i;
-            pick_vector_field_value(simulation, idx, sample_values);
-            GLfloat x_start = wn_sample + (fftw_real) i * wn_sample;
-            GLfloat y_start = hn_sample + (fftw_real) j * hn_sample;
-            // interpolate the sample values with the values of the computational grid points
-            // divide the x,y of the sample point with the step of the computational grid (wn or hn),
-            // ceil and then we get the coordinates of the 4 points of the computational grid to use
-            // for bilinear interpolation
-            int x_point = ceil(x_start / wn);
-            int y_point = ceil(y_start / hn);
-            idx_x1_y1 = ((y_point - 1) * DIM) + (x_point - 1);
-            idx_x2_y2 = ((y_point - 2) * DIM) + (x_point - 1);
-            idx_x3_y3 = ((y_point - 1) * DIM) + (x_point - 2);
-            idx_x4_y4 = ((y_point - 2) * DIM) + (x_point - 2);
-            pick_vector_field_value(simulation, idx_x1_y1, sample_values_x1_y1);
-            pick_vector_field_value(simulation, idx_x2_y2, sample_values_x2_y2);
-            pick_vector_field_value(simulation, idx_x3_y3, sample_values_x3_y3);
-            pick_vector_field_value(simulation, idx_x4_y4, sample_values_x4_y4);
-            // bilinear interpolation
-            GLfloat x1, y1, x2, y2;
-            x1 = wn + (fftw_real) (x_point - 1) * wn;
-            y1 = hn + (fftw_real) (y_point - 1) * hn;
-            x2 = wn + (fftw_real) (x_point - 2) * wn;
-            y2 = hn + (fftw_real) (y_point - 2) * hn;
-            GLfloat x, y;
-            GLfloat f1x = sample_values_x4_y4[0]*(x2 - x_start)*(y2 - y_start);
-            GLfloat f2x = sample_values_x2_y2[0]*(x_start - x1)*(y2 - y_start);
-            GLfloat f3x = sample_values_x3_y3[0]*(x2 - x_start)*(y_start - y1);
-            GLfloat f4x = sample_values_x1_y1[0]*(x_start - x1)*(y_start - y1);
-            x = (1 / ((x2 - x1)*(y2 - y1)))*(f1x + f2x + f3x + f4x);
-            GLfloat f1y = sample_values_x4_y4[1]*(x2 - x_start)*(y2 - y_start);
-            GLfloat f2y = sample_values_x2_y2[1]*(x_start - x1)*(y2 - y_start);
-            GLfloat f3y = sample_values_x3_y3[1]*(x2 - x_start)*(y_start - y1);
-            GLfloat f4y = sample_values_x1_y1[1]*(x_start - x1)*(y_start - y1);
-            y = (1 / ((x2 - x1)*(y2 - y1)))*(f1y + f2y + f3y + f4y);
-            GLfloat angle = atan2(y, x) * 180 / M_PI;
-            magn = magnitude(x, y);
-            magn = pick_scaled_field(magn);
-            glPushMatrix();
-            glTranslatef(x_start, y_start, 0.0);
-            glRotatef(angle, 0.0, 0.0, 1.0f);
-            glTranslatef(-x_start, -y_start, 0.0);
-            // draw the glyph (this needs to be refactored in order to draw other glyphs)
-            // the glyphs need to be designed to scale, then we can use a scaling factor
-            // for now I hardcoded the glyphs
-            glBegin(GL_POLYGON);
-            setColor(pick_scalar_field_value(simulation, idx));
-            glVertex2f(x_start, y_start + 1);
-            glVertex2f(x_start + magn, y_start + 1);
-            glVertex2f(x_start + magn, y_start + 2);
-            glVertex2f(x_start + magn + 3, y_start);
-            glVertex2f(x_start + magn, y_start - 2);
-            glVertex2f(x_start + magn, y_start - 1);
-            glVertex2f(x_start, y_start - 1);
-            glEnd();
-            glPopMatrix();
-            glBegin(GL_POINTS);
-            //glColor3f(255, 0, 0);
-            glVertex2f(x_start, y_start);
-            glEnd();
-        }
+//    for (i = 0; i < sample_x; i++)
+//        for (j = 0; j < sample_y; j++) {
+//            idx = (j * sample_y) + i;
+//            pick_vector_field_value(simulation, idx, sample_values);
+//            GLfloat x_start = wn_sample + (fftw_real) i * wn_sample;
+//            GLfloat y_start = hn_sample + (fftw_real) j * hn_sample;
+//            // interpolate the sample values with the values of the computational grid points
+//            // divide the x,y of the sample point with the step of the computational grid (wn or hn),
+//            // ceil and then we get the coordinates of the 4 points of the computational grid to use
+//            // for bilinear interpolation
+//            int x_point = ceil(x_start / wn);
+//            int y_point = ceil(y_start / hn);
+//            idx_x1_y1 = ((y_point - 1) * DIM) + (x_point - 1);
+//            idx_x2_y2 = ((y_point - 2) * DIM) + (x_point - 1);
+//            idx_x3_y3 = ((y_point - 1) * DIM) + (x_point - 2);
+//            idx_x4_y4 = ((y_point - 2) * DIM) + (x_point - 2);
+//            pick_vector_field_value(simulation, idx_x1_y1, sample_values_x1_y1);
+//            pick_vector_field_value(simulation, idx_x2_y2, sample_values_x2_y2);
+//            pick_vector_field_value(simulation, idx_x3_y3, sample_values_x3_y3);
+//            pick_vector_field_value(simulation, idx_x4_y4, sample_values_x4_y4);
+//            // bilinear interpolation
+//            GLfloat x1, y1, x2, y2;
+//            x1 = wn + (fftw_real) (x_point - 1) * wn;
+//            y1 = hn + (fftw_real) (y_point - 1) * hn;
+//            x2 = wn + (fftw_real) (x_point - 2) * wn;
+//            y2 = hn + (fftw_real) (y_point - 2) * hn;
+//            GLfloat x, y;
+//            GLfloat f1x = sample_values_x4_y4[0]*(x2 - x_start)*(y2 - y_start);
+//            GLfloat f2x = sample_values_x2_y2[0]*(x_start - x1)*(y2 - y_start);
+//            GLfloat f3x = sample_values_x3_y3[0]*(x2 - x_start)*(y_start - y1);
+//            GLfloat f4x = sample_values_x1_y1[0]*(x_start - x1)*(y_start - y1);
+//            x = (1 / ((x2 - x1)*(y2 - y1)))*(f1x + f2x + f3x + f4x);
+//            GLfloat f1y = sample_values_x4_y4[1]*(x2 - x_start)*(y2 - y_start);
+//            GLfloat f2y = sample_values_x2_y2[1]*(x_start - x1)*(y2 - y_start);
+//            GLfloat f3y = sample_values_x3_y3[1]*(x2 - x_start)*(y_start - y1);
+//            GLfloat f4y = sample_values_x1_y1[1]*(x_start - x1)*(y_start - y1);
+//            y = (1 / ((x2 - x1)*(y2 - y1)))*(f1y + f2y + f3y + f4y);
+//            GLfloat angle = atan2(y, x) * 180 / M_PI;
+//            magn = magnitude(x, y);
+//            magn = pick_scaled_field(magn);
+//            glPushMatrix();
+//            glTranslatef(x_start, y_start, 0.0);
+//            glRotatef(angle, 0.0, 0.0, 1.0f);
+//            glTranslatef(-x_start, -y_start, 0.0);
+//            // draw the glyph (this needs to be refactored in order to draw other glyphs)
+//            // the glyphs need to be designed to scale, then we can use a scaling factor
+//            // for now I hardcoded the glyphs
+//            glBegin(GL_POLYGON);
+//            setColor(pick_scalar_field_value(simulation, idx));
+//            glVertex2f(x_start, y_start + 1);
+//            glVertex2f(x_start + magn, y_start + 1);
+//            glVertex2f(x_start + magn, y_start + 2);
+//            glVertex2f(x_start + magn + 3, y_start);
+//            glVertex2f(x_start + magn, y_start - 2);
+//            glVertex2f(x_start + magn, y_start - 1);
+//            glVertex2f(x_start, y_start - 1);
+//            glEnd();
+//            glPopMatrix();
+//            glBegin(GL_POINTS);
+//            //glColor3f(255, 0, 0);
+//            glVertex2f(x_start, y_start);
+//            glEnd();
+//        }
 
     for (i = 0; i < DIM; i++)
         for (j = 0; j < DIM; j++) {

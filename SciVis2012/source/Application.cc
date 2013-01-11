@@ -371,7 +371,7 @@ void Application::initUI() {
     application_mode_list->add_item(Visualization::Scale, "Scale");
     application_mode_list->add_item(Visualization::Clamp, "Clamp");
     application_mode_list->set_alignment(GLUI_ALIGN_RIGHT);
-
+    
     // options
     GLUI_Panel *options_panel = new GLUI_Panel(glui, "Options");
     options_panel->set_w(200);
