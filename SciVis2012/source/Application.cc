@@ -20,7 +20,7 @@ int Application::winHeight;
 GLUI* Application::glui; // user interface
 int Application::main_window;
 
-int Application::selected_colormap;
+Visualization::ColorMode Application::selected_colormap;
 std::map<Visualization::ColorMode, Colormap*> Application::colormaps;
 Colormap* Application::colormap;
 int Application::selected_num_of_colors;
@@ -275,27 +275,28 @@ void Application::buttonHandler(int id) {
             break;
         case SelectColormap:
         {
-            switch (selected_colormap) {
-                case Visualization::RAINBOW:
-                {   
-                    colormap = colormaps[Visualization::RAINBOW];
-                }
-                    break;
-                case Visualization::GRADIENT:
-                {
-                    colormap = colormaps[Visualization::GRADIENT];
-                }
-                    break;
-                case Visualization::ZEBRA:
-                {
-                    colormap = colormaps[Visualization::ZEBRA];
-                }
-                    break;
-                default:
-                {
-                }
-                    break;
-            }
+//            switch (selected_colormap) {
+//                case Visualization::RAINBOW:
+//                {   
+//                    colormap = colormaps[Visualization::RAINBOW];
+//                }
+//                    break;
+//                case Visualization::GRADIENT:
+//                {
+//                    colormap = colormaps[Visualization::GRADIENT];
+//                }
+//                    break;
+//                case Visualization::ZEBRA:
+//                {
+//                    colormap = colormaps[Visualization::ZEBRA];
+//                }
+//                    break;
+//                default:
+//                {
+//                }
+//                    break;
+//            }
+            colormap = colormaps[selected_colormap];
             hue_value = colormap->getHue();
             saturation_value = colormap->getSaturation();
             selected_num_of_colors = colormap->getNumberOfColors();
@@ -360,7 +361,7 @@ void Application::initUI() {
     GLUI_Panel *colormap_options = new GLUI_Panel(glui, "Colormap");
 
 
-    GLUI_Listbox *colormap_list = new GLUI_Listbox(colormap_options, "Colormap ", &selected_colormap, SelectColormap, buttonHandler);
+    GLUI_Listbox *colormap_list = new GLUI_Listbox(colormap_options, "Colormap ", (int*) &selected_colormap, SelectColormap, buttonHandler);
     colormap_list->set_alignment(GLUI_ALIGN_RIGHT);
     colormap_list->add_item(Visualization::GRADIENT, "Grayscale");
     colormap_list->add_item(Visualization::RAINBOW, "Rainbow");

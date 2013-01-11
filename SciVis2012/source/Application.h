@@ -55,7 +55,7 @@ private:
     static GLUI *glui; // user interface
     static int main_window;
 
-    static int selected_colormap;
+    static Visualization::ColorMode selected_colormap;
     
     static void initializeColormaps();
     static std::map<Visualization::ColorMode, Colormap*> colormaps;
