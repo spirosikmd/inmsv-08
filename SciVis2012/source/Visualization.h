@@ -17,9 +17,9 @@ public:
     //different types of color mapping: black-and-white, rainbow, banded
 
     enum ColorMode {
-        Grayscale,
-        Rainbow,
-        Custom,
+        GRADIENT,
+        RAINBOW,
+        ZEBRA,
         ColorModeCount // (automatically assigned)
     };
 

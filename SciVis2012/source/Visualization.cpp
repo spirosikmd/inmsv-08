@@ -11,7 +11,6 @@ using namespace std;
 
 Visualization::Visualization() {
     vec_scale = 1000;
-    colormap = Colormap::Grayscale();
     sample_x = 20;
     sample_y = 20;
     scalar_draw_mode = Density;

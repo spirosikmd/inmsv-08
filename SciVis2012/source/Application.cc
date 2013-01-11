@@ -6,6 +6,7 @@
 #include <GLUT/glut.h>
 #include <GLUI/glui.h>
 #include <OpenGL/gl.h>
+#include <map>
 
 
 using namespace std;
@@ -21,7 +22,8 @@ GLUI* Application::glui; // user interface
 int Application::main_window;
 
 int Application::selected_colormap;
-Colorbar* Application::colorbar;
+std::map<Visualization::ColorMode, Colormap*> Application::colormaps;
+//Colorbar* Application::colorbar;
 Colormap* Application::colormap;
 int Application::selected_num_of_colors;
 float Application::hue_value;
@@ -56,16 +58,45 @@ void Application::initialize(int *argc, char** argv) {
 
     simulation.init_simulation(Simulation::DIM); //initialize the simulation data structures
 
-
-    colorbar = new Colorbar(720, 20, 0, 20, 256);
-    colormap = Colormap::Grayscale();
+    initializeColormaps();
+    
+    colormap = colormaps[Visualization::GRADIENT];
     visualization.setColormap(colormap);
     hue_value = colormap->getHue();
     saturation_value = colormap->getSaturation();
     selected_num_of_colors = colormap->getNumberOfColors();
+
     initUI();
-    
     glutMainLoop(); // enter main loop
+}
+
+void Application::initializeColormaps() {
+
+    Colormap* rainbow = new Colormap();
+    rainbow->putColor(RED, 255);
+    rainbow->putColor(GREEN, 127);
+    rainbow->putColor(BLUE, 0);
+
+    Colormap* gradient = new Colormap();
+    gradient->putColor(WHITE, 255);
+    gradient->putColor(BLACK, 0);
+    gradient->setSaturation(0);
+
+    Colormap* zebra = new Colormap();
+    for (int i = 0; i < 256; i = i + 64) {
+        for (int j = 0; j < 32; j++) {
+            zebra->putColor(WHITE, i + j);
+        }
+    }
+    for (int i = 32; i < 256; i = i + 64) {
+        for (int j = 0; j < 32; j++) {
+            zebra->putColor(BLACK, i + j);
+        }
+    }
+
+    colormaps.insert(make_pair(Visualization::RAINBOW, rainbow));
+    colormaps.insert(make_pair(Visualization::GRADIENT, gradient));
+    colormaps.insert(make_pair(Visualization::ZEBRA, zebra));
 }
 
 // output usage instructions
@@ -93,9 +124,9 @@ void Application::display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glEnable(GL_TEXTURE_1D);    
+    glEnable(GL_TEXTURE_1D);
     visualization.visualize(simulation, winWidth, winHeight);
-    glDisable(GL_TEXTURE_1D);    
+    glDisable(GL_TEXTURE_1D);
     glTranslatef(0, 0, 0);
     colormap->render();
     glFlush();
@@ -245,25 +276,19 @@ void Application::buttonHandler(int id) {
         case SelectColormap:
         {
             switch (selected_colormap) {
-                case Visualization::Rainbow:
-                {
-                    //visualization.set_scalar_col(Visualization::Rainbow);
-                    colorbar->set_color_mode(Visualization::Rainbow);
-                    colormap = Colormap::Rainbow();
+                case Visualization::RAINBOW:
+                {   
+                    colormap = colormaps[Visualization::RAINBOW];
                 }
                     break;
-                case Visualization::Grayscale:
+                case Visualization::GRADIENT:
                 {
-                    // visualization.set_scalar_col(Visualization::Grayscale);
-                    colorbar->set_color_mode(Visualization::Grayscale);
-                    colormap = Colormap::Grayscale();
+                    colormap = colormaps[Visualization::GRADIENT];
                 }
                     break;
-                case Visualization::Custom:
+                case Visualization::ZEBRA:
                 {
-                    // visualization.set_scalar_col(Visualization::Custom);
-                    colorbar->set_color_mode(Visualization::Custom);
-                    colormap = Colormap::Zebra();
+                    colormap = colormaps[Visualization::ZEBRA];
                 }
                     break;
                 default:
@@ -280,22 +305,18 @@ void Application::buttonHandler(int id) {
             break;
         case SelectedNumOfColors:
         {
-            colorbar->set_N(selected_num_of_colors);
             colormap->setNumberOfColors(selected_num_of_colors);
-            //visualization.set_num_of_colors(selected_num_of_colors);
         }
             break;
         case HueSpinner:
         {
             visualization.set_hue(hue_value);
-            colorbar->set_hue(hue_value);
             colormap->setHue(hue_value);
         }
             break;
         case SaturationSpinner:
         {
             visualization.set_saturation(saturation_value);
-            colorbar->set_saturation(saturation_value);
             colormap->setSaturation(saturation_value);
         }
             break;
@@ -341,9 +362,9 @@ void Application::initUI() {
 
     GLUI_Listbox *colormap_list = new GLUI_Listbox(colormap_options, "Colormap ", &selected_colormap, SelectColormap, buttonHandler);
     colormap_list->set_alignment(GLUI_ALIGN_RIGHT);
-    colormap_list->add_item(Visualization::Grayscale, "Grayscale");
-    colormap_list->add_item(Visualization::Rainbow, "Rainbow");
-    colormap_list->add_item(Visualization::Custom, "Custom");
+    colormap_list->add_item(Visualization::GRADIENT, "Grayscale");
+    colormap_list->add_item(Visualization::RAINBOW, "Rainbow");
+    colormap_list->add_item(Visualization::ZEBRA, "Custom");
 
     GLUI_Spinner *hue_spinner = new GLUI_Spinner(colormap_options, "Hue ", &hue_value, HueSpinner, buttonHandler);
     hue_spinner->set_float_limits(0.0, 1.0, GLUI_LIMIT_CLAMP);
@@ -371,7 +392,7 @@ void Application::initUI() {
     application_mode_list->add_item(Visualization::Scale, "Scale");
     application_mode_list->add_item(Visualization::Clamp, "Clamp");
     application_mode_list->set_alignment(GLUI_ALIGN_RIGHT);
-    
+
     // options
     GLUI_Panel *options_panel = new GLUI_Panel(glui, "Options");
     options_panel->set_w(200);
@@ -402,9 +423,6 @@ void Application::initUI() {
     sample_y_spinner->set_int_val(20);
 }
 
-void Application::drawColorbar() {
-    colorbar->render();
-}
 
 void Application::quit() {
     cout << "Quit.\n";

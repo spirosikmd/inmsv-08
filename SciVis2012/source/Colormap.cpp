@@ -25,40 +25,6 @@ Colormap::Colormap(const Colormap& orig) {
 Colormap::~Colormap() {
 }
 
-Colormap* Colormap::Rainbow() {
-    static Colormap* colormap = new Colormap();
-    colormap->putColor(RED, 255);
-    colormap->putColor(GREEN, 127);
-    colormap->putColor(BLUE, 0);
-
-    return colormap;
-}
-
-Colormap* Colormap::Grayscale() {
-    static Colormap* colormap = new Colormap();
-    colormap->putColor(WHITE, 255);
-    colormap->putColor(BLACK, 0);
-    colormap->setSaturation(0);
-    return colormap;
-}
-
-Colormap* Colormap::Zebra() {
-    static Colormap* colormap = new Colormap();
-
-    for (int i = 0; i < 256; i = i + 64) {
-        for (int j = 0; j < 32; j++) {
-            colormap->putColor(WHITE, i + j);
-        }
-    }
-    for (int i = 32; i < 256; i = i + 64) {
-        for (int j = 0; j < 32; j++) {
-            colormap->putColor(BLACK, i + j);
-        }
-    }
-
-    return colormap;
-}
-
 void Colormap::setHue(float h) {
     hue = h;
     computeColors();
@@ -165,9 +131,7 @@ void Colormap::computeColors() {
         }
         colors[i] = colors[c];
     }
-}
 
-void Colormap::loadColormapTexture() {
     GLfloat roygbiv_image[256][3];
     GLfloat R, G, B;
     for (int i = 0; i < 256; i++) {
@@ -177,19 +141,18 @@ void Colormap::loadColormapTexture() {
         roygbiv_image[i][2] = B;
     }
 
-
-    GLuint texture;
     // allocate a texture name
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_1D, texture);
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    glTexImage1D(GL_TEXTURE_1D, 0, 3, 256, 0, GL_RGB, GL_FLOAT, roygbiv_image); // array with color values
+}
 
+void Colormap::loadColormapTexture() {
+
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
     glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-
-    glTexImage1D(GL_TEXTURE_1D, 0, 3, 256, 0, GL_RGB, GL_FLOAT, roygbiv_image); // array with color values
-
-
+    glBindTexture(GL_TEXTURE_1D, texture);
 }

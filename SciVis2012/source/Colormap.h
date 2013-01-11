@@ -78,11 +78,7 @@ public:
     int getNumberOfColors();
     void loadColormapTexture();
     HSV getColorAt(int);
-
-    static Colormap* Rainbow();
-    static Colormap* Grayscale();
-    static Colormap* Zebra();
-
+    
 private:
     void applyHueAndSaturation(HSV&);
     float hue;
@@ -90,7 +86,7 @@ private:
     int numberOfColors;
     HSV colors[256];
     std::vector<HSV> map;
-    GLuint textureId;
+    GLuint texture;
     HSV interpolate(float at, float left, float right);
     void computeColors();
 };
