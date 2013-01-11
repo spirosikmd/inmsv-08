@@ -11,7 +11,6 @@ class Application {
 private:
 
     // GLUI control IDs
-
     enum UiControlID {
         QuitButton,
         SelectColormap,
@@ -21,6 +20,8 @@ private:
         ApplicationMode,
         ScalarDrawMode,
         VectorDrawMode,
+        ScalarDataset,
+        VectorDataset,
         XSample,
         YSample
     };
@@ -44,7 +45,7 @@ public:
 
 private:
 
-    static void initializeColormaps();
+    
 
     static Simulation simulation; // the smoke simulation
     static Visualization visualization; // visualization of the simulation
@@ -55,6 +56,8 @@ private:
     static int main_window;
 
     static int selected_colormap;
+    
+    static void initializeColormaps();
     static std::map<Visualization::ColorMode, Colormap*> colormaps;
     static Colormap *colormap;
     static int selected_num_of_colors;
