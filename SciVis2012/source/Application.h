@@ -55,10 +55,11 @@ private:
     static int main_window;
 
     static int selected_colormap;
-//    static Colorbar *colorbar;
     static std::map<Visualization::ColorMode, Colormap*> colormaps;
     static Colormap *colormap;
     static int selected_num_of_colors;
+    static int scalarDataset;
+    static int vectorDataset;
 
     static float hue_value;
     static float saturation_value;
@@ -67,6 +68,8 @@ private:
     static Visualization::ApplicationMode app_mode;
     static Visualization::ScalarDrawMode scalar_draw_mode;
     static Visualization::VectorDrawMode vector_draw_mode;
+
+
 };
 
 #endif

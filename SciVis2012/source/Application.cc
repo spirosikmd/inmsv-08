@@ -8,7 +8,6 @@
 #include <OpenGL/gl.h>
 #include <map>
 
-
 using namespace std;
 
 Simulation Application::simulation; // the smoke simulation
@@ -23,11 +22,12 @@ int Application::main_window;
 
 int Application::selected_colormap;
 std::map<Visualization::ColorMode, Colormap*> Application::colormaps;
-//Colorbar* Application::colorbar;
 Colormap* Application::colormap;
 int Application::selected_num_of_colors;
 float Application::hue_value;
 float Application::saturation_value;
+int Application::scalarDataset;
+int Application::vectorDataset;
 int Application::sample_x;
 int Application::sample_y;
 
@@ -393,6 +393,21 @@ void Application::initUI() {
     application_mode_list->add_item(Visualization::Clamp, "Clamp");
     application_mode_list->set_alignment(GLUI_ALIGN_RIGHT);
 
+    
+    // dataset
+    GLUI_Panel *datasetOptions = new GLUI_Panel(glui, "Dataset");
+    
+    GLUI_Panel *scalarDatasets = new GLUI_Panel(datasetOptions, "Scalar");
+    GLUI_RadioGroup *scalarDatasetsGroup = new GLUI_RadioGroup(scalarDatasets, &scalarDataset, ScalarDataset, buttonHandler);
+    new GLUI_RadioButton(scalarDatasetsGroup, "Density rho");
+    new GLUI_RadioButton(scalarDatasetsGroup, "Velocity |v|");
+    new GLUI_RadioButton(scalarDatasetsGroup, "Force |f|");
+    
+    GLUI_Panel *vectorDatasets = new GLUI_Panel(datasetOptions, "Vector");
+    GLUI_RadioGroup *vectorDatasetsGroup = new GLUI_RadioGroup(vectorDatasets, &vectorDataset, VectorDataset, buttonHandler);
+    new GLUI_RadioButton(vectorDatasetsGroup, "Velocity v");
+    new GLUI_RadioButton(vectorDatasetsGroup, "Force f");
+    
     // options
     GLUI_Panel *options_panel = new GLUI_Panel(glui, "Options");
     options_panel->set_w(200);
