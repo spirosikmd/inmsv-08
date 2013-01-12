@@ -33,20 +33,48 @@ public:
     }
 };
 
+struct RGB {
+public:
+    float red;
+    float green;
+    float blue;
+
+    RGB() : red(-1), green(-1), blue(-1) {
+    }
+
+    RGB(float r, float g, float b) : red(r), green(g), blue(b) {
+    }
+
+    bool operator==(const RGB & other) {
+        return (red == other.red && green == other.green && blue == other.blue);
+    }
+
+    bool operator!=(const RGB & other) {
+        return (red != other.red || green != other.green || blue != other.blue);
+    }
+};
+
+static const struct RGB NULLRGB;
 static const struct HSV NULLHSV;
-static const struct HSV BLACK(0, 1, 0);
-static const struct HSV WHITE(0, 0.0, 1.0);
-static const struct HSV MAGENTA((1.0 / 360.0) * 330.0, 1, 1);
-static const struct HSV PINK((1.0 / 360.0) * 300.0, 1, 1);
-static const struct HSV PURPLE((1.0 / 360.0) * 270.0, 1, 1);
-static const struct HSV BLUE((1.0 / 360.0) * 240.0, 1, 1);
-static const struct HSV AQUA((1.0 / 360.0) * 240.0, 1, 1);
-static const struct HSV CYAN((1.0 / 360.0) * 180.0, 1, 1);
-static const struct HSV SEAFOAM((1.0 / 360.0) * 150.0, 1, 1);
-static const struct HSV GREEN((1.0 / 360.0) * 120.0, 1, 1);
-static const struct HSV YELLOW((1.0 / 360.0) * 60.0, 1, 1);
-static const struct HSV ORANGE((1.0 / 360.0) * 30.0, 1, 1);
-static const struct HSV RED(0, 1, 1);
+static const struct RGB BLACK(0, 0, 0);
+static const struct RGB WHITE(1,1,1);
+static const struct RGB RED(1, 0,0);
+static const struct RGB GREEN(0, 1,0);
+static const struct RGB BLUE(0, 0,1);
+static const struct RGB YELLOW(1, 1,0);
+static const struct RGB MAGENTA(1, 0,1);
+static const struct RGB AQUA(0,1,1);
+
+//static const struct RGB MAGENTA((1.0 / 360.0) * 330.0, 1, 1);
+//static const struct HSV PINK((1.0 / 360.0) * 300.0, 1, 1);
+//static const struct HSV PURPLE((1.0 / 360.0) * 270.0, 1, 1);
+//static const struct HSV BLUE((1.0 / 360.0) * 240.0, 1, 1);
+//static const struct HSV CYAN((1.0 / 360.0) * 180.0, 1, 1);
+//static const struct HSV SEAFOAM((1.0 / 360.0) * 150.0, 1, 1);
+//static const struct HSV GREEN((1.0 / 360.0) * 120.0, 1, 1);
+//static const struct HSV YELLOW((1.0 / 360.0) * 60.0, 1, 1);
+//static const struct HSV ORANGE((1.0 / 360.0) * 30.0, 1, 1);
+//static const struct HSV RED(0, 1, 1);
 
 class Colormap {
 public:
@@ -65,7 +93,7 @@ public:
     Colormap();
     Colormap(const Colormap& orig);
     virtual ~Colormap();
-    void putColor(HSV color, unsigned int position);
+    void putColor(RGB color, unsigned int position);
     void printColors();
     void render(float min, float max, int ticks);
     void setHue(float);
@@ -75,18 +103,18 @@ public:
     void setNumberOfColors(int);
     int getNumberOfColors();
     void loadColormapTexture();
-    HSV getColorAt(int);
+    RGB getColorAt(int);
 
 private:
 
     float hue;
     float saturation;
     int numberOfColors;
-    HSV colors[256];
-    std::vector<HSV> map;
+    RGB colors[256];
+    std::vector<RGB> map;
     GLuint texture;
 
-    HSV interpolate(float at, float left, float right);
+    RGB interpolate(float at, float left, float right);
     void computeTexture();
     void computeColors();
 };

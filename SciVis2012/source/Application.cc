@@ -26,12 +26,16 @@ Colormap* Application::colormap;
 int Application::selectedNumOfColors;
 float Application::hueValue;
 float Application::saturationValue;
-Visualization::ScalarDataset Application::scalarDataset;
-Visualization::VectorDataset Application::vectorDataset;
+
+Visualization::DatasetType Application::scalarDataset;
+float Application::scalarMax;
+float Application::scalarMin;
+
+Visualization::DatasetType Application::vectorDataset;
 int Application::sample_x;
 int Application::sample_y;
 
-Visualization::Mode Application::appMode;
+Visualization::Mode Application::scalarMode;
 
 void Application::update() {
     glutSetWindow(main_window);
@@ -58,15 +62,18 @@ void Application::initialize(int *argc, char** argv) {
 
 
     visualization.initializeColormaps();
-
-    Colormap* colormap = visualization.loadColormap(Visualization::GRADIENT);
-
+    Colormap* colormap = visualization.loadColormap(Visualization::GRAYSCALE);
     hueValue = colormap->getHue();
     saturationValue = colormap->getSaturation();
     selectedNumOfColors = colormap->getNumberOfColors();
 
+    scalarMax = visualization.getScalarMax();
+    scalarMin = visualization.getScalarMin();
+    scalarMode = visualization.getScalarMode();
+
 
     initUI();
+    glui->sync_live();
     glutMainLoop(); // enter main loop
 }
 // output usage instructions
@@ -97,9 +104,10 @@ void Application::display() {
     glEnable(GL_TEXTURE_1D);
     visualization.visualize(simulation, winWidth, winHeight);
     glDisable(GL_TEXTURE_1D);
-    
+
     glTranslatef(10, 10, 0);
-    visualization.getColormap()->render(0,1,5);;
+    visualization.getColormap()->render(visualization.getScalarMin(), visualization.getScalarMax(), 5);
+
     glFlush();
     glutSwapBuffers();
 }
@@ -240,69 +248,77 @@ void Application::drag(int mx, int my) {
 void Application::buttonHandler(int id) {
     Colormap* colormap = visualization.getColormap();
     switch (id) {
+
         case QuitButton:
-        {
             quit();
-        }
             break;
+
         case SelectColormap:
-        {
-
-
-            Colormap* colormap = visualization.loadColormap(selectedColormap);
+            colormap = visualization.loadColormap(selectedColormap);
             hueValue = colormap->getHue();
             saturationValue = colormap->getSaturation();
             selectedNumOfColors = colormap->getNumberOfColors();
-            glui->sync_live();
-        }
             break;
+
         case SelectedNumOfColors:
-        {
             colormap->setNumberOfColors(selectedNumOfColors);
-        }
             break;
+
         case HueSpinner:
-        {
+
             visualization.set_hue(hueValue);
             colormap->setHue(hueValue);
-        }
+
             break;
         case SaturationSpinner:
-        {
             visualization.set_saturation(saturationValue);
             colormap->setSaturation(saturationValue);
-        }
             break;
-        case ApplicationMode:
-        {
 
-        }
+        case ScalarDataset:
+            visualization.setScalarDataset(scalarDataset);
+            scalarMax = visualization.getScalarMax();
+            scalarMin = visualization.getScalarMin();
+            scalarMode = visualization.getScalarMode();
             break;
-        case ScalarDrawMode:
-        {
-            visualization.set_scalar_draw_mode(scalarDataset);
-        }
+
+        case ScalarMax:
+            if (scalarMax <= scalarMin) {
+                scalarMax = scalarMin;
+            }
+            visualization.setScalarMax(scalarMax);
+
             break;
+        case ScalarMin:
+            if (scalarMin >= scalarMax) {
+                scalarMin = scalarMax;
+            }
+            visualization.setScalarMin(scalarMin);
+            break;
+        case ScalarMode:
+            visualization.setScalarMode(scalarMode);
+            break;
+
+
         case VectorDrawMode:
-        {
+
             visualization.set_vector_draw_mode(vectorDataset);
-        }
+
             break;
         case XSample:
-        {
+
             visualization.set_sample_x(sample_x);
-        }
+
             break;
         case YSample:
-        {
+
             visualization.set_sample_y(sample_y);
-        }
+
             break;
         default:
-        {
-        }
             break;
     }
+    glui->sync_live();
 }
 
 void Application::initUI() {
@@ -316,8 +332,12 @@ void Application::initUI() {
 
     GLUI_Listbox *colormap_list = new GLUI_Listbox(colormap_options, "Colormap ", (int*) &selectedColormap, SelectColormap, buttonHandler);
     colormap_list->set_alignment(GLUI_ALIGN_RIGHT);
-    colormap_list->add_item(Visualization::GRADIENT, "Gradient");
+    colormap_list->add_item(Visualization::GRAYSCALE, "Grayscale");
+    colormap_list->add_item(Visualization::BGRADIENT, "Black Gradient");
+    colormap_list->add_item(Visualization::WGRADIENT, "White Gradient");
     colormap_list->add_item(Visualization::RAINBOW, "Rainbow");
+    colormap_list->add_item(Visualization::HEATMAP, "Heatmap");
+    colormap_list->add_item(Visualization::BLUEYELLOWGREEN, "Blue Yellow Green");
     colormap_list->add_item(Visualization::ZEBRA, "Zebra");
 
     GLUI_Spinner *hue_spinner = new GLUI_Spinner(colormap_options, "Hue ", &hueValue, HueSpinner, buttonHandler);
@@ -340,35 +360,37 @@ void Application::initUI() {
     num_of_colors_list->add_item(Colormap::COL_256, "256");
     num_of_colors_list->do_selection(Colormap::COL_256);
 
-    GLUI_Listbox *application_mode_list = new GLUI_Listbox(colormap_options, "Mode ", (int*) &appMode, ApplicationMode, buttonHandler);
+    // dataset
+    GLUI_Panel *datasetOptions = new GLUI_Panel(glui, "Dataset");
+    datasetOptions->set_alignment(GLUI_ALIGN_LEFT);
+    glui->add_statictext_to_panel(datasetOptions, "                                   ");
+    //GLUI_Panel *scalarDatasets = new GLUI_Panel(datasetOptions, "Scalar");
+    GLUI_Listbox *scalarDatasetsGroup = new GLUI_Listbox(datasetOptions, "Scalar ", (int*) &scalarDataset, ScalarDataset, buttonHandler);
+    scalarDatasetsGroup->set_alignment(GLUI_ALIGN_RIGHT);
+    scalarDatasetsGroup->add_item(Visualization::DENSITY, "Density rho");
+    scalarDatasetsGroup->add_item(Visualization::VELOCITY_MAGN, "Velocity |v|");
+    scalarDatasetsGroup->add_item(Visualization::FORCE_MAGN, "Force |f|");
+
+    GLUI_Listbox *application_mode_list = new GLUI_Listbox(datasetOptions, "Mode ", (int*) &scalarMode, ScalarMode, buttonHandler);
     application_mode_list->add_item(Visualization::SCALING, "Scale");
     application_mode_list->add_item(Visualization::CLAMPING, "Clamp");
     application_mode_list->set_alignment(GLUI_ALIGN_RIGHT);
 
-    // dataset
-    GLUI_Panel *datasetOptions = new GLUI_Panel(glui, "Dataset");
-    datasetOptions->set_alignment(GLUI_ALIGN_LEFT);
-    glui->add_statictext_to_panel(datasetOptions, "Scalar                           ");
-    //GLUI_Panel *scalarDatasets = new GLUI_Panel(datasetOptions, "Scalar");
-    GLUI_RadioGroup *scalarDatasetsGroup = new GLUI_RadioGroup(datasetOptions, (int*) &scalarDataset, ScalarDataset, buttonHandler);
-    new GLUI_RadioButton(scalarDatasetsGroup, "Density rho");
-    new GLUI_RadioButton(scalarDatasetsGroup, "Velocity |v|");
-    new GLUI_RadioButton(scalarDatasetsGroup, "Force |f|");
-    scalarDatasetsGroup->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Spinner *scalar_max_spinner = new GLUI_Spinner(datasetOptions, "Clamp Max ", &scalarMax, ScalarMax, buttonHandler);
+    scalar_max_spinner->set_alignment(GLUI_ALIGN_RIGHT);
+    GLUI_Spinner *scalar_min_spinner = new GLUI_Spinner(datasetOptions, "Clamp Min ", &scalarMin, ScalarMin, buttonHandler);
+    scalar_min_spinner->set_alignment(GLUI_ALIGN_RIGHT);
+
+
     glui->add_separator_to_panel(datasetOptions);
-    glui->add_statictext_to_panel(datasetOptions, "Vector  ");
-    GLUI_RadioGroup *vectorDatasetsGroup = new GLUI_RadioGroup(datasetOptions, (int*) &vectorDataset, VectorDataset, buttonHandler);
-    new GLUI_RadioButton(vectorDatasetsGroup, "Velocity v");
-    new GLUI_RadioButton(vectorDatasetsGroup, "Force f");
-    vectorDatasetsGroup->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Listbox *vectorDatasetsGroup = new GLUI_Listbox(datasetOptions, "Vector ", (int*) &vectorDataset, VectorDataset, buttonHandler);
+    vectorDatasetsGroup->add_item(Visualization::VELOCITY, "Velocity v");
+    vectorDatasetsGroup->add_item(Visualization::FORCE, "Force f");
+    vectorDatasetsGroup->set_alignment(GLUI_ALIGN_RIGHT);
 
     // quit
     GLUI_Button *quit = new GLUI_Button(glui, "Quit", QuitButton, buttonHandler);
     quit->set_alignment(GLUI_ALIGN_LEFT);
-
-
-
-
 
     // options
     GLUI_Panel *options_panel = new GLUI_Panel(glui, "Options");
@@ -377,14 +399,14 @@ void Application::initUI() {
     new GLUI_Checkbox(options_panel, "Draw Forces", &visualization.options[Visualization::DrawForces]);
     new GLUI_Checkbox(options_panel, "Draw Smoke", &visualization.options[Visualization::DrawSmoke]);
 
-//    GLUI_Listbox *scalar_field_mode = new GLUI_Listbox(glui, "Scalar Field", (int*) &scalar_draw_mode, ScalarDrawMode, buttonHandler);
-//    scalar_field_mode->add_item(Visualization::Density, "Density rho");
-//    scalar_field_mode->add_item(Visualization::VelocityMagnitude, "Velocity |v|");
-//    scalar_field_mode->add_item(Visualization::ForceMagnitude, "Force |f|");
-//
-//    GLUI_Listbox *vector_field_mode = new GLUI_Listbox(glui, "Vector Field", (int*) &vector_draw_mode, VectorDrawMode, buttonHandler);
-//    vector_field_mode->add_item(Visualization::Velocity, "Velocity v");
-//    vector_field_mode->add_item(Visualization::Force, "Force f");
+    //    GLUI_Listbox *scalar_field_mode = new GLUI_Listbox(glui, "Scalar Field", (int*) &scalar_draw_mode, ScalarDrawMode, buttonHandler);
+    //    scalar_field_mode->add_item(Visualization::Density, "Density rho");
+    //    scalar_field_mode->add_item(Visualization::VelocityMagnitude, "Velocity |v|");
+    //    scalar_field_mode->add_item(Visualization::ForceMagnitude, "Force |f|");
+    //
+    //    GLUI_Listbox *vector_field_mode = new GLUI_Listbox(glui, "Vector Field", (int*) &vector_draw_mode, VectorDrawMode, buttonHandler);
+    //    vector_field_mode->add_item(Visualization::Velocity, "Velocity v");
+    //    vector_field_mode->add_item(Visualization::Force, "Force f");
 
     GLUI_Spinner *sample_x_spinner = new GLUI_Spinner(glui, "X Sample", &sample_x, XSample, buttonHandler);
     sample_x_spinner->set_int_val(20);

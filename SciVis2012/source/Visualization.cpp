@@ -6,6 +6,7 @@
 #include "Simulation.h"
 #include "Utilities.h"
 #include "Colormap.h"
+#include "Application.h"
 
 using namespace std;
 
@@ -21,19 +22,46 @@ Visualization::Visualization() {
     options[DrawForces] = false;
     options[DrawGlyphs] = true;
     options[DrawVectorField] = true; // not used for now
+
+    datasets.insert(std::make_pair(DENSITY, Dataset(0, 1, CLAMPING)));
+    datasets.insert(std::make_pair(VELOCITY_MAGN, Dataset(0.01, 0.08, CLAMPING)));
+    datasets.insert(std::make_pair(FORCE_MAGN, Dataset(0, 0.15, CLAMPING)));
+    datasets.insert(std::make_pair(FORCE, Dataset(0, 1, CLAMPING)));
+    datasets.insert(std::make_pair(VELOCITY, Dataset(0, 1, CLAMPING)));
 }
 
 void Visualization::initializeColormaps() {
 
     Colormap* rainbow = new Colormap();
     rainbow->putColor(RED, 255);
+    rainbow->putColor(YELLOW, 191);
     rainbow->putColor(GREEN, 127);
+    rainbow->putColor(AQUA, 63);
     rainbow->putColor(BLUE, 0);
+    
+       Colormap* heatmap = new Colormap();
+    heatmap->putColor(RED, 63);
+    heatmap->putColor(YELLOW, 191);
+    heatmap->putColor(WHITE, 255);
+    heatmap->putColor(BLACK, 0);
 
-    Colormap* gradient = new Colormap();
-    gradient->putColor(WHITE, 255);
-    gradient->putColor(BLACK, 0);
-    gradient->setSaturation(0);
+    Colormap* bwgradient = new Colormap();
+    bwgradient->putColor(WHITE, 255);
+    bwgradient->putColor(BLACK, 0);
+    bwgradient->setSaturation(0);
+    
+    Colormap* bgradient = new Colormap();
+    bgradient->putColor(MAGENTA, 255);
+    bgradient->putColor(BLACK, 0);
+    
+    Colormap* wgradient = new Colormap();
+    wgradient->putColor(MAGENTA, 255);
+    wgradient->putColor(WHITE, 0);
+   
+    Colormap* byg = new Colormap();
+    byg->putColor(GREEN, 255);
+    byg->putColor(YELLOW, 127);
+    byg->putColor(BLUE, 0);
 
     Colormap* zebra = new Colormap();
     for (int i = 0; i < 256; i = i + 64) {
@@ -48,7 +76,11 @@ void Visualization::initializeColormaps() {
     }
 
     colormaps.insert(make_pair(Visualization::RAINBOW, rainbow));
-    colormaps.insert(make_pair(Visualization::GRADIENT, gradient));
+    colormaps.insert(make_pair(Visualization::HEATMAP, heatmap));
+    colormaps.insert(make_pair(Visualization::GRAYSCALE, bwgradient));
+    colormaps.insert(make_pair(Visualization::BGRADIENT, bgradient));
+    colormaps.insert(make_pair(Visualization::WGRADIENT, wgradient));
+    colormaps.insert(make_pair(Visualization::BLUEYELLOWGREEN, byg));
     colormaps.insert(make_pair(Visualization::ZEBRA, zebra));
 }
 
@@ -90,11 +122,11 @@ void Visualization::set_saturation(const float s) {
     saturation = s;
 }
 
-void Visualization::set_scalar_draw_mode(ScalarDataset sdm) {
+void Visualization::setScalarDataset(DatasetType sdm) {
     scalarDataset = sdm;
 }
 
-void Visualization::set_vector_draw_mode(VectorDataset vdm) {
+void Visualization::set_vector_draw_mode(DatasetType vdm) {
     vectorDataset = vdm;
 }
 
@@ -133,9 +165,22 @@ void Visualization::set_sample_y(int y) {
 //set_colormap: Sets three different types of colormaps
 
 void Visualization::setColor(float vy) {
-    if (vy > 1) vy = 1;
-    if (vy < 0) vy = 0;
-    float colorIndex = scale(vy, 0, 1, 0, 1);
+    Dataset dataset = datasets[scalarDataset];
+    float colorIndex = 0;
+    switch (dataset.mode) {
+        case CLAMPING:
+            if (vy > dataset.max) vy = dataset.max;
+            if (vy < dataset.min) vy = dataset.min;
+            colorIndex = scale(vy, dataset.min, dataset.max, 0, 1);
+            break;
+
+        case SCALING:
+            if (vy > dataset.scaleMax) datasets[scalarDataset].scaleMax = vy;
+            if (vy < dataset.scaleMin) datasets[scalarDataset].scaleMin = vy;
+            colorIndex = scale(vy, dataset.scaleMin, dataset.scaleMax, 0, 1);
+            break;
+    }
+
     glTexCoord1f(colorIndex);
 }
 
@@ -361,74 +406,74 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
             glVertex2f(x_start, y_start);
             glEnd();
         }
-    
+
     colormap->loadColormapTexture();
 
     // draw the glyphs on the sample points. if the sample points do not coincide 
     // with the grid points then use interpolation
-//    for (i = 0; i < sample_x; i++)
-//        for (j = 0; j < sample_y; j++) {
-//            idx = (j * sample_y) + i;
-//            pick_vector_field_value(simulation, idx, sample_values);
-//            GLfloat x_start = wn_sample + (fftw_real) i * wn_sample;
-//            GLfloat y_start = hn_sample + (fftw_real) j * hn_sample;
-//            // interpolate the sample values with the values of the computational grid points
-//            // divide the x,y of the sample point with the step of the computational grid (wn or hn),
-//            // ceil and then we get the coordinates of the 4 points of the computational grid to use
-//            // for bilinear interpolation
-//            int x_point = ceil(x_start / wn);
-//            int y_point = ceil(y_start / hn);
-//            idx_x1_y1 = ((y_point - 1) * DIM) + (x_point - 1);
-//            idx_x2_y2 = ((y_point - 2) * DIM) + (x_point - 1);
-//            idx_x3_y3 = ((y_point - 1) * DIM) + (x_point - 2);
-//            idx_x4_y4 = ((y_point - 2) * DIM) + (x_point - 2);
-//            pick_vector_field_value(simulation, idx_x1_y1, sample_values_x1_y1);
-//            pick_vector_field_value(simulation, idx_x2_y2, sample_values_x2_y2);
-//            pick_vector_field_value(simulation, idx_x3_y3, sample_values_x3_y3);
-//            pick_vector_field_value(simulation, idx_x4_y4, sample_values_x4_y4);
-//            // bilinear interpolation
-//            GLfloat x1, y1, x2, y2;
-//            x1 = wn + (fftw_real) (x_point - 1) * wn;
-//            y1 = hn + (fftw_real) (y_point - 1) * hn;
-//            x2 = wn + (fftw_real) (x_point - 2) * wn;
-//            y2 = hn + (fftw_real) (y_point - 2) * hn;
-//            GLfloat x, y;
-//            GLfloat f1x = sample_values_x4_y4[0]*(x2 - x_start)*(y2 - y_start);
-//            GLfloat f2x = sample_values_x2_y2[0]*(x_start - x1)*(y2 - y_start);
-//            GLfloat f3x = sample_values_x3_y3[0]*(x2 - x_start)*(y_start - y1);
-//            GLfloat f4x = sample_values_x1_y1[0]*(x_start - x1)*(y_start - y1);
-//            x = (1 / ((x2 - x1)*(y2 - y1)))*(f1x + f2x + f3x + f4x);
-//            GLfloat f1y = sample_values_x4_y4[1]*(x2 - x_start)*(y2 - y_start);
-//            GLfloat f2y = sample_values_x2_y2[1]*(x_start - x1)*(y2 - y_start);
-//            GLfloat f3y = sample_values_x3_y3[1]*(x2 - x_start)*(y_start - y1);
-//            GLfloat f4y = sample_values_x1_y1[1]*(x_start - x1)*(y_start - y1);
-//            y = (1 / ((x2 - x1)*(y2 - y1)))*(f1y + f2y + f3y + f4y);
-//            GLfloat angle = atan2(y, x) * 180 / M_PI;
-//            magn = magnitude(x, y);
-//            magn = pick_scaled_field(magn);
-//            glPushMatrix();
-//            glTranslatef(x_start, y_start, 0.0);
-//            glRotatef(angle, 0.0, 0.0, 1.0f);
-//            glTranslatef(-x_start, -y_start, 0.0);
-//            // draw the glyph (this needs to be refactored in order to draw other glyphs)
-//            // the glyphs need to be designed to scale, then we can use a scaling factor
-//            // for now I hardcoded the glyphs
-//            glBegin(GL_POLYGON);
-//            setColor(pick_scalar_field_value(simulation, idx));
-//            glVertex2f(x_start, y_start + 1);
-//            glVertex2f(x_start + magn, y_start + 1);
-//            glVertex2f(x_start + magn, y_start + 2);
-//            glVertex2f(x_start + magn + 3, y_start);
-//            glVertex2f(x_start + magn, y_start - 2);
-//            glVertex2f(x_start + magn, y_start - 1);
-//            glVertex2f(x_start, y_start - 1);
-//            glEnd();
-//            glPopMatrix();
-//            glBegin(GL_POINTS);
-//            //glColor3f(255, 0, 0);
-//            glVertex2f(x_start, y_start);
-//            glEnd();
-//        }
+    //    for (i = 0; i < sample_x; i++)
+    //        for (j = 0; j < sample_y; j++) {
+    //            idx = (j * sample_y) + i;
+    //            pick_vector_field_value(simulation, idx, sample_values);
+    //            GLfloat x_start = wn_sample + (fftw_real) i * wn_sample;
+    //            GLfloat y_start = hn_sample + (fftw_real) j * hn_sample;
+    //            // interpolate the sample values with the values of the computational grid points
+    //            // divide the x,y of the sample point with the step of the computational grid (wn or hn),
+    //            // ceil and then we get the coordinates of the 4 points of the computational grid to use
+    //            // for bilinear interpolation
+    //            int x_point = ceil(x_start / wn);
+    //            int y_point = ceil(y_start / hn);
+    //            idx_x1_y1 = ((y_point - 1) * DIM) + (x_point - 1);
+    //            idx_x2_y2 = ((y_point - 2) * DIM) + (x_point - 1);
+    //            idx_x3_y3 = ((y_point - 1) * DIM) + (x_point - 2);
+    //            idx_x4_y4 = ((y_point - 2) * DIM) + (x_point - 2);
+    //            pick_vector_field_value(simulation, idx_x1_y1, sample_values_x1_y1);
+    //            pick_vector_field_value(simulation, idx_x2_y2, sample_values_x2_y2);
+    //            pick_vector_field_value(simulation, idx_x3_y3, sample_values_x3_y3);
+    //            pick_vector_field_value(simulation, idx_x4_y4, sample_values_x4_y4);
+    //            // bilinear interpolation
+    //            GLfloat x1, y1, x2, y2;
+    //            x1 = wn + (fftw_real) (x_point - 1) * wn;
+    //            y1 = hn + (fftw_real) (y_point - 1) * hn;
+    //            x2 = wn + (fftw_real) (x_point - 2) * wn;
+    //            y2 = hn + (fftw_real) (y_point - 2) * hn;
+    //            GLfloat x, y;
+    //            GLfloat f1x = sample_values_x4_y4[0]*(x2 - x_start)*(y2 - y_start);
+    //            GLfloat f2x = sample_values_x2_y2[0]*(x_start - x1)*(y2 - y_start);
+    //            GLfloat f3x = sample_values_x3_y3[0]*(x2 - x_start)*(y_start - y1);
+    //            GLfloat f4x = sample_values_x1_y1[0]*(x_start - x1)*(y_start - y1);
+    //            x = (1 / ((x2 - x1)*(y2 - y1)))*(f1x + f2x + f3x + f4x);
+    //            GLfloat f1y = sample_values_x4_y4[1]*(x2 - x_start)*(y2 - y_start);
+    //            GLfloat f2y = sample_values_x2_y2[1]*(x_start - x1)*(y2 - y_start);
+    //            GLfloat f3y = sample_values_x3_y3[1]*(x2 - x_start)*(y_start - y1);
+    //            GLfloat f4y = sample_values_x1_y1[1]*(x_start - x1)*(y_start - y1);
+    //            y = (1 / ((x2 - x1)*(y2 - y1)))*(f1y + f2y + f3y + f4y);
+    //            GLfloat angle = atan2(y, x) * 180 / M_PI;
+    //            magn = magnitude(x, y);
+    //            magn = pick_scaled_field(magn);
+    //            glPushMatrix();
+    //            glTranslatef(x_start, y_start, 0.0);
+    //            glRotatef(angle, 0.0, 0.0, 1.0f);
+    //            glTranslatef(-x_start, -y_start, 0.0);
+    //            // draw the glyph (this needs to be refactored in order to draw other glyphs)
+    //            // the glyphs need to be designed to scale, then we can use a scaling factor
+    //            // for now I hardcoded the glyphs
+    //            glBegin(GL_POLYGON);
+    //            setColor(pick_scalar_field_value(simulation, idx));
+    //            glVertex2f(x_start, y_start + 1);
+    //            glVertex2f(x_start + magn, y_start + 1);
+    //            glVertex2f(x_start + magn, y_start + 2);
+    //            glVertex2f(x_start + magn + 3, y_start);
+    //            glVertex2f(x_start + magn, y_start - 2);
+    //            glVertex2f(x_start + magn, y_start - 1);
+    //            glVertex2f(x_start, y_start - 1);
+    //            glEnd();
+    //            glPopMatrix();
+    //            glBegin(GL_POINTS);
+    //            //glColor3f(255, 0, 0);
+    //            glVertex2f(x_start, y_start);
+    //            glEnd();
+    //        }
 
     for (i = 0; i < DIM; i++)
         for (j = 0; j < DIM; j++) {
@@ -496,4 +541,36 @@ float Visualization::pick_scaled_field(float v) {
             break;
     }
     return value;
+}
+
+void Visualization::setScalarMin(float min) {
+    datasets[scalarDataset].min = min;
+}
+
+void Visualization::setScalarMax(float max) {
+    datasets[scalarDataset].max = max;
+}
+
+void Visualization::setScalarMode(Mode mode) {
+    datasets[scalarDataset].mode = mode;
+}
+
+float Visualization::getScalarMin() {
+    if (datasets[scalarDataset].mode == CLAMPING) {
+        return datasets[scalarDataset].min;
+    } else {
+        return datasets[scalarDataset].scaleMin;
+    }
+}
+
+float Visualization::getScalarMax() {
+    if (datasets[scalarDataset].mode == CLAMPING) {
+        return datasets[scalarDataset].max;
+    } else {
+        return datasets[scalarDataset].scaleMax;
+    }
+}
+
+Visualization::Mode Visualization::getScalarMode() {
+    return datasets[scalarDataset].mode;
 }

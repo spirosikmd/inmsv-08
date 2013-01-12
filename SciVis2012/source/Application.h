@@ -17,8 +17,10 @@ private:
         SelectedNumOfColors,
         HueSpinner,
         SaturationSpinner,
-        ApplicationMode,
+        ScalarMode,
         ScalarDrawMode,
+        ScalarMax,
+        ScalarMin,
         VectorDrawMode,
         ScalarDataset,
         VectorDataset,
@@ -61,14 +63,17 @@ private:
     static std::map<Visualization::ColorMode, Colormap*> colormaps;
     static Colormap *colormap;
     static int selectedNumOfColors;
-    static Visualization::ScalarDataset scalarDataset;
-    static Visualization::VectorDataset vectorDataset;
+    
+    static Visualization::DatasetType scalarDataset;
+    static float scalarMax, scalarMin;
+    
+    static Visualization::DatasetType vectorDataset;
 
     static float hueValue;
     static float saturationValue;
     static int sample_x, sample_y;
 
-    static Visualization::Mode appMode;
+    static Visualization::Mode scalarMode;
 
 };
 

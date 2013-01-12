@@ -4,6 +4,7 @@
 #include <rfftw.h>
 #include <map>
 #include "Colormap.h"              //the numerical simulation FFTW library
+#include <map>
 
 class Simulation;
 
@@ -17,8 +18,12 @@ public:
     //different types of color mapping: black-and-white, rainbow, banded
 
     enum ColorMode {
-        GRADIENT,
+        GRAYSCALE,
+        BGRADIENT,
+        WGRADIENT,
+        BLUEYELLOWGREEN,
         RAINBOW,
+        HEATMAP,
         ZEBRA,
         ColorModeCount // (automatically assigned)
     };
@@ -37,15 +42,34 @@ public:
         OptionsCount // (automatically assigned)
     };
 
-    enum ScalarDataset {
+    enum DatasetType {
         DENSITY,
         VELOCITY_MAGN,
-        FORCE_MAGN
-    };
-
-    enum VectorDataset {
+        FORCE_MAGN,
         VELOCITY,
         FORCE
+    };
+
+    struct Dataset {
+        float max;
+        float min;
+        Mode mode;
+        float scaleMin;
+        float scaleMax;
+
+        Dataset() {
+            max = 0;
+            min = 0;
+            mode = SCALING;
+        }
+
+        Dataset(float mn, float mx, Mode md) {
+            max = mx;
+            min = mn;
+            mode = md;
+            scaleMin = INFINITY;
+            scaleMax = -INFINITY;
+        }
     };
 
     void visualize(Simulation const &simulation, int winWidth, int winHeight);
@@ -59,31 +83,37 @@ public:
     void set_hue(const float h);
     void set_saturation(const float s);
     void set_num_of_colors(const int n);
-    //
-    //    void rainbow(float value, float* R, float* G, float* B);
-    //    void grayscale(float value, float* R, float* G, float* B);
-    //    void custom(float value, float* R, float* G, float* B);
+    
     Colormap* getColormap();
     Colormap* loadColormap(ColorMode);
+    
     void setColor(float vy);
     void direction_to_color(float x, float y);
     void magnitude_to_color(float x, float y);
-    void set_scalar_draw_mode(ScalarDataset sdm);
-    void set_vector_draw_mode(VectorDataset vdm);
+    void setScalarDataset(DatasetType sdm);
+    void set_vector_draw_mode(DatasetType vdm);
     void set_sample_x(int x);
     void set_sample_y(int y);
+
+    void setScalarMin(float);
+    void setScalarMax(float);
+    void setScalarMode(Mode);
+    float getScalarMin();
+    float getScalarMax();
+    Mode getScalarMode();
 
 private:
 
     void initializeColormaps();
     std::map<ColorMode, Colormap*> colormaps;
-    
+    std::map<DatasetType, Dataset> datasets;
+
     float vec_scale; // scaling of hedgehogs 
     int options[OptionsCount]; // options boolean array
     Colormap* colormap;
     float hue, saturation;
-    ScalarDataset scalarDataset;
-    VectorDataset vectorDataset;
+    DatasetType scalarDataset;
+    DatasetType vectorDataset;
     int sample_x, sample_y;
 
     void draw_smoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);

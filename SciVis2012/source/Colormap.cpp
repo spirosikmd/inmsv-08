@@ -54,12 +54,12 @@ int Colormap::getNumberOfColors() {
     return numberOfColors;
 }
 
-void Colormap::putColor(HSV color, unsigned int position) {
+void Colormap::putColor(RGB color, unsigned int position) {
     map[position] = color;
     computeColors();
 }
 
-HSV Colormap::getColorAt(int index) {
+RGB Colormap::getColorAt(int index) {
     return colors[index];
 }
 
@@ -74,13 +74,12 @@ void Colormap::loadColormapTexture() {
 
 void Colormap::printColors() {
     for (unsigned i = 0; i < 256; i++) {
-        std::cout << "[" << i << "](" << colors[i].hue << "," << colors[i].saturation << "," << colors[i].value << "), ";
+        std::cout << "[" << i << "](" << colors[i].red << "," << colors[i].green << "," << colors[i].blue << "), ";
     }
     std::cout << '\n';
 }
 
 void Colormap::render(float min, float max, int minorTicks) {
-    float R, G, B;
     int step = 1;
     int width = 50;
 
@@ -99,11 +98,10 @@ void Colormap::render(float min, float max, int minorTicks) {
 
     glBegin(GL_QUADS);
     for (size_t i = 0; i < 256; i++) {
-        hsv2rgb(colors[i].hue, colors[i].saturation, colors[i].value, R, G, B);
-        glColor3f(R, G, B);
+        glColor3f(colors[i].red, colors[i].green, colors[i].blue);
         glVertex2f(1, 1+(i * step) + step); // Top Left
         glVertex2f(width - 1, 1+(i * step) + step); // Top Right
-        glColor3f(R, G, B);
+        glColor3f(colors[i].red, colors[i].green, colors[i].blue);
         glVertex2f(width - 1, 1+i * step); // Bottom Right
         glVertex2f(1, 1+i * step); // Bottom Left
     }
@@ -135,16 +133,16 @@ void Colormap::render(float min, float max, int minorTicks) {
     printText(width+8,256 * step-3.5, float2str(max));
 }
 
-HSV Colormap::interpolate(float x, float x0, float x1) {
-    HSV interpolated;
+RGB Colormap::interpolate(float x, float x0, float x1) {
+    RGB interpolated;
 
-    HSV y0 = map[x0];
-    HSV y1 = map[x1];
-
-    interpolated.hue = y0.hue + (y1.hue - y0.hue) * ((x - x0) / (x1 - x0));
-    interpolated.saturation = y0.saturation + (y1.saturation - y0.saturation) * ((x - x0) / (x1 - x0));
-    interpolated.value = y0.value + (y1.value - y0.value) * ((x - x0) / (x1 - x0));
-
+    RGB y0 = map[x0];
+    RGB y1 = map[x1];
+        
+     interpolated.red= y0.red + (y1.red - y0.red) * ((x - x0) / (x1 - x0));
+     interpolated.green= y0.green + (y1.green - y0.green) * ((x - x0) / (x1 - x0));
+     interpolated.blue= y0.blue + (y1.blue - y0.blue) * ((x - x0) / (x1 - x0));
+   
     return interpolated;
 }
 
@@ -152,7 +150,7 @@ void Colormap::computeColors() {
     int left = 0;
     int right = -1;
     for (unsigned i = 1; i < map.size(); i++) {
-        if (map[i] != NULLHSV) {
+        if (map[i] != NULLRGB) {
             right = i;
             colors[right] = map[right];
             for (int pos = left + 1; pos < right; pos++) {
@@ -165,10 +163,13 @@ void Colormap::computeColors() {
     colors[0] = map[0];
     colors[255] = map[255];
 
+    
     for (unsigned i = 0; i < 256; i++) {
-        colors[i].hue = fmod(colors[i].hue + hue, 1.0);
-        colors[i].saturation = colors[i].saturation * saturation;
-
+        float H,S,V;
+        rgb2hsv(colors[i].red,colors[i].green,colors[i].blue,H,S,V);
+        H = fmod(H + hue, 1.0);
+        S = S * saturation;
+        hsv2rgb(H,S,V,colors[i].red,colors[i].green,colors[i].blue);
     }
 
     int step = 256 / numberOfColors;
@@ -188,10 +189,9 @@ void Colormap::computeTexture() {
     GLfloat rgbTexture[256][3];
     GLfloat R, G, B;
     for (int i = 0; i < 256; i++) {
-        hsv2rgb(colors[i].hue, colors[i].saturation, colors[i].value, R, G, B);
-        rgbTexture[i][0] = R;
-        rgbTexture[i][1] = G;
-        rgbTexture[i][2] = B;
+        rgbTexture[i][0] = colors[i].red;
+        rgbTexture[i][1] = colors[i].green;
+        rgbTexture[i][2] = colors[i].blue;
     }
 
     //delete old texture
