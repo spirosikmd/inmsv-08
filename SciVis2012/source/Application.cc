@@ -20,16 +20,18 @@ int Application::winHeight;
 GLUI* Application::glui; // user interface
 int Application::main_window;
 
-int Application::selected_colormap;
-int Application::selected_num_of_colors;
-float Application::hue_value;
-float Application::saturation_value;
+Visualization::ColorMode Application::selectedColormap;
+std::map<Visualization::ColorMode, Colormap*> Application::colormaps;
+Colormap* Application::colormap;
+int Application::selectedNumOfColors;
+float Application::hueValue;
+float Application::saturationValue;
 int Application::scalarDataset;
 int Application::vectorDataset;
 int Application::sample_x;
 int Application::sample_y;
 
-Visualization::ApplicationMode Application::app_mode;
+Visualization::ApplicationMode Application::appMode;
 Visualization::ScalarDrawMode Application::scalar_draw_mode;
 Visualization::VectorDrawMode Application::vector_draw_mode;
 
@@ -56,15 +58,22 @@ void Application::initialize(int *argc, char** argv) {
 
     simulation.init_simulation(Simulation::DIM); //initialize the simulation data structures
 
+    
     visualization.initializeColormaps();
 
     visualization.loadColormap(Visualization::GRADIENT);
     Colormap* colormap = visualization.getColormap();
-    hue_value = colormap->getHue();
-    saturation_value = colormap->getSaturation();
-    selected_num_of_colors = colormap->getNumberOfColors();
+    
+    
 
-    initUI();
+    
+    
+    hueValue = colormap->getHue();
+    saturationValue = colormap->getSaturation();
+    selectedNumOfColors = colormap->getNumberOfColors();
+    
+
+            initUI();
     glutMainLoop(); // enter main loop
 }
 // output usage instructions
@@ -245,49 +254,30 @@ void Application::buttonHandler(int id) {
             break;
         case SelectColormap:
         {
-            switch (selected_colormap) {
-                case Visualization::RAINBOW:
-                {   
-                    visualization.loadColormap(Visualization::RAINBOW);
-                }
-                    break;
-                case Visualization::GRADIENT:
-                {
-                    visualization.loadColormap(Visualization::GRADIENT);
-                }
-                    break;
-                case Visualization::ZEBRA:
-                {
-                    visualization.loadColormap(Visualization::ZEBRA);
-                }
-                    break;
-                default:
-                {
-                }
-                    break;
-            }
+
+            visualization.loadColormap(selectedColormap);
             Colormap* colormap = visualization.getColormap();
-            hue_value = colormap->getHue();
-            saturation_value = colormap->getSaturation();
-            selected_num_of_colors = colormap->getNumberOfColors();
+            hueValue = colormap->getHue();
+            saturationValue = colormap->getSaturation();
+            selectedNumOfColors = colormap->getNumberOfColors();
             glui->sync_live();
         }
-        break;
+            break;
         case SelectedNumOfColors:
         {
-            colormap->setNumberOfColors(selected_num_of_colors);
+            colormap->setNumberOfColors(selectedNumOfColors);
         }
             break;
         case HueSpinner:
         {
-            visualization.set_hue(hue_value);
-            colormap->setHue(hue_value);
+            visualization.set_hue(hueValue);
+            colormap->setHue(hueValue);
         }
             break;
         case SaturationSpinner:
         {
-            visualization.set_saturation(saturation_value);
-            colormap->setSaturation(saturation_value);
+            visualization.set_saturation(saturationValue);
+            colormap->setSaturation(saturationValue);
         }
             break;
         case ApplicationMode:
@@ -323,29 +313,29 @@ void Application::buttonHandler(int id) {
 }
 
 void Application::initUI() {
+    // main window
     glui = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
     glui->set_main_gfx_window(main_window);
 
-    //colormap
+    // colormap
     GLUI_Panel *colormap_options = new GLUI_Panel(glui, "Colormap");
+    colormap_options->set_alignment(GLUI_ALIGN_LEFT);
 
-
-    GLUI_Listbox *colormap_list = new GLUI_Listbox(colormap_options, "Colormap ", &selected_colormap, SelectColormap, buttonHandler);
+    GLUI_Listbox *colormap_list = new GLUI_Listbox(colormap_options, "Colormap ", (int*) &selectedColormap, SelectColormap, buttonHandler);
     colormap_list->set_alignment(GLUI_ALIGN_RIGHT);
-    colormap_list->add_item(Visualization::GRADIENT, "Grayscale");
+    colormap_list->add_item(Visualization::GRADIENT, "Gradient");
     colormap_list->add_item(Visualization::RAINBOW, "Rainbow");
-    colormap_list->add_item(Visualization::ZEBRA, "Custom");
+    colormap_list->add_item(Visualization::ZEBRA, "Zebra");
 
-    GLUI_Spinner *hue_spinner = new GLUI_Spinner(colormap_options, "Hue ", &hue_value, HueSpinner, buttonHandler);
+    GLUI_Spinner *hue_spinner = new GLUI_Spinner(colormap_options, "Hue ", &hueValue, HueSpinner, buttonHandler);
     hue_spinner->set_float_limits(0.0, 1.0, GLUI_LIMIT_CLAMP);
     hue_spinner->set_alignment(GLUI_ALIGN_RIGHT);
 
-    GLUI_Spinner *sat_spinner = new GLUI_Spinner(colormap_options, "Saturation ", &saturation_value, SaturationSpinner, buttonHandler);
+    GLUI_Spinner *sat_spinner = new GLUI_Spinner(colormap_options, "Saturation ", &saturationValue, SaturationSpinner, buttonHandler);
     sat_spinner->set_float_limits(0.0, 1.0, GLUI_LIMIT_CLAMP);
     sat_spinner->set_alignment(GLUI_ALIGN_RIGHT);
 
-
-    GLUI_Listbox *num_of_colors_list = new GLUI_Listbox(colormap_options, "Band ", &selected_num_of_colors, SelectedNumOfColors, buttonHandler);
+    GLUI_Listbox *num_of_colors_list = new GLUI_Listbox(colormap_options, "Band ", &selectedNumOfColors, SelectedNumOfColors, buttonHandler);
     num_of_colors_list->set_alignment(GLUI_ALIGN_RIGHT);
     num_of_colors_list->add_item(Colormap::COL_2, "2");
     num_of_colors_list->add_item(Colormap::COL_4, "4");
@@ -357,41 +347,42 @@ void Application::initUI() {
     num_of_colors_list->add_item(Colormap::COL_256, "256");
     num_of_colors_list->do_selection(Colormap::COL_256);
 
-
-    GLUI_Listbox *application_mode_list = new GLUI_Listbox(colormap_options, "Mode ", (int*) &app_mode, ApplicationMode, buttonHandler);
+    GLUI_Listbox *application_mode_list = new GLUI_Listbox(colormap_options, "Mode ", (int*) &appMode, ApplicationMode, buttonHandler);
     application_mode_list->add_item(Visualization::Scale, "Scale");
     application_mode_list->add_item(Visualization::Clamp, "Clamp");
     application_mode_list->set_alignment(GLUI_ALIGN_RIGHT);
 
-    
     // dataset
     GLUI_Panel *datasetOptions = new GLUI_Panel(glui, "Dataset");
-    
+    datasetOptions->set_alignment(GLUI_ALIGN_LEFT);
+
     GLUI_Panel *scalarDatasets = new GLUI_Panel(datasetOptions, "Scalar");
     GLUI_RadioGroup *scalarDatasetsGroup = new GLUI_RadioGroup(scalarDatasets, &scalarDataset, ScalarDataset, buttonHandler);
     new GLUI_RadioButton(scalarDatasetsGroup, "Density rho");
     new GLUI_RadioButton(scalarDatasetsGroup, "Velocity |v|");
     new GLUI_RadioButton(scalarDatasetsGroup, "Force |f|");
-    
+    scalarDatasets->set_alignment(GLUI_ALIGN_LEFT);
+
     GLUI_Panel *vectorDatasets = new GLUI_Panel(datasetOptions, "Vector");
     GLUI_RadioGroup *vectorDatasetsGroup = new GLUI_RadioGroup(vectorDatasets, &vectorDataset, VectorDataset, buttonHandler);
     new GLUI_RadioButton(vectorDatasetsGroup, "Velocity v");
     new GLUI_RadioButton(vectorDatasetsGroup, "Force f");
-    
+    vectorDatasets->set_alignment(GLUI_ALIGN_LEFT);
+
+    // quit
+    GLUI_Button *quit = new GLUI_Button(glui, "Quit", QuitButton, buttonHandler);
+    quit->set_alignment(GLUI_ALIGN_LEFT);
+
+
+
+
+
     // options
     GLUI_Panel *options_panel = new GLUI_Panel(glui, "Options");
     options_panel->set_w(200);
     new GLUI_Checkbox(options_panel, "Draw Glyphs", &visualization.options[Visualization::DrawGlyphs]);
     new GLUI_Checkbox(options_panel, "Draw Forces", &visualization.options[Visualization::DrawForces]);
     new GLUI_Checkbox(options_panel, "Draw Smoke", &visualization.options[Visualization::DrawSmoke]);
-
-    new GLUI_Button(glui, "Quit", QuitButton, buttonHandler);
-
-
-
-
-
-
 
     GLUI_Listbox *scalar_field_mode = new GLUI_Listbox(glui, "Scalar Field", (int*) &scalar_draw_mode, ScalarDrawMode, buttonHandler);
     scalar_field_mode->add_item(Visualization::Density, "Density rho");
@@ -407,7 +398,6 @@ void Application::initUI() {
     GLUI_Spinner *sample_y_spinner = new GLUI_Spinner(glui, "Y Sample", &sample_y, YSample, buttonHandler);
     sample_y_spinner->set_int_val(20);
 }
-
 
 void Application::quit() {
     cout << "Quit.\n";
