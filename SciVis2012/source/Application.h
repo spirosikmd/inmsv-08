@@ -61,17 +61,14 @@ private:
     static std::map<Visualization::ColorMode, Colormap*> colormaps;
     static Colormap *colormap;
     static int selectedNumOfColors;
-    static int scalarDataset;
-    static int vectorDataset;
+    static Visualization::ScalarDataset scalarDataset;
+    static Visualization::VectorDataset vectorDataset;
 
     static float hueValue;
     static float saturationValue;
     static int sample_x, sample_y;
 
     static Visualization::Mode appMode;
-    static Visualization::ScalarDrawMode scalar_draw_mode;
-    static Visualization::VectorDrawMode vector_draw_mode;
-
 
 };
 

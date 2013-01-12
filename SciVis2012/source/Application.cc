@@ -26,14 +26,12 @@ Colormap* Application::colormap;
 int Application::selectedNumOfColors;
 float Application::hueValue;
 float Application::saturationValue;
-int Application::scalarDataset;
-int Application::vectorDataset;
+Visualization::ScalarDataset Application::scalarDataset;
+Visualization::VectorDataset Application::vectorDataset;
 int Application::sample_x;
 int Application::sample_y;
 
 Visualization::Mode Application::appMode;
-Visualization::ScalarDrawMode Application::scalar_draw_mode;
-Visualization::VectorDrawMode Application::vector_draw_mode;
 
 void Application::update() {
     glutSetWindow(main_window);
@@ -101,7 +99,7 @@ void Application::display() {
     glDisable(GL_TEXTURE_1D);
     
     glTranslatef(10, 10, 0);
-    visualization.getColormap()->render(-1.1,3.34675475167,7);;
+    visualization.getColormap()->render(0,1,5);;
     glFlush();
     glutSwapBuffers();
 }
@@ -282,12 +280,12 @@ void Application::buttonHandler(int id) {
             break;
         case ScalarDrawMode:
         {
-            visualization.set_scalar_draw_mode(scalar_draw_mode);
+            visualization.set_scalar_draw_mode(scalarDataset);
         }
             break;
         case VectorDrawMode:
         {
-            visualization.set_vector_draw_mode(vector_draw_mode);
+            visualization.set_vector_draw_mode(vectorDataset);
         }
             break;
         case XSample:
@@ -352,14 +350,14 @@ void Application::initUI() {
     datasetOptions->set_alignment(GLUI_ALIGN_LEFT);
     glui->add_statictext_to_panel(datasetOptions, "Scalar                           ");
     //GLUI_Panel *scalarDatasets = new GLUI_Panel(datasetOptions, "Scalar");
-    GLUI_RadioGroup *scalarDatasetsGroup = new GLUI_RadioGroup(datasetOptions, &scalarDataset, ScalarDataset, buttonHandler);
+    GLUI_RadioGroup *scalarDatasetsGroup = new GLUI_RadioGroup(datasetOptions, (int*) &scalarDataset, ScalarDataset, buttonHandler);
     new GLUI_RadioButton(scalarDatasetsGroup, "Density rho");
     new GLUI_RadioButton(scalarDatasetsGroup, "Velocity |v|");
     new GLUI_RadioButton(scalarDatasetsGroup, "Force |f|");
     scalarDatasetsGroup->set_alignment(GLUI_ALIGN_LEFT);
     glui->add_separator_to_panel(datasetOptions);
     glui->add_statictext_to_panel(datasetOptions, "Vector  ");
-    GLUI_RadioGroup *vectorDatasetsGroup = new GLUI_RadioGroup(datasetOptions, &vectorDataset, VectorDataset, buttonHandler);
+    GLUI_RadioGroup *vectorDatasetsGroup = new GLUI_RadioGroup(datasetOptions, (int*) &vectorDataset, VectorDataset, buttonHandler);
     new GLUI_RadioButton(vectorDatasetsGroup, "Velocity v");
     new GLUI_RadioButton(vectorDatasetsGroup, "Force f");
     vectorDatasetsGroup->set_alignment(GLUI_ALIGN_LEFT);
@@ -379,14 +377,14 @@ void Application::initUI() {
     new GLUI_Checkbox(options_panel, "Draw Forces", &visualization.options[Visualization::DrawForces]);
     new GLUI_Checkbox(options_panel, "Draw Smoke", &visualization.options[Visualization::DrawSmoke]);
 
-    GLUI_Listbox *scalar_field_mode = new GLUI_Listbox(glui, "Scalar Field", (int*) &scalar_draw_mode, ScalarDrawMode, buttonHandler);
-    scalar_field_mode->add_item(Visualization::Density, "Density rho");
-    scalar_field_mode->add_item(Visualization::VelocityMagnitude, "Velocity |v|");
-    scalar_field_mode->add_item(Visualization::ForceMagnitude, "Force |f|");
-
-    GLUI_Listbox *vector_field_mode = new GLUI_Listbox(glui, "Vector Field", (int*) &vector_draw_mode, VectorDrawMode, buttonHandler);
-    vector_field_mode->add_item(Visualization::Velocity, "Velocity v");
-    vector_field_mode->add_item(Visualization::Force, "Force f");
+//    GLUI_Listbox *scalar_field_mode = new GLUI_Listbox(glui, "Scalar Field", (int*) &scalar_draw_mode, ScalarDrawMode, buttonHandler);
+//    scalar_field_mode->add_item(Visualization::Density, "Density rho");
+//    scalar_field_mode->add_item(Visualization::VelocityMagnitude, "Velocity |v|");
+//    scalar_field_mode->add_item(Visualization::ForceMagnitude, "Force |f|");
+//
+//    GLUI_Listbox *vector_field_mode = new GLUI_Listbox(glui, "Vector Field", (int*) &vector_draw_mode, VectorDrawMode, buttonHandler);
+//    vector_field_mode->add_item(Visualization::Velocity, "Velocity v");
+//    vector_field_mode->add_item(Visualization::Force, "Force f");
 
     GLUI_Spinner *sample_x_spinner = new GLUI_Spinner(glui, "X Sample", &sample_x, XSample, buttonHandler);
     sample_x_spinner->set_int_val(20);

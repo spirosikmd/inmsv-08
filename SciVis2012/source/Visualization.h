@@ -37,12 +37,15 @@ public:
         OptionsCount // (automatically assigned)
     };
 
-    enum ScalarDrawMode {
-        Density, VelocityMagnitude, ForceMagnitude
+    enum ScalarDataset {
+        DENSITY,
+        VELOCITY_MAGN,
+        FORCE_MAGN
     };
 
-    enum VectorDrawMode {
-        Velocity, Force
+    enum VectorDataset {
+        VELOCITY,
+        FORCE
     };
 
     void visualize(Simulation const &simulation, int winWidth, int winHeight);
@@ -65,8 +68,8 @@ public:
     void setColor(float vy);
     void direction_to_color(float x, float y);
     void magnitude_to_color(float x, float y);
-    void set_scalar_draw_mode(ScalarDrawMode sdm);
-    void set_vector_draw_mode(VectorDrawMode vdm);
+    void set_scalar_draw_mode(ScalarDataset sdm);
+    void set_vector_draw_mode(VectorDataset vdm);
     void set_sample_x(int x);
     void set_sample_y(int y);
 
@@ -79,8 +82,8 @@ private:
     int options[OptionsCount]; // options boolean array
     Colormap* colormap;
     float hue, saturation;
-    ScalarDrawMode scalar_draw_mode;
-    VectorDrawMode vector_draw_mode;
+    ScalarDataset scalarDataset;
+    VectorDataset vectorDataset;
     int sample_x, sample_y;
 
     void draw_smoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);

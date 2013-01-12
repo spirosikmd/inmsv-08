@@ -15,7 +15,7 @@ Visualization::Visualization() {
     vec_scale = 1000;
     sample_x = 20;
     sample_y = 20;
-    scalar_draw_mode = Density;
+    scalarDataset = DENSITY;
     options[UseDirectionColoring] = false; // not used for now
     options[DrawSmoke] = false;
     options[DrawForces] = false;
@@ -90,12 +90,12 @@ void Visualization::set_saturation(const float s) {
     saturation = s;
 }
 
-void Visualization::set_scalar_draw_mode(ScalarDrawMode sdm) {
-    scalar_draw_mode = sdm;
+void Visualization::set_scalar_draw_mode(ScalarDataset sdm) {
+    scalarDataset = sdm;
 }
 
-void Visualization::set_vector_draw_mode(VectorDrawMode vdm) {
-    vector_draw_mode = vdm;
+void Visualization::set_vector_draw_mode(VectorDataset vdm) {
+    vectorDataset = vdm;
 }
 
 void Visualization::set_sample_x(int x) {
@@ -291,18 +291,18 @@ void Visualization::draw_smoke(Simulation const &simulation, const int DIM, cons
 float Visualization::pick_scalar_field_value(Simulation const &simulation, size_t idx) {
     float value = 0.0;
 
-    switch (scalar_draw_mode) {
-        case VelocityMagnitude:
+    switch (scalarDataset) {
+        case VELOCITY_MAGN:
         {
             value = magnitude(simulation.vx[idx], simulation.vy[idx]);
         }
             break;
-        case ForceMagnitude:
+        case FORCE_MAGN:
         {
             value = magnitude(simulation.fx[idx], simulation.fy[idx]);
         }
             break;
-        case Density:
+        case DENSITY:
         {
             value = simulation.rho[idx];
         }
@@ -461,14 +461,14 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
 }
 
 void Visualization::pick_vector_field_value(Simulation const &simulation, size_t idx, float values[]) {
-    switch (vector_draw_mode) {
-        case Force:
+    switch (vectorDataset) {
+        case FORCE:
         {
             values[0] = simulation.fx[idx];
             values[1] = simulation.fy[idx];
         }
             break;
-        case Velocity:
+        case VELOCITY:
         {
             values[0] = simulation.vx[idx];
             values[1] = simulation.vy[idx];
@@ -480,13 +480,13 @@ void Visualization::pick_vector_field_value(Simulation const &simulation, size_t
 float Visualization::pick_scaled_field(float v) {
     float value = 0.0;
 
-    switch (vector_draw_mode) {
-        case Force:
+    switch (vectorDataset) {
+        case FORCE:
         {
             value = scale(v, 0, 1, 0, vec_scale);
         }
             break;
-        case Velocity:
+        case VELOCITY:
         {
             value = scale(v, 0, 1, 0, vec_scale);
         }
