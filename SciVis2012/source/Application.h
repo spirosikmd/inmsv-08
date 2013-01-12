@@ -12,18 +12,18 @@ private:
 
     // GLUI control IDs
     enum UiControlID {
-        QuitButton,
-        SelectColormap,
-        SelectedNumOfColors,
-        HueSpinner,
-        SaturationSpinner,
-        ScalarMode,
-        ScalarDrawMode,
-        ScalarMax,
-        ScalarMin,
-        VectorDrawMode,
-        ScalarDataset,
-        VectorDataset,
+        QUIT_BUTTON,
+        COLORMAP_LIST,
+        NUMBER_OF_COLORS_LIST,
+        HUE_SPINNER,
+        SATURATION_SPINNER,
+        SCALAR_DATASET_LIST,
+        SCALAR_MODE_LIST,
+        SCALAR_MAX_SPINNER,
+        SCALAR_MIN_SPINNER,
+        
+        VECTOR_DATASET_LIST,
+        
         XSample,
         YSample
     };

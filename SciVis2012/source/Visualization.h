@@ -38,7 +38,6 @@ public:
         DrawVectorField, // draw the vector field or not (not used for now)
         UseDirectionColoring, // use direction color-coding or not (not used for now)
         DrawGlyphs, // draw the velocities or not 
-        DrawForces, // draw forces or nor
         OptionsCount // (automatically assigned)
     };
 
@@ -47,7 +46,8 @@ public:
         VELOCITY_MAGN,
         FORCE_MAGN,
         VELOCITY,
-        FORCE
+        FORCE,
+        NONE
     };
 
     struct Dataset {
@@ -91,7 +91,7 @@ public:
     void direction_to_color(float x, float y);
     void magnitude_to_color(float x, float y);
     void setScalarDataset(DatasetType sdm);
-    void set_vector_draw_mode(DatasetType vdm);
+    void setVectorDataset(DatasetType vdm);
     void set_sample_x(int x);
     void set_sample_y(int y);
 

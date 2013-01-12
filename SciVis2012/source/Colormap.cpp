@@ -87,10 +87,10 @@ void Colormap::render(float min, float max, int minorTicks) {
     glColor3f(1, 1, 1);
     glBegin(GL_LINES);
     glVertex2f(1, 1);
-    glVertex2f(1, 258 * step);
-    glVertex2f(1, 258 * step);
-    glVertex2f(width, 258 * step);
-    glVertex2f(width, 258 * step);
+    glVertex2f(1, 256 * step +2);
+    glVertex2f(1, 256 * step +2);
+    glVertex2f(width, 256 * step+2);
+    glVertex2f(width, 256 * step+2);
     glVertex2f(width, 1);
     glVertex2f(width, 1);
     glVertex2f(1, 1);
@@ -110,8 +110,8 @@ void Colormap::render(float min, float max, int minorTicks) {
  
     glColor3f(1, 1, 1);
     glBegin(GL_LINES);
-    glVertex2f(width, 1);
-    glVertex2f(width+5, 1);
+    glVertex2f(width, 2);
+    glVertex2f(width+5, 2);
     glEnd();
     printText(width+8,1-3.5, float2str(min));
     
@@ -127,8 +127,8 @@ void Colormap::render(float min, float max, int minorTicks) {
     }
 
     glBegin(GL_LINES);
-    glVertex2f(width, 256 * step);
-    glVertex2f(width+5, 256 * step);
+    glVertex2f(width, 256 * step+1);
+    glVertex2f(width+5, 256 * step+1);
     glEnd();
     printText(width+8,256 * step-3.5, float2str(max));
 }
