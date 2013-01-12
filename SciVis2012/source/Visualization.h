@@ -65,7 +65,7 @@ public:
     //    void grayscale(float value, float* R, float* G, float* B);
     //    void custom(float value, float* R, float* G, float* B);
     Colormap* getColormap();
-    void loadColormap(ColorMode);
+    Colormap* loadColormap(ColorMode);
     void setColor(float vy);
     void direction_to_color(float x, float y);
     void magnitude_to_color(float x, float y);

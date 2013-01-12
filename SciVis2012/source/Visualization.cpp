@@ -143,8 +143,9 @@ Colormap* Visualization::getColormap() {
     return colormap;
 }
 
-void Visualization::loadColormap(ColorMode cm) {
+Colormap* Visualization::loadColormap(ColorMode cm) {
     colormap = colormaps[cm];
+    return colormap;
 }
 
 //direction_to_color: Set the current color by mapping a direction vector (x,y), using

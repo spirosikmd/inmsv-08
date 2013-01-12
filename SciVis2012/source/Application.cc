@@ -61,12 +61,7 @@ void Application::initialize(int *argc, char** argv) {
     
     visualization.initializeColormaps();
 
-    visualization.loadColormap(Visualization::GRADIENT);
-    Colormap* colormap = visualization.getColormap();
-    
-    
-
-    
+    Colormap* colormap = visualization.loadColormap(Visualization::GRADIENT);
     
     hueValue = colormap->getHue();
     saturationValue = colormap->getSaturation();
@@ -255,8 +250,8 @@ void Application::buttonHandler(int id) {
         case SelectColormap:
         {
 
-            visualization.loadColormap(selectedColormap);
-            Colormap* colormap = visualization.getColormap();
+            
+            Colormap* colormap = visualization.loadColormap(selectedColormap);
             hueValue = colormap->getHue();
             saturationValue = colormap->getSaturation();
             selectedNumOfColors = colormap->getNumberOfColors();
