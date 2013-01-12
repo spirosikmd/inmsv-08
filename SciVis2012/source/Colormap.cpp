@@ -16,6 +16,7 @@ Colormap::Colormap() {
     map.resize(COL_256);
     map[0] = BLACK;
     map[255] = WHITE;
+    texture = 0;
     computeColors();
 }
 
@@ -141,10 +142,15 @@ void Colormap::computeColors() {
         roygbiv_image[i][2] = B;
     }
 
+    if (texture != 0) {
+        glDeleteTextures(1, &texture);
+    }
+    
     // allocate a texture name
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_1D, texture);
     glTexImage1D(GL_TEXTURE_1D, 0, 3, 256, 0, GL_RGB, GL_FLOAT, roygbiv_image); // array with color values
+    std::cout << texture << '\n';
 }
 
 void Colormap::loadColormapTexture() {
