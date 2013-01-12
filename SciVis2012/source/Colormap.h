@@ -33,11 +33,9 @@ public:
     }
 };
 
-
-
+static const struct HSV NULLHSV;
 static const struct HSV BLACK(0, 1, 0);
 static const struct HSV WHITE(0, 0.0, 1.0);
-static const struct HSV NULLHSV(-1, -1, -1);
 static const struct HSV MAGENTA((1.0 / 360.0) * 330.0, 1, 1);
 static const struct HSV PINK((1.0 / 360.0) * 300.0, 1, 1);
 static const struct HSV PURPLE((1.0 / 360.0) * 270.0, 1, 1);
@@ -69,7 +67,7 @@ public:
     virtual ~Colormap();
     void putColor(HSV color, unsigned int position);
     void printColors();
-    void render();
+    void render(float min, float max, int ticks);
     void setHue(float);
     float getHue();
     void setSaturation(float);
@@ -78,16 +76,18 @@ public:
     int getNumberOfColors();
     void loadColormapTexture();
     HSV getColorAt(int);
-    
+
 private:
-    void applyHueAndSaturation(HSV&);
+
     float hue;
     float saturation;
     int numberOfColors;
     HSV colors[256];
     std::vector<HSV> map;
     GLuint texture;
+
     HSV interpolate(float at, float left, float right);
+    void computeTexture();
     void computeColors();
 };
 

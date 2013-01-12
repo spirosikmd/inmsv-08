@@ -68,7 +68,7 @@ private:
     static float saturationValue;
     static int sample_x, sample_y;
 
-    static Visualization::ApplicationMode appMode;
+    static Visualization::Mode appMode;
     static Visualization::ScalarDrawMode scalar_draw_mode;
     static Visualization::VectorDrawMode vector_draw_mode;
 

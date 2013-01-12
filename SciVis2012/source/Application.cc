@@ -31,7 +31,7 @@ int Application::vectorDataset;
 int Application::sample_x;
 int Application::sample_y;
 
-Visualization::ApplicationMode Application::appMode;
+Visualization::Mode Application::appMode;
 Visualization::ScalarDrawMode Application::scalar_draw_mode;
 Visualization::VectorDrawMode Application::vector_draw_mode;
 
@@ -58,17 +58,17 @@ void Application::initialize(int *argc, char** argv) {
 
     simulation.init_simulation(Simulation::DIM); //initialize the simulation data structures
 
-    
+
     visualization.initializeColormaps();
 
     Colormap* colormap = visualization.loadColormap(Visualization::GRADIENT);
-    
+
     hueValue = colormap->getHue();
     saturationValue = colormap->getSaturation();
     selectedNumOfColors = colormap->getNumberOfColors();
-    
 
-            initUI();
+
+    initUI();
     glutMainLoop(); // enter main loop
 }
 // output usage instructions
@@ -99,9 +99,9 @@ void Application::display() {
     glEnable(GL_TEXTURE_1D);
     visualization.visualize(simulation, winWidth, winHeight);
     glDisable(GL_TEXTURE_1D);
-    glTranslatef(0, 0, 0);
-    Colormap* colormap = visualization.getColormap();
-    colormap->render();
+    
+    glTranslatef(10, 10, 0);
+    visualization.getColormap()->render(-1.1,3.34675475167,7);;
     glFlush();
     glutSwapBuffers();
 }
@@ -250,7 +250,7 @@ void Application::buttonHandler(int id) {
         case SelectColormap:
         {
 
-            
+
             Colormap* colormap = visualization.loadColormap(selectedColormap);
             hueValue = colormap->getHue();
             saturationValue = colormap->getSaturation();
@@ -343,26 +343,26 @@ void Application::initUI() {
     num_of_colors_list->do_selection(Colormap::COL_256);
 
     GLUI_Listbox *application_mode_list = new GLUI_Listbox(colormap_options, "Mode ", (int*) &appMode, ApplicationMode, buttonHandler);
-    application_mode_list->add_item(Visualization::Scale, "Scale");
-    application_mode_list->add_item(Visualization::Clamp, "Clamp");
+    application_mode_list->add_item(Visualization::SCALING, "Scale");
+    application_mode_list->add_item(Visualization::CLAMPING, "Clamp");
     application_mode_list->set_alignment(GLUI_ALIGN_RIGHT);
 
     // dataset
     GLUI_Panel *datasetOptions = new GLUI_Panel(glui, "Dataset");
     datasetOptions->set_alignment(GLUI_ALIGN_LEFT);
-
-    GLUI_Panel *scalarDatasets = new GLUI_Panel(datasetOptions, "Scalar");
-    GLUI_RadioGroup *scalarDatasetsGroup = new GLUI_RadioGroup(scalarDatasets, &scalarDataset, ScalarDataset, buttonHandler);
+    glui->add_statictext_to_panel(datasetOptions, "Scalar                           ");
+    //GLUI_Panel *scalarDatasets = new GLUI_Panel(datasetOptions, "Scalar");
+    GLUI_RadioGroup *scalarDatasetsGroup = new GLUI_RadioGroup(datasetOptions, &scalarDataset, ScalarDataset, buttonHandler);
     new GLUI_RadioButton(scalarDatasetsGroup, "Density rho");
     new GLUI_RadioButton(scalarDatasetsGroup, "Velocity |v|");
     new GLUI_RadioButton(scalarDatasetsGroup, "Force |f|");
-    scalarDatasets->set_alignment(GLUI_ALIGN_LEFT);
-
-    GLUI_Panel *vectorDatasets = new GLUI_Panel(datasetOptions, "Vector");
-    GLUI_RadioGroup *vectorDatasetsGroup = new GLUI_RadioGroup(vectorDatasets, &vectorDataset, VectorDataset, buttonHandler);
+    scalarDatasetsGroup->set_alignment(GLUI_ALIGN_LEFT);
+    glui->add_separator_to_panel(datasetOptions);
+    glui->add_statictext_to_panel(datasetOptions, "Vector  ");
+    GLUI_RadioGroup *vectorDatasetsGroup = new GLUI_RadioGroup(datasetOptions, &vectorDataset, VectorDataset, buttonHandler);
     new GLUI_RadioButton(vectorDatasetsGroup, "Velocity v");
     new GLUI_RadioButton(vectorDatasetsGroup, "Force f");
-    vectorDatasets->set_alignment(GLUI_ALIGN_LEFT);
+    vectorDatasetsGroup->set_alignment(GLUI_ALIGN_LEFT);
 
     // quit
     GLUI_Button *quit = new GLUI_Button(glui, "Quit", QuitButton, buttonHandler);

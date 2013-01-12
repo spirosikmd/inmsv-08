@@ -8,6 +8,7 @@
 #include "Colormap.h"
 #include <iostream>
 #include <cmath>
+#include <string>
 
 Colormap::Colormap() {
     hue = 0.0f;
@@ -58,6 +59,19 @@ void Colormap::putColor(HSV color, unsigned int position) {
     computeColors();
 }
 
+HSV Colormap::getColorAt(int index) {
+    return colors[index];
+}
+
+void Colormap::loadColormapTexture() {
+    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
+    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP);
+    glBindTexture(GL_TEXTURE_1D, texture);
+}
+
 void Colormap::printColors() {
     for (unsigned i = 0; i < 256; i++) {
         std::cout << "[" << i << "](" << colors[i].hue << "," << colors[i].saturation << "," << colors[i].value << "), ";
@@ -65,26 +79,60 @@ void Colormap::printColors() {
     std::cout << '\n';
 }
 
-HSV Colormap::getColorAt(int index) {
-    return colors[index];
-}
-
-void Colormap::render() {
+void Colormap::render(float min, float max, int minorTicks) {
     float R, G, B;
     int step = 1;
     int width = 50;
+
+
+    glColor3f(1, 1, 1);
+    glBegin(GL_LINES);
+    glVertex2f(1, 1);
+    glVertex2f(1, 258 * step);
+    glVertex2f(1, 258 * step);
+    glVertex2f(width, 258 * step);
+    glVertex2f(width, 258 * step);
+    glVertex2f(width, 1);
+    glVertex2f(width, 1);
+    glVertex2f(1, 1);
+    glEnd();
 
     glBegin(GL_QUADS);
     for (size_t i = 0; i < 256; i++) {
         hsv2rgb(colors[i].hue, colors[i].saturation, colors[i].value, R, G, B);
         glColor3f(R, G, B);
-        glVertex3i(0, (i * step) + step, 0); // Top Left
-        glVertex3i(width, (i * step) + step, 0); // Top Right
+        glVertex2f(1, 1+(i * step) + step); // Top Left
+        glVertex2f(width - 1, 1+(i * step) + step); // Top Right
         glColor3f(R, G, B);
-        glVertex3i(width, i* step, 0); // Bottom Right
-        glVertex3i(0, i * step, 0); // Bottom Left
+        glVertex2f(width - 1, 1+i * step); // Bottom Right
+        glVertex2f(1, 1+i * step); // Bottom Left
     }
     glEnd();
+
+ 
+    glColor3f(1, 1, 1);
+    glBegin(GL_LINES);
+    glVertex2f(width, 1);
+    glVertex2f(width+5, 1);
+    glEnd();
+    printText(width+8,1-3.5, float2str(min));
+    
+    minorTicks=minorTicks+1;
+    for (int tick = 1; tick < minorTicks; tick++) {
+        glBegin(GL_LINES);
+        glVertex2f(width, tick * ((256 * step) / minorTicks));
+        glVertex2f(width+2, tick * ((256 * step) / minorTicks));
+        glEnd();
+        
+        float val = min + tick *(fabs(min-max)/minorTicks);
+        printText(width+5,tick * ((256 * step) / minorTicks)-3.5, float2str(val));
+    }
+
+    glBegin(GL_LINES);
+    glVertex2f(width, 256 * step);
+    glVertex2f(width+5, 256 * step);
+    glEnd();
+    printText(width+8,256 * step-3.5, float2str(max));
 }
 
 HSV Colormap::interpolate(float x, float x0, float x1) {
@@ -133,32 +181,26 @@ void Colormap::computeColors() {
         colors[i] = colors[c];
     }
 
-    GLfloat roygbiv_image[256][3];
+    computeTexture();
+}
+
+void Colormap::computeTexture() {
+    GLfloat rgbTexture[256][3];
     GLfloat R, G, B;
     for (int i = 0; i < 256; i++) {
         hsv2rgb(colors[i].hue, colors[i].saturation, colors[i].value, R, G, B);
-        roygbiv_image[i][0] = R;
-        roygbiv_image[i][1] = G;
-        roygbiv_image[i][2] = B;
+        rgbTexture[i][0] = R;
+        rgbTexture[i][1] = G;
+        rgbTexture[i][2] = B;
     }
 
+    //delete old texture
     if (texture != 0) {
         glDeleteTextures(1, &texture);
     }
-    
+
     // allocate a texture name
     glGenTextures(1, &texture);
     glBindTexture(GL_TEXTURE_1D, texture);
-    glTexImage1D(GL_TEXTURE_1D, 0, 3, 256, 0, GL_RGB, GL_FLOAT, roygbiv_image); // array with color values
-    std::cout << texture << '\n';
-}
-
-void Colormap::loadColormapTexture() {
-
-    glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_S, GL_CLAMP);
-    glTexParameteri(GL_TEXTURE_1D, GL_TEXTURE_WRAP_T, GL_CLAMP);
-    glBindTexture(GL_TEXTURE_1D, texture);
+    glTexImage1D(GL_TEXTURE_1D, 0, 3, 256, 0, GL_RGB, GL_FLOAT, rgbTexture); // array with color values    
 }

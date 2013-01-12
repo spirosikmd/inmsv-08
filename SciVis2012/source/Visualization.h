@@ -37,10 +37,6 @@ public:
         OptionsCount // (automatically assigned)
     };
 
-    enum ApplicationMode {
-        Scale, Clamp
-    };
-
     enum ScalarDrawMode {
         Density, VelocityMagnitude, ForceMagnitude
     };
