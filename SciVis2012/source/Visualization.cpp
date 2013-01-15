@@ -164,25 +164,45 @@ void Visualization::set_sample_y(int y) {
 
 //set_colormap: Sets three different types of colormaps
 
-void Visualization::setColor(float vy) {
+void Visualization::setColor(float vy, ColorType t) {
     Dataset dataset = datasets[scalarDataset];
     float colorIndex = 0;
     switch (dataset.mode) {
         case CLAMPING:
             if (vy > dataset.max) vy = dataset.max;
             if (vy < dataset.min) vy = dataset.min;
-            colorIndex = scale(vy, dataset.min, dataset.max, 0, 255);
+            switch (t) {
+                case TEXTURE:
+                    colorIndex = scale(vy, dataset.min, dataset.max, 0, 1);
+                    break;
+                case SIMPLE:
+                    colorIndex = scale(vy, dataset.min, dataset.max, 0, 255);
+                    break;
+            }
             break;
 
         case SCALING:
             if (vy > dataset.scaleMax) datasets[scalarDataset].scaleMax = vy;
             if (vy < dataset.scaleMin) datasets[scalarDataset].scaleMin = vy;
-            colorIndex = scale(vy, dataset.scaleMin, dataset.scaleMax, 0, 255);
+            switch (t) {
+                case TEXTURE:
+                    colorIndex = scale(vy, dataset.scaleMin, dataset.scaleMax, 0, 1);
+                    break;
+                case SIMPLE:
+                    colorIndex = scale(vy, dataset.scaleMin, dataset.scaleMax, 0, 255);
+                    break;
+            }
             break;
     }
-//    glTexCoord1f(colorIndex);
-    RGB color = colormap->getColorAt(colorIndex);
-    glColor3f(color.red, color.green, color.blue);
+    switch (t) {
+        case TEXTURE:
+            glTexCoord1f(colorIndex);
+            break;
+        case SIMPLE:
+            RGB color = colormap->getColorAt(colorIndex);
+            glColor3f(color.red, color.green, color.blue);
+            break;
+    }
 }
 
 Colormap* Visualization::getColormap() {
@@ -206,10 +226,11 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     fftw_real hn_sample = (fftw_real) winHeight / (fftw_real) (sample_y + 1); // Sample Grid cell heigh
 
     if (options[DrawSmoke]) {
+        glEnable(GL_TEXTURE_1D);
         draw_smoke(simulation, DIM, wn, hn);
+        glDisable(GL_TEXTURE_1D);
     }
     if (options[DrawGlyphs]) {
-        //        draw_velocities(simulation, DIM, wn, hn);
         draw_glyphs(simulation, DIM, wn, hn, wn_sample, hn_sample);
     }
 }
@@ -217,7 +238,6 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
 void Visualization::draw_smoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
     int i, j, idx;
     double px, py;
-
 
     GLenum error = glGetError();
     if (error != 0) {
@@ -234,83 +254,43 @@ void Visualization::draw_smoke(Simulation const &simulation, const int DIM, cons
         px = wn + (fftw_real) i * wn;
         py = hn + (fftw_real) j * hn;
         idx = (j * DIM) + i;
-        setColor(pick_scalar_field_value(simulation, idx));
+        setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
         glVertex2f(px, py);
 
         for (i = 0; i < DIM - 1; i++) {
             px = wn + (fftw_real) i * wn;
             py = hn + (fftw_real) (j + 1) * hn;
             idx = ((j + 1) * DIM) + i;
-            setColor(pick_scalar_field_value(simulation, idx));
+            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
             glVertex2f(px, py);
             px = wn + (fftw_real) (i + 1) * wn;
             py = hn + (fftw_real) j * hn;
             idx = (j * DIM) + (i + 1);
-            setColor(pick_scalar_field_value(simulation, idx));
+            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
             glVertex2f(px, py);
         }
 
         px = wn + (fftw_real) (DIM - 1) * wn;
         py = hn + (fftw_real) (j + 1) * hn;
         idx = ((j + 1) * DIM) + (DIM - 1);
-        setColor(pick_scalar_field_value(simulation, idx));
+        setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
         glVertex2f(px, py);
         glEnd();
     }
 }
 
-float Visualization::pick_scalar_field_value(Simulation const &simulation, size_t idx) {
-    float value = 0.0;
-
-    switch (scalarDataset) {
-        case VELOCITY_MAGN:
-        {
-            value = magnitude(simulation.vx[idx], simulation.vy[idx]);
-        }
+void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample) {
+    switch (glyphType) {
+        case SIMPLE_ARROWS:
+            draw_simple_arrows(simulation, DIM, wn, hn);
             break;
-        case FORCE_MAGN:
-        {
-            value = magnitude(simulation.fx[idx], simulation.fy[idx]);
-        }
+        case CONES:
+            draw_3dcones(simulation, DIM, wn, hn);
             break;
-        case DENSITY:
-        {
-            value = simulation.rho[idx];
-        }
-        default: break;
     }
-    return value;
 }
 
-//void Visualization::draw_velocities(Simulation const &simulation, const int DIM, fftw_real wn, fftw_real hn) {
-//    int i, j, idx;
-//
-//    glBegin(GL_LINES); //draw velocities
-//    for (i = 0; i < DIM; i++)
-//        for (j = 0; j < DIM; j++) {
-//            idx = (j * DIM) + i;
-//            magnitude_to_color(simulation.vx[idx], simulation.vy[idx]);
-//            glVertex2f(wn + (fftw_real) i * wn, hn + (fftw_real) j * hn);
-//            glVertex2f((wn + (fftw_real) i * wn) + vec_scale * simulation.vx[idx], (hn + (fftw_real) j * hn) + vec_scale * simulation.vy[idx]);
-//        }
-//    glEnd();
-//}
-//
-//void Visualization::draw_forces(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
-//    int i, j, idx;
-//
-//    glBegin(GL_LINES); //draw forces
-//    for (i = 0; i < DIM; i++)
-//        for (j = 0; j < DIM; j++) {
-//            idx = (j * DIM) + i;
-//            magnitude_to_color(simulation.fx[idx], simulation.fy[idx]);
-//            glVertex2f(wn + (fftw_real) i * wn, hn + (fftw_real) j * hn);
-//            glVertex2f((wn + (fftw_real) i * wn) + vec_scale * simulation.fx[idx], (hn + (fftw_real) j * hn) + vec_scale * simulation.fy[idx]);
-//        }
-//    glEnd();
-//}
-
-void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample) {
+void Visualization::draw_3dcones(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
 
     //    float *sample_values = new float[2];
     //    float *sample_values_x1_y1 = new float[2];
@@ -419,47 +399,41 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
     //    glEnd();
     //
     //    glPopMatrix();
-    // glEnable(GL_TEXTURE);
 
-    //    
-    //    for (i = 0; i < DIM; i++)
-    //        for (j = 0; j < DIM; j++) {
-    //            idx = (j * DIM) + i;
-    //            pick_vector_field_value(simulation, idx, values);
-    //            
-    //            magn = magnitude(values);
-    //            magn = pick_scaled_field(magn);
-    //            
-    //            GLfloat x_start = wn + (fftw_real) i * wn;
-    //            GLfloat y_start = hn + (fftw_real) j * hn;
-    //            GLfloat x = values[0];
-    //            GLfloat y = values[1];
-    //            GLfloat angle = 0.0;
-    //            
-    //            angle = atan2(y, x) * 180 / M_PI;
-    //            glPushMatrix();
-    //            glTranslatef(x_start, y_start, 0.0);
-    //            glRotatef(90, 1.0, 0.0, 0.0f);
-    //            glTranslatef(-x_start, -y_start, 0.0);
-    //            
-    ////            
-    ////            glBegin(GL_POLYGON);
-    ////            setColor(pick_scalar_field_value(simulation, idx));
-    ////            
-    ////            glVertex2f(x_start, y_start + 1);
-    ////            glVertex2f(x_start + magn, y_start + 1);
-    ////            glVertex2f(x_start + magn, y_start + 2);
-    ////            glVertex2f(x_start + magn + 3, y_start);
-    ////            glVertex2f(x_start + magn, y_start - 2);
-    ////            glVertex2f(x_start + magn, y_start - 1);
-    ////            glVertex2f(x_start, y_start - 1);
-    ////            glEnd();
-    ////            
-    //            glPopMatrix();
-    //        }
+    size_t idx;
+    GLfloat magn;
+    float *values = new float[2];
 
-    //    glPushMatrix();
-    
+    for (int i = 0; i < DIM; i++)
+        for (int j = 0; j < DIM; j++) {
+            idx = (j * DIM) + i;
+            pick_vector_field_value(simulation, idx, values);
+
+            magn = magnitude(values);
+            magn = pick_scaled_field(magn);
+
+            GLfloat x = values[0];
+            GLfloat y = values[1];
+            GLfloat angle = 0.0;
+
+            angle = atan2(y, x) * 180 / M_PI;
+
+            GLfloat x_start = wn + (fftw_real) i * wn;
+            GLfloat y_start = hn + (fftw_real) j * hn;
+
+            glPushMatrix();
+            setColor(pick_scalar_field_value(simulation, idx), SIMPLE);
+            glTranslatef(x_start, y_start, 0.0);
+            glRotatef(angle, 0.0, 0.0, 1.0);
+            glRotatef(90, 0.0, 1.0, 0.0);
+            glutSolidCone(0.5 + (1.5 * magn), 5 + (3 * magn), 70, 12);
+            glPopMatrix();
+        }
+}
+
+void Visualization::draw_simple_arrows(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
+    glEnable(GL_TEXTURE_1D);
+
     colormap->loadColormapTexture();
 
     size_t idx;
@@ -482,52 +456,71 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
 
             GLfloat x_start = wn + (fftw_real) i * wn;
             GLfloat y_start = hn + (fftw_real) j * hn;
-            
+
             glPushMatrix();
-            setColor(pick_scalar_field_value(simulation, idx));
             glTranslatef(x_start, y_start, 0.0);
-            glRotatef(angle, 0.0, 0.0, 1.0);
-            glRotatef(90, 0.0, 1.0, 0.0);
-            
-            glutSolidCone(1+(3*magn), 3+(3*magn), 70, 12);
+            glRotatef(angle, 0.0, 0.0, 1.0f);
+            glTranslatef(-x_start, -y_start, 0.0);
+            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+            glTranslatef(x_start, y_start, 0);
+            glBegin(GL_QUADS);
+            glVertex2f(10, 2.5);
+            glVertex2f(0, 2.5);
+            glVertex2f(0, -2.5);
+            glVertex2f(10, -2.5);
+            glEnd();
+            glTranslatef(10, 0, 0);
+            glBegin(GL_TRIANGLES);
+            glVertex2f(10, 0);
+            glVertex2f(0, 5);
+            glVertex2f(0, -5);
+            glEnd();
             glPopMatrix();
         }
+    glDisable(GL_TEXTURE_1D);
+}
+
+float Visualization::pick_scalar_field_value(Simulation const &simulation, size_t idx) {
+    float value = 0.0;
+
+    switch (scalarDataset) {
+        case VELOCITY_MAGN:
+            value = magnitude(simulation.vx[idx], simulation.vy[idx]);
+            break;
+        case FORCE_MAGN:
+            value = magnitude(simulation.fx[idx], simulation.fy[idx]);
+            break;
+        case DENSITY:
+            value = simulation.rho[idx];
+        default:
+            break;
+    }
+    return value;
 }
 
 void Visualization::pick_vector_field_value(Simulation const &simulation, size_t idx, float values[]) {
     switch (vectorDataset) {
         case FORCE:
-        {
             values[0] = simulation.fx[idx];
             values[1] = simulation.fy[idx];
-        }
             break;
         case VELOCITY:
-        {
             values[0] = simulation.vx[idx];
             values[1] = simulation.vy[idx];
-        }
-        default: break;
+        default:
+            break;
     }
 }
 
 GLfloat Visualization::pick_scaled_field(float v) {
-
-
     float value = 0.0;
     switch (vectorDataset) {
         case FORCE:
-        {
             value = scale(v, 0, 1, 0, vec_scale);
-        }
             break;
         case VELOCITY:
-        {
-            value = scale(v, 0.00001, 0.08, 0, 5);
-        }
+            value = scale(v, 0.00001, 0.08, 0, 10);
         default:
-        {
-        }
             break;
     }
     return value;
@@ -564,3 +557,35 @@ float Visualization::getScalarMax() {
 Visualization::Mode Visualization::getScalarMode() {
     return datasets[scalarDataset].mode;
 }
+
+void Visualization::setGlyphType(GlyphType gt) {
+    glyphType = gt;
+}
+
+//void Visualization::draw_velocities(Simulation const &simulation, const int DIM, fftw_real wn, fftw_real hn) {
+//    int i, j, idx;
+//
+//    glBegin(GL_LINES); //draw velocities
+//    for (i = 0; i < DIM; i++)
+//        for (j = 0; j < DIM; j++) {
+//            idx = (j * DIM) + i;
+//            magnitude_to_color(simulation.vx[idx], simulation.vy[idx]);
+//            glVertex2f(wn + (fftw_real) i * wn, hn + (fftw_real) j * hn);
+//            glVertex2f((wn + (fftw_real) i * wn) + vec_scale * simulation.vx[idx], (hn + (fftw_real) j * hn) + vec_scale * simulation.vy[idx]);
+//        }
+//    glEnd();
+//}
+//
+//void Visualization::draw_forces(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
+//    int i, j, idx;
+//
+//    glBegin(GL_LINES); //draw forces
+//    for (i = 0; i < DIM; i++)
+//        for (j = 0; j < DIM; j++) {
+//            idx = (j * DIM) + i;
+//            magnitude_to_color(simulation.fx[idx], simulation.fy[idx]);
+//            glVertex2f(wn + (fftw_real) i * wn, hn + (fftw_real) j * hn);
+//            glVertex2f((wn + (fftw_real) i * wn) + vec_scale * simulation.fx[idx], (hn + (fftw_real) j * hn) + vec_scale * simulation.fy[idx]);
+//        }
+//    glEnd();
+//}

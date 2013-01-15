@@ -31,6 +31,7 @@ float Application::scalarMax;
 float Application::scalarMin;
 
 Visualization::DatasetType Application::vectorDataset;
+Visualization::GlyphType Application::glyphType;
 int Application::sample_x;
 int Application::sample_y;
 
@@ -340,11 +341,10 @@ void Application::buttonHandler(int id) {
             break;
 
         case HUE_SPINNER:
-
             visualization.set_hue(hueValue);
             colormap->setHue(hueValue);
-
             break;
+            
         case SATURATION_SPINNER:
             visualization.set_saturation(saturationValue);
             colormap->setSaturation(saturationValue);
@@ -362,22 +362,27 @@ void Application::buttonHandler(int id) {
                 scalarMax = scalarMin;
             }
             visualization.setScalarMax(scalarMax);
-
             break;
+            
         case SCALAR_MIN_SPINNER:
             if (scalarMin >= scalarMax) {
                 scalarMin = scalarMax;
             }
             visualization.setScalarMin(scalarMin);
             break;
+            
         case SCALAR_MODE_LIST:
             visualization.setScalarMode(scalarMode);
             break;
 
-
         case VECTOR_DATASET_LIST:
             visualization.setVectorDataset(vectorDataset);
             break;
+            
+        case GLYPH_TYPE_LIST:
+            visualization.setGlyphType(glyphType);
+            break;
+            
         case XSample:
 
             visualization.set_sample_x(sample_x);
@@ -470,6 +475,9 @@ void Application::initUI() {
     glyphs_box->set_alignment(GLUI_ALIGN_RIGHT);
     GLUI_Checkbox * smoke_box = new GLUI_Checkbox(visualization_options, "Smoke", &visualization.options[Visualization::DrawSmoke]);
     smoke_box->set_alignment(GLUI_ALIGN_RIGHT);
+    GLUI_Listbox *glyphTypeList = new GLUI_Listbox(visualization_options, "Glyph ", (int*) &glyphType, GLYPH_TYPE_LIST, buttonHandler);
+    glyphTypeList->add_item(Visualization::SIMPLE_ARROWS, "Simple Arrows");
+    glyphTypeList->add_item(Visualization::CONES, "3D Cones");
     glui->add_statictext_to_panel(visualization_options, "                                              ");
 
 

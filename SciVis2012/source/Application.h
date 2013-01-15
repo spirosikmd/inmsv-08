@@ -21,8 +21,8 @@ private:
         SCALAR_MODE_LIST,
         SCALAR_MAX_SPINNER,
         SCALAR_MIN_SPINNER,
-        
         VECTOR_DATASET_LIST,
+        GLYPH_TYPE_LIST,
         
         XSample,
         YSample
@@ -68,6 +68,8 @@ private:
     static float scalarMax, scalarMin;
     
     static Visualization::DatasetType vectorDataset;
+    
+    static Visualization::GlyphType glyphType;
 
     static float hueValue;
     static float saturationValue;
