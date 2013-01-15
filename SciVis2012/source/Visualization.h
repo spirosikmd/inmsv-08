@@ -122,7 +122,7 @@ private:
     float pick_scalar_field_value(Simulation const &simulation, size_t idx);
     void pick_vector_field_value(Simulation const &simulation, size_t idx, float values[]);
     void draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
-    float pick_scaled_field(float v);
+    GLfloat pick_scaled_field(float v);
 };
 
 #endif

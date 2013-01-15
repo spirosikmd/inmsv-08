@@ -5,7 +5,6 @@
 #include <iostream>
 #include <GLUT/glut.h>
 #include <GLUI/glui.h>
-#include <OpenGL/gl.h>
 #include <map>
 
 using namespace std;
@@ -62,7 +61,6 @@ void Application::initialize(int *argc, char** argv) {
 
     simulation.init_simulation(Simulation::DIM); //initialize the simulation data structures
 
-
     visualization.initializeColormaps();
     Colormap* colormap = visualization.loadColormap(Visualization::GRAYSCALE);
     hueValue = colormap->getHue();
@@ -74,41 +72,60 @@ void Application::initialize(int *argc, char** argv) {
     scalarMin = visualization.getScalarMin();
     scalarMode = visualization.getScalarMode();
 
-
     initUI();
     glui->sync_live();
 
 
 
-    const GLfloat light_ambient[] = {0.0f, 0.0f, 0.0f, 1.0f};
-    const GLfloat light_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    const GLfloat light_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    const GLfloat light_position[] = {2.0f, 5.0f, 5.0f, 0.0f};
+    //    const GLfloat light_ambient[] = {0.0f, 0.0f, 0.0f, 1.0f};
+    //    const GLfloat light_diffuse[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    //    const GLfloat light_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    //    const GLfloat light_position[] = {2.0f, 5.0f, 5.0f, 0.0f};
+    //
+    //    const GLfloat mat_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
+    //    const GLfloat mat_diffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
+    //    const GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
+    //    const GLfloat high_shininess[] = {100.0f};
+    //
+    //    //glEnable(GL_CULL_FACE);
+    //    //glCullFace(GL_BACK);
+    //    glEnable(GL_DEPTH_TEST);
+    //    glDepthFunc(GL_LESS);
+    //
+    //    glEnable(GL_LIGHT0);
+    //    glEnable(GL_NORMALIZE);
+    //    glEnable(GL_COLOR_MATERIAL);
+    //    //glEnable(GL_LIGHTING);
+    //
+    //    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
+    //    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
+    //    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
+    //    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
+    //
+    //    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
+    //    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
+    //    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
+    //    glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
 
-    const GLfloat mat_ambient[] = {0.7f, 0.7f, 0.7f, 1.0f};
-    const GLfloat mat_diffuse[] = {0.8f, 0.8f, 0.8f, 1.0f};
-    const GLfloat mat_specular[] = {1.0f, 1.0f, 1.0f, 1.0f};
-    const GLfloat high_shininess[] = {100.0f};
+    GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
+    GLfloat yellow[] = {1.0, 1.0, 0.0, 1.0};
+    GLfloat cyan[] = {0.0, 1.0, 1.0, 1.0};
+    GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
+    GLfloat direction[] = {1.0, 1.0, 5.0, 0.0};
 
-    //glEnable(GL_CULL_FACE);
-    //glCullFace(GL_BACK);
-    glEnable(GL_DEPTH_TEST);
-    glDepthFunc(GL_LESS);
-    
-    glEnable(GL_LIGHT0);
-    glEnable(GL_NORMALIZE);
-    glEnable(GL_COLOR_MATERIAL);
-    //glEnable(GL_LIGHTING);
-    
-    glLightfv(GL_LIGHT0, GL_AMBIENT, light_ambient);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, light_diffuse);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, light_specular);
-    glLightfv(GL_LIGHT0, GL_POSITION, light_position);
-    
-    glMaterialfv(GL_FRONT, GL_AMBIENT, mat_ambient);
-    glMaterialfv(GL_FRONT, GL_DIFFUSE, mat_diffuse);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, mat_specular);
-    glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, cyan);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, white);
+    glMaterialf(GL_FRONT, GL_SHININESS, 30);
+
+    glLightfv(GL_LIGHT0, GL_AMBIENT, black);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, white);
+    glLightfv(GL_LIGHT0, GL_POSITION, direction);
+
+    glEnable(GL_LIGHTING); // so the renderer considers light
+    glEnable(GL_LIGHT0); // turn LIGHT0 on
+    glEnable(GL_DEPTH_TEST); // so the renderer considers depth
+    glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
 
     glutMainLoop(); // enter main loop
 }
@@ -135,14 +152,20 @@ void Application::outputUsage() {
 
 void Application::display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+    glViewport(0.0f, 0.0f, (GLfloat) winWidth, (GLfloat) winHeight);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0.0, (GLdouble) winWidth, 0.0, (GLdouble) winHeight, -10, 10);
+
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
-    glEnable(GL_TEXTURE_1D);
-    visualization.visualize(simulation, winWidth, winHeight);
-    glDisable(GL_TEXTURE_1D);
 
-    glTranslatef(10, 10, 0);
+    visualization.visualize(simulation, winWidth, winHeight);
+    
+    glDisable(GL_LIGHTING);
     visualization.getColormap()->render(visualization.getScalarMin(), visualization.getScalarMax(), 5);
+    glEnable(GL_LIGHTING);
 
     glFlush();
     glutSwapBuffers();
@@ -151,10 +174,25 @@ void Application::display() {
 //reshape: Handle window resizing (reshaping) events
 
 void Application::reshape(int w, int h) {
-    glViewport(0.0f, 0.0f, (GLfloat) w, (GLfloat) h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0.0, (GLdouble) w, 0.0, (GLdouble) h, -100, 10);
+    //
+//    glViewport(0.0f, 0.0f, (GLfloat) w * (1.0 / 4.0), (GLfloat) h);
+//    glMatrixMode(GL_PROJECTION);
+//    glLoadIdentity();
+//    glOrtho(0.0, (GLdouble) w, 0.0, (GLdouble) h, -10, 10);
+//
+//    //
+//    glViewport((GLfloat) w * (1.0 / 4.0), 0.0f, (GLfloat) w, (GLfloat) h);
+//    glMatrixMode(GL_PROJECTION);
+//    glLoadIdentity();
+//    glOrtho(0.0, (GLdouble) w, 0.0, (GLdouble) h, -10, 10);
+
+    //    if (w <= h) {
+    //        // width is smaller, so stretch out the height
+    //        glOrtho(-2.5, 2.5, -2.5 / aspect, 2.5 / aspect, -10.0, 10.0);
+    //    } else {
+    //        // height is smaller, so stretch out the width
+    //        glOrtho(-2.5 * aspect, 2.5 * aspect, -2.5, 2.5, -10.0, 10.0);
+    //    }
 
     winWidth = w;
     winHeight = h;

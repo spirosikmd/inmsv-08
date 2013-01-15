@@ -2,7 +2,6 @@
 #include <cmath>
 #include <GLUT/glut.h>
 #include <iostream>
-#include <OpenGL.framework/headers/gl.h>
 #include "Visualization.h"
 #include "Simulation.h"
 #include "Utilities.h"
@@ -39,8 +38,8 @@ void Visualization::initializeColormaps() {
     rainbow->putColor(GREEN, 127);
     rainbow->putColor(AQUA, 63);
     rainbow->putColor(BLUE, 0);
-    
-       Colormap* heatmap = new Colormap();
+
+    Colormap* heatmap = new Colormap();
     heatmap->putColor(RED, 63);
     heatmap->putColor(YELLOW, 191);
     heatmap->putColor(WHITE, 255);
@@ -50,15 +49,15 @@ void Visualization::initializeColormaps() {
     bwgradient->putColor(WHITE, 255);
     bwgradient->putColor(BLACK, 0);
     bwgradient->setSaturation(0);
-    
+
     Colormap* bgradient = new Colormap();
     bgradient->putColor(MAGENTA, 255);
     bgradient->putColor(BLACK, 0);
-    
+
     Colormap* wgradient = new Colormap();
     wgradient->putColor(MAGENTA, 255);
     wgradient->putColor(WHITE, 0);
-   
+
     Colormap* byg = new Colormap();
     byg->putColor(GREEN, 255);
     byg->putColor(YELLOW, 127);
@@ -172,17 +171,18 @@ void Visualization::setColor(float vy) {
         case CLAMPING:
             if (vy > dataset.max) vy = dataset.max;
             if (vy < dataset.min) vy = dataset.min;
-            colorIndex = scale(vy, dataset.min, dataset.max, 0, 1);
+            colorIndex = scale(vy, dataset.min, dataset.max, 0, 255);
             break;
 
         case SCALING:
             if (vy > dataset.scaleMax) datasets[scalarDataset].scaleMax = vy;
             if (vy < dataset.scaleMin) datasets[scalarDataset].scaleMin = vy;
-            colorIndex = scale(vy, dataset.scaleMin, dataset.scaleMax, 0, 1);
+            colorIndex = scale(vy, dataset.scaleMin, dataset.scaleMax, 0, 255);
             break;
     }
-
-    glTexCoord1f(colorIndex);
+//    glTexCoord1f(colorIndex);
+    RGB color = colormap->getColorAt(colorIndex);
+    glColor3f(color.red, color.green, color.blue);
 }
 
 Colormap* Visualization::getColormap() {
@@ -311,27 +311,25 @@ float Visualization::pick_scalar_field_value(Simulation const &simulation, size_
 //}
 
 void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample) {
-  
-//    float *sample_values = new float[2];
-//    float *sample_values_x1_y1 = new float[2];
-//    float *sample_values_x2_y2 = new float[2];
-//    float *sample_values_x3_y3 = new float[2];
-////    float *sample_values_x4_y4 = new float[2];
-//    int idx_x1_y1, idx_x2_y2, idx_x3_y3, idx_x4_y4;
+
+    //    float *sample_values = new float[2];
+    //    float *sample_values_x1_y1 = new float[2];
+    //    float *sample_values_x2_y2 = new float[2];
+    //    float *sample_values_x3_y3 = new float[2];
+    ////    float *sample_values_x4_y4 = new float[2];
+    //    int idx_x1_y1, idx_x2_y2, idx_x3_y3, idx_x4_y4;
 
     // construct a grid with computational points
-//    for (i = 0; i < DIM; i++)
-//        for (j = 0; j < DIM; j++) {
-//            idx = (j * DIM) + i;
-//            GLfloat x_start = wn + (fftw_real) i * wn;
-//            GLfloat y_start = hn + (fftw_real) j * hn;
-//            glBegin(GL_POINTS);
-//            // glColor3f(255, 255, 255);
-//            glVertex2f(x_start, y_start);
-//            glEnd();
-//        }
-
-   colormap->loadColormapTexture();
+    //    for (i = 0; i < DIM; i++)
+    //        for (j = 0; j < DIM; j++) {
+    //            idx = (j * DIM) + i;
+    //            GLfloat x_start = wn + (fftw_real) i * wn;
+    //            GLfloat y_start = hn + (fftw_real) j * hn;
+    //            glBegin(GL_POINTS);
+    //            // glColor3f(255, 255, 255);
+    //            glVertex2f(x_start, y_start);
+    //            glEnd();
+    //        }
 
     // draw the glyphs on the sample points. if the sample points do not coincide 
     // with the grid points then use interpolation
@@ -398,67 +396,101 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
     //            glVertex2f(x_start, y_start);
     //            glEnd();
     //        }
-       int i, j, idx;
-    float magn;
-    float *values = new float[2];
-    
-    //glDisable(GL_TEXTURE);
-    glPushMatrix();
-    glTranslatef(300,300,0);
-    glColor3f(1,1,0);
-    glRotatef(-90, 1.0, 0.0,0.0f);
-    glutSolidCone(100, 100, 10,10);
-    
-    glBegin(GL_QUADS);
-    glVertex3f(100,100, 0);
-    glVertex3f(100,200,0);
-    glVertex3f(200,200,0);
-    glVertex3f(200,100,0);
-    glVertex3f(100,200,0);
-    glVertex3f(100,200,200);
-    glVertex3f(200,200,200);
-    glVertex3f(200,200,0);
-    glEnd();
+    //       int i, j, idx;
+    //    float magn;
+    //    float *values = new float[2];
+    //    
+    //    //glDisable(GL_TEXTURE);
+    //    glPushMatrix();
+    //    glTranslatef(300,300,0);
+    //    glColor3f(1,1,0);
+    //    glRotatef(-90, 1.0, 0.0,0.0f);
+    //    glutSolidCone(100, 100, 10,10);
+    //    
+    //    glBegin(GL_QUADS);
+    //    glVertex3f(100,100, 0);
+    //    glVertex3f(100,200,0);
+    //    glVertex3f(200,200,0);
+    //    glVertex3f(200,100,0);
+    //    glVertex3f(100,200,0);
+    //    glVertex3f(100,200,200);
+    //    glVertex3f(200,200,200);
+    //    glVertex3f(200,200,0);
+    //    glEnd();
+    //
+    //    glPopMatrix();
+    // glEnable(GL_TEXTURE);
 
-    glPopMatrix();
-   // glEnable(GL_TEXTURE);
+    //    
+    //    for (i = 0; i < DIM; i++)
+    //        for (j = 0; j < DIM; j++) {
+    //            idx = (j * DIM) + i;
+    //            pick_vector_field_value(simulation, idx, values);
+    //            
+    //            magn = magnitude(values);
+    //            magn = pick_scaled_field(magn);
+    //            
+    //            GLfloat x_start = wn + (fftw_real) i * wn;
+    //            GLfloat y_start = hn + (fftw_real) j * hn;
+    //            GLfloat x = values[0];
+    //            GLfloat y = values[1];
+    //            GLfloat angle = 0.0;
+    //            
+    //            angle = atan2(y, x) * 180 / M_PI;
+    //            glPushMatrix();
+    //            glTranslatef(x_start, y_start, 0.0);
+    //            glRotatef(90, 1.0, 0.0, 0.0f);
+    //            glTranslatef(-x_start, -y_start, 0.0);
+    //            
+    ////            
+    ////            glBegin(GL_POLYGON);
+    ////            setColor(pick_scalar_field_value(simulation, idx));
+    ////            
+    ////            glVertex2f(x_start, y_start + 1);
+    ////            glVertex2f(x_start + magn, y_start + 1);
+    ////            glVertex2f(x_start + magn, y_start + 2);
+    ////            glVertex2f(x_start + magn + 3, y_start);
+    ////            glVertex2f(x_start + magn, y_start - 2);
+    ////            glVertex2f(x_start + magn, y_start - 1);
+    ////            glVertex2f(x_start, y_start - 1);
+    ////            glEnd();
+    ////            
+    //            glPopMatrix();
+    //        }
+
+    //    glPushMatrix();
     
-//    
-//    for (i = 0; i < DIM; i++)
-//        for (j = 0; j < DIM; j++) {
-//            idx = (j * DIM) + i;
-//            pick_vector_field_value(simulation, idx, values);
-//            
-//            magn = magnitude(values);
-//            magn = pick_scaled_field(magn);
-//            
-//            GLfloat x_start = wn + (fftw_real) i * wn;
-//            GLfloat y_start = hn + (fftw_real) j * hn;
-//            GLfloat x = values[0];
-//            GLfloat y = values[1];
-//            GLfloat angle = 0.0;
-//            
-//            angle = atan2(y, x) * 180 / M_PI;
-//            glPushMatrix();
-//            glTranslatef(x_start, y_start, 0.0);
-//            glRotatef(90, 1.0, 0.0, 0.0f);
-//            glTranslatef(-x_start, -y_start, 0.0);
-//            
-////            
-////            glBegin(GL_POLYGON);
-////            setColor(pick_scalar_field_value(simulation, idx));
-////            
-////            glVertex2f(x_start, y_start + 1);
-////            glVertex2f(x_start + magn, y_start + 1);
-////            glVertex2f(x_start + magn, y_start + 2);
-////            glVertex2f(x_start + magn + 3, y_start);
-////            glVertex2f(x_start + magn, y_start - 2);
-////            glVertex2f(x_start + magn, y_start - 1);
-////            glVertex2f(x_start, y_start - 1);
-////            glEnd();
-////            
-//            glPopMatrix();
-//        }
+    colormap->loadColormapTexture();
+
+    size_t idx;
+    GLfloat magn;
+    float *values = new float[2];
+
+    for (int i = 0; i < DIM; i++)
+        for (int j = 0; j < DIM; j++) {
+            idx = (j * DIM) + i;
+            pick_vector_field_value(simulation, idx, values);
+
+            magn = magnitude(values);
+            magn = pick_scaled_field(magn);
+
+            GLfloat x = values[0];
+            GLfloat y = values[1];
+            GLfloat angle = 0.0;
+
+            angle = atan2(y, x) * 180 / M_PI;
+
+            GLfloat x_start = wn + (fftw_real) i * wn;
+            GLfloat y_start = hn + (fftw_real) j * hn;
+            
+            glPushMatrix();
+            setColor(pick_scalar_field_value(simulation, idx));
+            glTranslatef(x_start, y_start, 0.0);
+            glRotatef(angle, 0.0, 0.0, 1.0);
+            glRotatef(90, 0.0, 1.0, 0.0);
+            glutSolidCone(10, 15, 70, 12);
+            glPopMatrix();
+        }
 }
 
 void Visualization::pick_vector_field_value(Simulation const &simulation, size_t idx, float values[]) {
@@ -478,9 +510,9 @@ void Visualization::pick_vector_field_value(Simulation const &simulation, size_t
     }
 }
 
-float Visualization::pick_scaled_field(float v) {
-    
-    
+GLfloat Visualization::pick_scaled_field(float v) {
+
+
     float value = 0.0;
     switch (vectorDataset) {
         case FORCE:
@@ -490,7 +522,7 @@ float Visualization::pick_scaled_field(float v) {
             break;
         case VELOCITY:
         {
-            value = scale(v, 0, 1, 0, vec_scale);
+            value = scale(v, 0.01, 0.08, 0, 10);
         }
         default:
         {

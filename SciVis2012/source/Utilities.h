@@ -13,7 +13,7 @@ void rgb2hsv(float r, float g, float b, float& h, float& s, float& v);
 //double round(double r);
 float scale(float v, float f_min, float f_max, float min, float max);
 float magnitude(float x, float y);
-float magnitude(float v[]);
+GLfloat magnitude(float v[]);
 void printText(GLfloat x, GLfloat y, std::string text);
 
 #endif

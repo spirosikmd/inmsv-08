@@ -82,8 +82,8 @@ void Colormap::printColors() {
 void Colormap::render(float min, float max, int minorTicks) {
     int step = 1;
     int width = 50;
-
-
+    
+    glTranslatef(10, 10, 0);
     glColor3f(1, 1, 1);
     glBegin(GL_LINES);
     glVertex2f(1, 1);
@@ -187,7 +187,7 @@ void Colormap::computeColors() {
 
 void Colormap::computeTexture() {
     GLfloat rgbTexture[256][3];
-    GLfloat R, G, B;
+    
     for (int i = 0; i < 256; i++) {
         rgbTexture[i][0] = colors[i].red;
         rgbTexture[i][1] = colors[i].green;
