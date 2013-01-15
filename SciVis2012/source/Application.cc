@@ -161,11 +161,11 @@ void Application::display() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    visualization.visualize(simulation, winWidth, winHeight);
-    
     glDisable(GL_LIGHTING);
     visualization.getColormap()->render(visualization.getScalarMin(), visualization.getScalarMax(), 5);
     glEnable(GL_LIGHTING);
+
+    visualization.visualize(simulation, winWidth, winHeight);
 
     glFlush();
     glutSwapBuffers();
@@ -175,16 +175,16 @@ void Application::display() {
 
 void Application::reshape(int w, int h) {
     //
-//    glViewport(0.0f, 0.0f, (GLfloat) w * (1.0 / 4.0), (GLfloat) h);
-//    glMatrixMode(GL_PROJECTION);
-//    glLoadIdentity();
-//    glOrtho(0.0, (GLdouble) w, 0.0, (GLdouble) h, -10, 10);
-//
-//    //
-//    glViewport((GLfloat) w * (1.0 / 4.0), 0.0f, (GLfloat) w, (GLfloat) h);
-//    glMatrixMode(GL_PROJECTION);
-//    glLoadIdentity();
-//    glOrtho(0.0, (GLdouble) w, 0.0, (GLdouble) h, -10, 10);
+    //    glViewport(0.0f, 0.0f, (GLfloat) w * (1.0 / 4.0), (GLfloat) h);
+    //    glMatrixMode(GL_PROJECTION);
+    //    glLoadIdentity();
+    //    glOrtho(0.0, (GLdouble) w, 0.0, (GLdouble) h, -10, 10);
+    //
+    //    //
+    //    glViewport((GLfloat) w * (1.0 / 4.0), 0.0f, (GLfloat) w, (GLfloat) h);
+    //    glMatrixMode(GL_PROJECTION);
+    //    glLoadIdentity();
+    //    glOrtho(0.0, (GLdouble) w, 0.0, (GLdouble) h, -10, 10);
 
     //    if (w <= h) {
     //        // width is smaller, so stretch out the height

@@ -83,7 +83,7 @@ void Colormap::render(float min, float max, int minorTicks) {
     int step = 1;
     int width = 50;
     
-    glTranslatef(10, 10, 0);
+    glTranslatef(10, 10, 10);
     glColor3f(1, 1, 1);
     glBegin(GL_LINES);
     glVertex2f(1, 1);
@@ -131,6 +131,7 @@ void Colormap::render(float min, float max, int minorTicks) {
     glVertex2f(width+5, 256 * step+1);
     glEnd();
     printText(width+8,256 * step-3.5, float2str(max));
+    glTranslatef(-10, -10, -10);
 }
 
 RGB Colormap::interpolate(float x, float x0, float x1) {
