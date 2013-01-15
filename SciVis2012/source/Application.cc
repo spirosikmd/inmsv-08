@@ -108,7 +108,7 @@ void Application::initialize(int *argc, char** argv) {
     //    glMaterialfv(GL_FRONT, GL_SHININESS, high_shininess);
 
     GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
-    GLfloat yellow[] = {1.0, 1.0, 0.0, 1.0};
+//    GLfloat yellow[] = {1.0, 1.0, 0.0, 1.0};
     GLfloat cyan[] = {0.0, 1.0, 1.0, 1.0};
     GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
     GLfloat direction[] = {1.0, 1.0, 5.0, 0.0};
@@ -482,7 +482,7 @@ void Application::initUI() {
     // quit
     GLUI_Button *quit = new GLUI_Button(glui, "Quit", QUIT_BUTTON, buttonHandler);
     quit->set_alignment(GLUI_ALIGN_CENTER);
-
+    
 }
 
 void Application::quit() {

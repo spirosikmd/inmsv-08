@@ -488,7 +488,8 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
             glTranslatef(x_start, y_start, 0.0);
             glRotatef(angle, 0.0, 0.0, 1.0);
             glRotatef(90, 0.0, 1.0, 0.0);
-            glutSolidCone(10, 15, 70, 12);
+            
+            glutSolidCone(1+(3*magn), 3+(3*magn), 70, 12);
             glPopMatrix();
         }
 }
@@ -522,7 +523,7 @@ GLfloat Visualization::pick_scaled_field(float v) {
             break;
         case VELOCITY:
         {
-            value = scale(v, 0.01, 0.08, 0, 10);
+            value = scale(v, 0.00001, 0.08, 0, 5);
         }
         default:
         {
