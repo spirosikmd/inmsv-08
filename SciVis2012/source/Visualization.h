@@ -83,7 +83,6 @@ public:
     };
 
     void visualize(Simulation const &simulation, int winWidth, int winHeight);
-    //void set_scalar_col(ColorMode colorMode);
     void toggle(Option option);
     void enable(Option option);
     void disable(Option option);
