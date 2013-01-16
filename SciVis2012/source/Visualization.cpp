@@ -425,7 +425,8 @@ void Visualization::draw_3d_arrow(GLfloat magn, GLfloat x_start, GLfloat y_start
     glRotatef(angle, 0.0, 0.0, 1.0);
     glRotatef(90, 0.0, 1.0, 0.0);
     gluCylinder(p, 2 + base_scale, 2 + base_scale, 10 + height_scale, 10, 5);
-    // here probably we need to draw a 3d cone as the arrow tip
+    glTranslatef(0, 0, 10 + height_scale);
+    gluCylinder(p, 5 + base_scale, 0, 10 + height_scale, 10, 5);
     glPopMatrix();
 }
 
