@@ -465,7 +465,7 @@ GLfloat Visualization::pick_scaled_field(float v) {
     float value = 0.0;
     switch (vectorDataset) {
         case FORCE:
-            value = scale(v, 0, 1, 0, vec_scale);
+            value = scale(v, 0, 0.15, 0, 10);
             break;
         case VELOCITY:
             value = scale(v, 0.00001, 0.08, 0, 10);
@@ -488,19 +488,19 @@ void Visualization::setScalarMode(Mode mode) {
 }
 
 float Visualization::getScalarMin() {
-    if (datasets[scalarDataset].mode == CLAMPING) {
-        return datasets[scalarDataset].min;
-    } else {
-        return datasets[scalarDataset].scaleMin;
-    }
+    return datasets[scalarDataset].min;
+}
+
+float Visualization::getScalarScaleMin() {
+    return datasets[scalarDataset].scaleMin;
 }
 
 float Visualization::getScalarMax() {
-    if (datasets[scalarDataset].mode == CLAMPING) {
-        return datasets[scalarDataset].max;
-    } else {
-        return datasets[scalarDataset].scaleMax;
-    }
+    return datasets[scalarDataset].max;
+}
+
+float Visualization::getScalarScaleMax() {
+    return datasets[scalarDataset].scaleMax;
 }
 
 Visualization::Mode Visualization::getScalarMode() {

@@ -134,7 +134,7 @@ void Application::display() {
     glLoadIdentity();
 
     glDisable(GL_LIGHTING);
-    visualization.getColormap()->render(visualization.getScalarMin(), visualization.getScalarMax(), 5);
+    visualization.getColormap()->render(visualization.getScalarScaleMin(), visualization.getScalarScaleMax(), 5);
     glEnable(GL_LIGHTING);
 
     visualization.visualize(simulation, winWidth, winHeight);

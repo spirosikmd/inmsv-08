@@ -16,7 +16,7 @@ int main(int argc, char** argv)
     }
     catch(exception &ex)
     {
-        //cerr << "an exception occurred: " << ex.what() << '\n';		
+        cerr << "an exception occurred: " << ex.what() << '\n';		
     }
     catch(...)
     {

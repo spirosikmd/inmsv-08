@@ -112,6 +112,8 @@ public:
     void setScalarMode(Mode);
     float getScalarMin();
     float getScalarMax();
+    float getScalarScaleMin();
+    float getScalarScaleMax();
     Mode getScalarMode();
 
     void setGlyphType(GlyphType);
