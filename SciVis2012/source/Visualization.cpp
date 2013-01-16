@@ -10,8 +10,6 @@
 
 using namespace std;
 
-//std::map<Visualization::ColorMode, Colormap*> Visualization::colormaps;
-
 Visualization::Visualization() {
     vec_scale = 1000;
     sample_x = 40;
@@ -84,12 +82,6 @@ void Visualization::initializeColormaps() {
     colormaps.insert(make_pair(Visualization::ZEBRA, zebra));
 }
 
-//
-//void Visualization::set_scalar_col(ColorMode colorMode)
-//{
-//    scalar_col = colorMode;
-//}
-
 void Visualization::toggle(Option option) {
     options[option] = !options[option];
 }
@@ -145,33 +137,6 @@ void Visualization::setSampleY(int y) {
 int Visualization::getSampleY() {
     return sample_y;
 }
-
-//
-////rainbow: Implements a color palette, mapping the scalar 'value' to a rainbow color RGB
-//void Visualization::rainbow(float value, float* R, float* G, float* B)
-//{
-//    const float dx=0.8;
-//    if (value<0) value=0; if (value>1) value=1;
-//    value = (6-2*dx)*value+dx;	
-//    *R = max(0.0, (3-fabs(value-4)-fabs(value-5)) / 2.0);
-//    *G = max(0.0, (4-fabs(value-2)-fabs(value-4)) / 2.0);
-//    *B = max(0.0, (3-fabs(value-1)-fabs(value-2)) / 2.0);
-//}
-//
-//void Visualization::grayscale(float value, float* R, float* G, float* B)
-//{
-//    if (value<0) value=0; if (value>1) value=1;
-//    *R = *G = *B = value;
-//}
-//
-//void Visualization::custom(float value, float* R, float* G, float* B)
-//{
-//    if (value<0) value=0; if (value>1) value=1;
-//    *R = 1;
-//    *G = *B = value;
-//}
-
-//set_colormap: Sets three different types of colormaps
 
 void Visualization::setColor(float vy, ColorType t) {
     Dataset dataset = datasets[scalarDataset];
@@ -382,12 +347,12 @@ void Visualization::draw_glyphs_on_sampled_grid(Simulation const &simulation, co
             magn = pick_scaled_field(magn);
 
             GLfloat angle = atan2(y, x) * 180 / M_PI;
-            
+
             float value_for_color1 = pick_scalar_field_value(simulation, idx_x1_y1);
             float value_for_color2 = pick_scalar_field_value(simulation, idx_x2_y2);
             float value_for_color3 = pick_scalar_field_value(simulation, idx_x3_y3);
             float value_for_color4 = pick_scalar_field_value(simulation, idx_x4_y4);
-            
+
             float fx4y4 = value_for_color4 * (x2 - x_start) * (y2 - y_start);
             float fx2y2 = value_for_color2 * (x_start - x1) * (y2 - y_start);
             float fx3y3 = value_for_color3 * (x2 - x_start) * (y_start - y1);
@@ -466,7 +431,6 @@ void Visualization::draw_3d_arrow(GLfloat magn, GLfloat x_start, GLfloat y_start
 
 float Visualization::pick_scalar_field_value(Simulation const &simulation, size_t idx) {
     float value = 0.0;
-
     switch (scalarDataset) {
         case VELOCITY_MAGN:
             value = magnitude(simulation.vx[idx], simulation.vy[idx]);
@@ -572,4 +536,29 @@ void Visualization::setGlyphType(GlyphType gt) {
 //            glVertex2f((wn + (fftw_real) i * wn) + vec_scale * simulation.fx[idx], (hn + (fftw_real) j * hn) + vec_scale * simulation.fy[idx]);
 //        }
 //    glEnd();
+//}
+
+//
+////rainbow: Implements a color palette, mapping the scalar 'value' to a rainbow color RGB
+//void Visualization::rainbow(float value, float* R, float* G, float* B)
+//{
+//    const float dx=0.8;
+//    if (value<0) value=0; if (value>1) value=1;
+//    value = (6-2*dx)*value+dx;	
+//    *R = max(0.0, (3-fabs(value-4)-fabs(value-5)) / 2.0);
+//    *G = max(0.0, (4-fabs(value-2)-fabs(value-4)) / 2.0);
+//    *B = max(0.0, (3-fabs(value-1)-fabs(value-2)) / 2.0);
+//}
+//
+//void Visualization::grayscale(float value, float* R, float* G, float* B)
+//{
+//    if (value<0) value=0; if (value>1) value=1;
+//    *R = *G = *B = value;
+//}
+//
+//void Visualization::custom(float value, float* R, float* G, float* B)
+//{
+//    if (value<0) value=0; if (value>1) value=1;
+//    *R = 1;
+//    *G = *B = value;
 //}
