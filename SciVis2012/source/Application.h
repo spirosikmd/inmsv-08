@@ -25,9 +25,8 @@ private:
         VECTOR_DATASET_LIST,
         GLYPH_TYPE_LIST,
         DIM_SPINNER,
-
-        XSample,
-        YSample
+        SAMPLE_X_SPINNER,
+        SAMPLE_Y_SPINNER
     };
 
 public:

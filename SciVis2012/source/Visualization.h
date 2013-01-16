@@ -102,8 +102,10 @@ public:
     void magnitude_to_color(float x, float y);
     void setScalarDataset(DatasetType sdm);
     void setVectorDataset(DatasetType vdm);
-    void set_sample_x(int x);
-    void set_sample_y(int y);
+    void setSampleX(int x);
+    int getSampleX();
+    void setSampleY(int y);
+    int getSampleY();
 
     void setScalarMin(float);
     void setScalarMax(float);
@@ -135,9 +137,9 @@ private:
     float pick_scalar_field_value(Simulation const &simulation, size_t idx);
     void pick_vector_field_value(Simulation const &simulation, size_t idx, float values[]);
     void draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
-    void draw_3d_cones(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
-    void draw_simple_arrows(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
-    void draw_3d_arrows(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+    void draw_3d_cone(Simulation const &simulation, GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, size_t idx);
+    void draw_simple_arrow(Simulation const &simulation, GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, size_t idx);
+    void draw_3d_arrow(Simulation const &simulation, GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, size_t idx);
     GLfloat pick_scaled_field(float v);
 };
 
