@@ -284,10 +284,66 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
         case SIMPLE_ARROWS:
             draw_simple_arrows(simulation, DIM, wn, hn);
             break;
-        case CONES:
+        case CONES_3D:
             draw_3d_cones(simulation, DIM, wn, hn);
             break;
+        case ARROWS_3D:
+            draw_3d_arrows(simulation, DIM, wn, hn);
+            break;
     }
+}
+
+void Visualization::draw_simple_arrows(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
+    glEnable(GL_TEXTURE_1D);
+
+    colormap->loadColormapTexture();
+
+    size_t idx;
+    GLfloat magn;
+    float *values = new float[2];
+
+    for (int i = 0; i < DIM; i++)
+        for (int j = 0; j < DIM; j++) {
+            idx = (j * DIM) + i;
+            pick_vector_field_value(simulation, idx, values);
+
+            magn = magnitude(values);
+            magn = pick_scaled_field(magn);
+
+            GLfloat x = values[0];
+            GLfloat y = values[1];
+            GLfloat angle = 0.0;
+
+            angle = atan2(y, x) * 180 / M_PI;
+
+            GLfloat x_start = wn + (fftw_real) i * wn;
+            GLfloat y_start = hn + (fftw_real) j * hn;
+
+            GLfloat scale_x = magn * 1.5;
+            GLfloat scale_y_quad = magn * 0.2;
+            GLfloat scale_y_triangle = magn * 0.3;
+
+            glPushMatrix();
+            glTranslatef(x_start, y_start, 0.0);
+            glRotatef(angle, 0.0, 0.0, 1.0f);
+            glTranslatef(-x_start, -y_start, 0.0);
+            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+            glTranslatef(x_start, y_start, 0);
+            glBegin(GL_QUADS);
+            glVertex2f(1 + scale_x, 0.5 + scale_y_quad);
+            glVertex2f(0, 0.5 + scale_y_quad);
+            glVertex2f(0, -0.5 - scale_y_quad);
+            glVertex2f(1 + scale_x, -0.5 - scale_y_quad);
+            glEnd();
+            glTranslatef(1 + scale_x, 0, 0);
+            glBegin(GL_TRIANGLES);
+            glVertex2f(1 + scale_x, 0);
+            glVertex2f(0, 2 + scale_y_triangle);
+            glVertex2f(0, -2 - scale_y_triangle);
+            glEnd();
+            glPopMatrix();
+        }
+    glDisable(GL_TEXTURE_1D);
 }
 
 void Visualization::draw_3d_cones(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
@@ -399,7 +455,7 @@ void Visualization::draw_3d_cones(Simulation const &simulation, const int DIM, c
     //    glEnd();
     //
     //    glPopMatrix();
-
+    
     size_t idx;
     GLfloat magn;
     float *values = new float[2];
@@ -420,22 +476,24 @@ void Visualization::draw_3d_cones(Simulation const &simulation, const int DIM, c
 
             GLfloat x_start = wn + (fftw_real) i * wn;
             GLfloat y_start = hn + (fftw_real) j * hn;
+            
+            GLfloat base_scale = magn;
+            GLfloat height_scale = magn * 2;
 
             glPushMatrix();
             setColor(pick_scalar_field_value(simulation, idx), SIMPLE);
             glTranslatef(x_start, y_start, 0.0);
             glRotatef(angle, 0.0, 0.0, 1.0);
             glRotatef(90, 0.0, 1.0, 0.0);
-            glutSolidCone(0.5 + (1.5 * magn), 5 + (3 * magn), 70, 12);
+            glutSolidCone(0.5 + base_scale, 5 + height_scale, 50, 10);
             glPopMatrix();
         }
 }
 
-void Visualization::draw_simple_arrows(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
-    glEnable(GL_TEXTURE_1D);
-
-    colormap->loadColormapTexture();
-
+void Visualization::draw_3d_arrows(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
+    GLUquadricObj *p = gluNewQuadric();
+    gluQuadricDrawStyle(p, GLU_FILL);
+    
     size_t idx;
     GLfloat magn;
     float *values = new float[2];
@@ -456,32 +514,19 @@ void Visualization::draw_simple_arrows(Simulation const &simulation, const int D
 
             GLfloat x_start = wn + (fftw_real) i * wn;
             GLfloat y_start = hn + (fftw_real) j * hn;
-
-            GLfloat scale_x = magn * 1.5;
-            GLfloat scale_y_quad = magn * 0.2;
-            GLfloat scale_y_triangle = magn * 0.3;
+            
+            GLfloat base_scale = magn;
+            GLfloat height_scale = magn * 2;
 
             glPushMatrix();
+            setColor(pick_scalar_field_value(simulation, idx), SIMPLE);
             glTranslatef(x_start, y_start, 0.0);
-            glRotatef(angle, 0.0, 0.0, 1.0f);
-            glTranslatef(-x_start, -y_start, 0.0);
-            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
-            glTranslatef(x_start, y_start, 0);
-            glBegin(GL_QUADS);
-            glVertex2f(1 + scale_x, 0.5 + scale_y_quad);
-            glVertex2f(0, 0.5 + scale_y_quad);
-            glVertex2f(0, -0.5 - scale_y_quad);
-            glVertex2f(1 + scale_x, -0.5 - scale_y_quad);
-            glEnd();
-            glTranslatef(1 + scale_x, 0, 0);
-            glBegin(GL_TRIANGLES);
-            glVertex2f(1 + scale_x, 0);
-            glVertex2f(0, 2 + scale_y_triangle);
-            glVertex2f(0, -2 - scale_y_triangle);
-            glEnd();
+            glRotatef(angle, 0.0, 0.0, 1.0);
+            glRotatef(90, 0.0, 1.0, 0.0);
+            gluCylinder(p, 2 + base_scale, 2 + base_scale, 10 + height_scale, 10, 5);
+            // here probably we need to draw a 3d cone as the arrow tip
             glPopMatrix();
         }
-    glDisable(GL_TEXTURE_1D);
 }
 
 float Visualization::pick_scalar_field_value(Simulation const &simulation, size_t idx) {

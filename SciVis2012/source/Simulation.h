@@ -12,13 +12,13 @@ class Simulation {
 
 public:
 
-    static const int DIM = 40; //size of simulation grid
+    static int DIM; //size of simulation grid
 
     Simulation();
     virtual ~Simulation();
 
     void do_one_simulation_step();
-    void init_simulation(size_t n);
+    void init_simulation();
     void insert_force(int X, int Y, double dx, double dy);
     void set_forces();
 
@@ -28,6 +28,9 @@ public:
 
     void change_timestep(double change);
     void scale_viscosity(float scale);
+    
+    void set_DIM(int dim);
+    int get_DIM();
 
 private:
 

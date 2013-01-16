@@ -32,6 +32,7 @@ float Application::scalarMin;
 
 Visualization::DatasetType Application::vectorDataset;
 Visualization::GlyphType Application::glyphType;
+int Application::dim;
 int Application::sample_x;
 int Application::sample_y;
 
@@ -48,7 +49,6 @@ void Application::initialize(int *argc, char** argv) {
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
     glutInitWindowSize(1000, 800);
 
-
     main_window = glutCreateWindow("Real-time smoke simulation and visualization");
 
     // pass static functions as callback to GLUT
@@ -60,7 +60,7 @@ void Application::initialize(int *argc, char** argv) {
     GLUI_Master.set_glutReshapeFunc(reshape);
     GLUI_Master.set_glutIdleFunc(update);
 
-    simulation.init_simulation(Simulation::DIM); //initialize the simulation data structures
+    simulation.init_simulation(); //initialize the simulation data structures
 
     visualization.initializeColormaps();
     Colormap* colormap = visualization.loadColormap(Visualization::GRAYSCALE);
@@ -68,10 +68,11 @@ void Application::initialize(int *argc, char** argv) {
     saturationValue = colormap->getSaturation();
     selectedNumOfColors = colormap->getNumberOfColors();
 
-
     scalarMax = visualization.getScalarMax();
     scalarMin = visualization.getScalarMin();
     scalarMode = visualization.getScalarMode();
+    
+    dim = simulation.get_DIM();
 
     initUI();
     glui->sync_live();
@@ -382,17 +383,20 @@ void Application::buttonHandler(int id) {
         case GLYPH_TYPE_LIST:
             visualization.setGlyphType(glyphType);
             break;
+            
+        case DIM_SPINNER:
+            simulation.set_DIM(dim);
+            simulation.init_simulation();
+            break;
 
         case XSample:
-
             visualization.set_sample_x(sample_x);
-
             break;
+            
         case YSample:
-
             visualization.set_sample_y(sample_y);
-
             break;
+            
         default:
             break;
     }
@@ -478,9 +482,13 @@ void Application::initUI() {
     GLUI_Listbox *glyphTypeList = new GLUI_Listbox(visualization_options, "Glyph ", (int*) &glyphType, GLYPH_TYPE_LIST, buttonHandler);
     glyphTypeList->set_alignment(GLUI_ALIGN_RIGHT);
     glyphTypeList->add_item(Visualization::SIMPLE_ARROWS, "Simple Arrows");
-    glyphTypeList->add_item(Visualization::CONES, "3D Cones");
+    glyphTypeList->add_item(Visualization::CONES_3D, "3D Cones");
+    glyphTypeList->add_item(Visualization::ARROWS_3D, "3D Arrows");
     glui->add_statictext_to_panel(visualization_options, "                                              ");
 
+    GLUI_Spinner *dim_spinner = new GLUI_Spinner(glui, "DIM ", &dim, DIM_SPINNER, buttonHandler);
+    dim_spinner->set_alignment(GLUI_ALIGN_RIGHT);
+    dim_spinner->set_int_limits(40, 80, GLUI_LIMIT_CLAMP);
 
     GLUI_Spinner *sample_x_spinner = new GLUI_Spinner(glui, "X Sample", &sample_x, XSample, buttonHandler);
     sample_x_spinner->set_int_val(20);

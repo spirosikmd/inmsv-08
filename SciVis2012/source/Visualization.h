@@ -57,7 +57,8 @@ public:
 
     enum GlyphType {
         SIMPLE_ARROWS,
-        CONES
+        CONES_3D,
+        ARROWS_3D
     };
 
     struct Dataset {
@@ -136,6 +137,7 @@ private:
     void draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
     void draw_3d_cones(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_simple_arrows(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+    void draw_3d_arrows(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     GLfloat pick_scaled_field(float v);
 };
 

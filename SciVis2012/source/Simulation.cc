@@ -1,10 +1,13 @@
 #include "Simulation.h"
 #include "Utilities.h"
 
+int Simulation::DIM;
+
 Simulation::Simulation() {
     dt = 0.4; //simulation time step
     visc = 0.001; //fluid viscosity
-    frozen = 0; //toggles on/off the animation	
+    frozen = 0; //toggles on/off the animation
+    DIM = 40;
 }
 
 Simulation::~Simulation() {
@@ -38,14 +41,23 @@ void Simulation::scale_viscosity(float scale) {
     visc *= scale;
 }
 
+void Simulation::set_DIM(int dim) {
+    DIM = dim;
+}
+
+int Simulation::get_DIM() {
+    return DIM;
+}
+
 //------ SIMULATION CODE STARTS HERE -----------------------------------------------------------------
 
 //init_simulation: Initialize simulation data structures as a function of the grid size 'n'.
 //                 Although the simulation takes place on a 2D grid, we allocate all data structures as 1D arrays,
 //                 for compatibility with the FFTW numerical library.
 
-void Simulation::init_simulation(size_t n) {
+void Simulation::init_simulation() {
     //Allocate data structures
+    size_t n = DIM;
     size_t dim = n * 2 * (n / 2 + 1);
     vx = new fftw_real[dim];
     vy = new fftw_real[dim];

@@ -24,6 +24,7 @@ private:
         SCALAR_MIN_SPINNER,
         VECTOR_DATASET_LIST,
         GLYPH_TYPE_LIST,
+        DIM_SPINNER,
 
         XSample,
         YSample
@@ -47,8 +48,6 @@ public:
     static void buttonHandler(int id);
 
 private:
-
-
 
     static Simulation simulation; // the smoke simulation
     static Visualization visualization; // visualization of the simulation
@@ -74,6 +73,7 @@ private:
 
     static float hueValue;
     static float saturationValue;
+    static int dim;
     static int sample_x, sample_y;
 
     static Visualization::Mode scalarMode;
