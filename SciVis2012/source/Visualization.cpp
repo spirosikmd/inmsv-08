@@ -417,16 +417,16 @@ void Visualization::draw_3d_cone(GLfloat magn, GLfloat x_start, GLfloat y_start,
 void Visualization::draw_3d_arrow(GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, float value) {
     static GLUquadricObj *p = gluNewQuadric();
     gluQuadricDrawStyle(p, GLU_FILL);
-    GLfloat base_scale = magn;
+    GLfloat base_scale = magn * 0.3;
     GLfloat height_scale = magn * 2;
     glPushMatrix();
     setColor(value, SIMPLE);
     glTranslatef(x_start, y_start, 0.0);
     glRotatef(angle, 0.0, 0.0, 1.0);
     glRotatef(90, 0.0, 1.0, 0.0);
-    gluCylinder(p, 2 + base_scale, 2 + base_scale, 10 + height_scale, 10, 5);
-    glTranslatef(0, 0, 10 + height_scale);
-    gluCylinder(p, 5 + base_scale, 0, 10 + height_scale, 10, 5);
+    gluCylinder(p, 0.25 + base_scale, 0.1 + base_scale, 3 + height_scale, 10, 5);
+    glTranslatef(0, 0, 3 + height_scale);
+    gluCylinder(p, 2 + base_scale, 0, 2 + height_scale, 10, 5);
     glPopMatrix();
 }
 

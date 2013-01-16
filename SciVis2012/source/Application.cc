@@ -447,7 +447,7 @@ void Application::initUI() {
     visualization_options->set_alignment(GLUI_ALIGN_LEFT);
     GLUI_Checkbox *glyphs_box = new GLUI_Checkbox(visualization_options, "Glyphs", &visualization.options[Visualization::DrawGlyphs]);
     glyphs_box->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Checkbox * smoke_box = new GLUI_Checkbox(visualization_options, "Smoke", &visualization.options[Visualization::DrawSmoke]);
+    GLUI_Checkbox *smoke_box = new GLUI_Checkbox(visualization_options, "Smoke", &visualization.options[Visualization::DrawSmoke]);
     smoke_box->set_alignment(GLUI_ALIGN_RIGHT);
     GLUI_Listbox *glyphTypeList = new GLUI_Listbox(visualization_options, "Glyph ", (int*) &glyphType, GLYPH_TYPE_LIST, buttonHandler);
     glyphTypeList->set_alignment(GLUI_ALIGN_RIGHT);
