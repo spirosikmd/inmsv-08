@@ -463,17 +463,20 @@ void Visualization::draw_simple_arrows(Simulation const &simulation, const int D
             glTranslatef(-x_start, -y_start, 0.0);
             setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
             glTranslatef(x_start, y_start, 0);
+            GLfloat scale_x = magn * 1.5;
+            GLfloat scale_y_quad = magn * 0.2;
+            GLfloat scale_y_triangle = magn * 0.3;
             glBegin(GL_QUADS);
-            glVertex2f(10, 2.5);
-            glVertex2f(0, 2.5);
-            glVertex2f(0, -2.5);
-            glVertex2f(10, -2.5);
+            glVertex2f(1 + scale_x, 0.5 + scale_y_quad);
+            glVertex2f(0, 0.5 + scale_y_quad);
+            glVertex2f(0, -0.5 - scale_y_quad);
+            glVertex2f(1 + scale_x, -0.5 - scale_y_quad);
             glEnd();
-            glTranslatef(10, 0, 0);
+            glTranslatef(1 + scale_x, 0, 0);
             glBegin(GL_TRIANGLES);
-            glVertex2f(10, 0);
-            glVertex2f(0, 5);
-            glVertex2f(0, -5);
+            glVertex2f(1 + scale_x, 0);
+            glVertex2f(0, 2 + scale_y_triangle);
+            glVertex2f(0, -2 - scale_y_triangle);
             glEnd();
             glPopMatrix();
         }
