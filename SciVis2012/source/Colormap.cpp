@@ -82,15 +82,15 @@ void Colormap::printColors() {
 void Colormap::render(float min, float max, int minorTicks) {
     int step = 1;
     int width = 50;
-    
+
     glTranslatef(10, 10, 10);
     glColor3f(1, 1, 1);
     glBegin(GL_LINES);
     glVertex2f(1, 1);
-    glVertex2f(1, 256 * step +2);
-    glVertex2f(1, 256 * step +2);
-    glVertex2f(width, 256 * step+2);
-    glVertex2f(width, 256 * step+2);
+    glVertex2f(1, 256 * step + 2);
+    glVertex2f(1, 256 * step + 2);
+    glVertex2f(width, 256 * step + 2);
+    glVertex2f(width, 256 * step + 2);
     glVertex2f(width, 1);
     glVertex2f(width, 1);
     glVertex2f(1, 1);
@@ -99,38 +99,38 @@ void Colormap::render(float min, float max, int minorTicks) {
     glBegin(GL_QUADS);
     for (size_t i = 0; i < 256; i++) {
         glColor3f(colors[i].red, colors[i].green, colors[i].blue);
-        glVertex2f(1, 1+(i * step) + step); // Top Left
-        glVertex2f(width - 1, 1+(i * step) + step); // Top Right
+        glVertex2f(1, 1 + (i * step) + step); // Top Left
+        glVertex2f(width - 1, 1 + (i * step) + step); // Top Right
         glColor3f(colors[i].red, colors[i].green, colors[i].blue);
-        glVertex2f(width - 1, 1+i * step); // Bottom Right
-        glVertex2f(1, 1+i * step); // Bottom Left
+        glVertex2f(width - 1, 1 + i * step); // Bottom Right
+        glVertex2f(1, 1 + i * step); // Bottom Left
     }
     glEnd();
 
- 
+
     glColor3f(1, 1, 1);
     glBegin(GL_LINES);
     glVertex2f(width, 2);
-    glVertex2f(width+5, 2);
+    glVertex2f(width + 5, 2);
     glEnd();
-    printText(width+8,1-3.5, float2str(min));
-    
-    minorTicks=minorTicks+1;
+    printText(width + 8, 1 - 3.5, float2str(min));
+
+    minorTicks = minorTicks + 1;
     for (int tick = 1; tick < minorTicks; tick++) {
         glBegin(GL_LINES);
         glVertex2f(width, tick * ((256 * step) / minorTicks));
-        glVertex2f(width+2, tick * ((256 * step) / minorTicks));
+        glVertex2f(width + 2, tick * ((256 * step) / minorTicks));
         glEnd();
-        
-        float val = min + tick *(fabs(min-max)/minorTicks);
-        printText(width+5,tick * ((256 * step) / minorTicks)-3.5, float2str(val));
+
+        float val = min + tick * (fabs(min - max) / minorTicks);
+        printText(width + 5, tick * ((256 * step) / minorTicks) - 3.5, float2str(val));
     }
 
     glBegin(GL_LINES);
-    glVertex2f(width, 256 * step+1);
-    glVertex2f(width+5, 256 * step+1);
+    glVertex2f(width, 256 * step + 1);
+    glVertex2f(width + 5, 256 * step + 1);
     glEnd();
-    printText(width+8,256 * step-3.5, float2str(max));
+    printText(width + 8, 256 * step - 3.5, float2str(max));
     glTranslatef(-10, -10, -10);
 }
 
@@ -139,11 +139,11 @@ RGB Colormap::interpolate(float x, float x0, float x1) {
 
     RGB y0 = map[x0];
     RGB y1 = map[x1];
-        
-     interpolated.red= y0.red + (y1.red - y0.red) * ((x - x0) / (x1 - x0));
-     interpolated.green= y0.green + (y1.green - y0.green) * ((x - x0) / (x1 - x0));
-     interpolated.blue= y0.blue + (y1.blue - y0.blue) * ((x - x0) / (x1 - x0));
-   
+
+    interpolated.red = y0.red + (y1.red - y0.red) * ((x - x0) / (x1 - x0));
+    interpolated.green = y0.green + (y1.green - y0.green) * ((x - x0) / (x1 - x0));
+    interpolated.blue = y0.blue + (y1.blue - y0.blue) * ((x - x0) / (x1 - x0));
+
     return interpolated;
 }
 
@@ -164,13 +164,13 @@ void Colormap::computeColors() {
     colors[0] = map[0];
     colors[255] = map[255];
 
-    
+
     for (unsigned i = 0; i < 256; i++) {
-        float H,S,V;
-        rgb2hsv(colors[i].red,colors[i].green,colors[i].blue,H,S,V);
+        float H, S, V;
+        rgb2hsv(colors[i].red, colors[i].green, colors[i].blue, H, S, V);
         H = fmod(H + hue, 1.0);
         S = S * saturation;
-        hsv2rgb(H,S,V,colors[i].red,colors[i].green,colors[i].blue);
+        hsv2rgb(H, S, V, colors[i].red, colors[i].green, colors[i].blue);
     }
 
     int step = 256 / numberOfColors;
@@ -188,7 +188,7 @@ void Colormap::computeColors() {
 
 void Colormap::computeTexture() {
     GLfloat rgbTexture[256][3];
-    
+
     for (int i = 0; i < 256; i++) {
         rgbTexture[i][0] = colors[i].red;
         rgbTexture[i][1] = colors[i].green;

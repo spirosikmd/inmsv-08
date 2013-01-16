@@ -32,10 +32,10 @@ public:
         SCALING,
         CLAMPING
     };
-    
+
     enum ColorType {
         TEXTURE,
-        SIMPLE  // with this I mean that we assign color with glColor3f()
+        SIMPLE // with this I mean that we assign color with glColor3f()
     };
 
     enum Option {
@@ -54,7 +54,7 @@ public:
         FORCE,
         NONE
     };
-    
+
     enum GlyphType {
         SIMPLE_ARROWS,
         CONES
@@ -93,10 +93,10 @@ public:
     void set_hue(const float h);
     void set_saturation(const float s);
     void set_num_of_colors(const int n);
-    
+
     Colormap* getColormap();
     Colormap* loadColormap(ColorMode);
-    
+
     void setColor(float vy, ColorType t);
     void direction_to_color(float x, float y);
     void magnitude_to_color(float x, float y);
@@ -111,7 +111,7 @@ public:
     float getScalarMin();
     float getScalarMax();
     Mode getScalarMode();
-    
+
     void setGlyphType(GlyphType);
 
 private:
@@ -135,7 +135,7 @@ private:
     float pick_scalar_field_value(Simulation const &simulation, size_t idx);
     void pick_vector_field_value(Simulation const &simulation, size_t idx, float values[]);
     void draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
-    void draw_3dcones(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+    void draw_3d_cones(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_simple_arrows(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     GLfloat pick_scaled_field(float v);
 };

@@ -57,13 +57,13 @@ public:
 static const struct RGB NULLRGB;
 static const struct HSV NULLHSV;
 static const struct RGB BLACK(0, 0, 0);
-static const struct RGB WHITE(1,1,1);
-static const struct RGB RED(1, 0,0);
-static const struct RGB GREEN(0, 1,0);
-static const struct RGB BLUE(0, 0,1);
-static const struct RGB YELLOW(1, 1,0);
-static const struct RGB MAGENTA(1, 0,1);
-static const struct RGB AQUA(0,1,1);
+static const struct RGB WHITE(1, 1, 1);
+static const struct RGB RED(1, 0, 0);
+static const struct RGB GREEN(0, 1, 0);
+static const struct RGB BLUE(0, 0, 1);
+static const struct RGB YELLOW(1, 1, 0);
+static const struct RGB MAGENTA(1, 0, 1);
+static const struct RGB AQUA(0, 1, 1);
 
 //static const struct RGB MAGENTA((1.0 / 360.0) * 330.0, 1, 1);
 //static const struct HSV PINK((1.0 / 360.0) * 300.0, 1, 1);

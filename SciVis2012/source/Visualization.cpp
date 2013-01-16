@@ -285,12 +285,12 @@ void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, con
             draw_simple_arrows(simulation, DIM, wn, hn);
             break;
         case CONES:
-            draw_3dcones(simulation, DIM, wn, hn);
+            draw_3d_cones(simulation, DIM, wn, hn);
             break;
     }
 }
 
-void Visualization::draw_3dcones(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
+void Visualization::draw_3d_cones(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
 
     //    float *sample_values = new float[2];
     //    float *sample_values_x1_y1 = new float[2];
@@ -457,15 +457,16 @@ void Visualization::draw_simple_arrows(Simulation const &simulation, const int D
             GLfloat x_start = wn + (fftw_real) i * wn;
             GLfloat y_start = hn + (fftw_real) j * hn;
 
+            GLfloat scale_x = magn * 1.5;
+            GLfloat scale_y_quad = magn * 0.2;
+            GLfloat scale_y_triangle = magn * 0.3;
+
             glPushMatrix();
             glTranslatef(x_start, y_start, 0.0);
             glRotatef(angle, 0.0, 0.0, 1.0f);
             glTranslatef(-x_start, -y_start, 0.0);
             setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
             glTranslatef(x_start, y_start, 0);
-            GLfloat scale_x = magn * 1.5;
-            GLfloat scale_y_quad = magn * 0.2;
-            GLfloat scale_y_triangle = magn * 0.3;
             glBegin(GL_QUADS);
             glVertex2f(1 + scale_x, 0.5 + scale_y_quad);
             glVertex2f(0, 0.5 + scale_y_quad);

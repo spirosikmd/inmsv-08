@@ -11,6 +11,7 @@ class Application {
 private:
 
     // GLUI control IDs
+
     enum UiControlID {
         QUIT_BUTTON,
         COLORMAP_LIST,
@@ -23,7 +24,7 @@ private:
         SCALAR_MIN_SPINNER,
         VECTOR_DATASET_LIST,
         GLYPH_TYPE_LIST,
-        
+
         XSample,
         YSample
     };
@@ -47,7 +48,7 @@ public:
 
 private:
 
-    
+
 
     static Simulation simulation; // the smoke simulation
     static Visualization visualization; // visualization of the simulation
@@ -58,17 +59,17 @@ private:
     static int main_window;
 
     static Visualization::ColorMode selectedColormap;
-    
+
     static void initializeColormaps();
     static std::map<Visualization::ColorMode, Colormap*> colormaps;
     static Colormap *colormap;
     static int selectedNumOfColors;
-    
+
     static Visualization::DatasetType scalarDataset;
     static float scalarMax, scalarMin;
-    
+
     static Visualization::DatasetType vectorDataset;
-    
+
     static Visualization::GlyphType glyphType;
 
     static float hueValue;
