@@ -289,110 +289,127 @@ void Visualization::draw_smoke(Simulation const &simulation, const int DIM, cons
 }
 
 void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample) {
-    if (sample_x == DIM && sample_y == DIM) {
-        size_t idx;
-        GLfloat magn;
-        float *values = new float[2];
+    if (sample_x == DIM && sample_y == DIM)
+        draw_glyphs_on_comp_grid(simulation, DIM, wn, hn, wn_sample, hn_sample);
+    else
+        draw_glyphs_on_sampled_grid(simulation, DIM, wn, hn, wn_sample, hn_sample);
+}
 
-        for (int i = 0; i < DIM; i++) {
-            for (int j = 0; j < DIM; j++) {
-                idx = (j * DIM) + i;
-                pick_vector_field_value(simulation, idx, values);
+void Visualization::draw_glyphs_on_comp_grid(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample) {
+    size_t idx;
+    GLfloat magn;
+    float *values = new float[2];
 
-                magn = magnitude(values);
-                magn = pick_scaled_field(magn);
+    for (int i = 0; i < DIM; i++) {
+        for (int j = 0; j < DIM; j++) {
+            idx = (j * DIM) + i;
+            pick_vector_field_value(simulation, idx, values);
 
-                GLfloat x = values[0];
-                GLfloat y = values[1];
-                GLfloat angle = 0.0;
+            magn = magnitude(values);
+            magn = pick_scaled_field(magn);
 
-                angle = atan2(y, x) * 180 / M_PI;
+            GLfloat x = values[0];
+            GLfloat y = values[1];
+            GLfloat angle = 0.0;
 
-                GLfloat x_start = wn + (fftw_real) i * wn;
-                GLfloat y_start = hn + (fftw_real) j * hn;
+            angle = atan2(y, x) * 180 / M_PI;
 
-                switch (glyphType) {
-                    case SIMPLE_ARROWS:
-                        draw_simple_arrow(simulation, magn, x_start, y_start, angle, idx);
-                        break;
-                    case CONES_3D:
-                        draw_3d_cone(simulation, magn, x_start, y_start, angle, idx);
-                        break;
-                    case ARROWS_3D:
-                        draw_3d_arrow(simulation, magn, x_start, y_start, angle, idx);
-                        break;
-                }
-            }
-        }
-    } else {
-        size_t idx, idx_x1_y1, idx_x2_y2, idx_x3_y3, idx_x4_y4;
-        GLfloat magn;
-        float *sample_values = new float[2];
-        float *sample_values_x1_y1 = new float[2];
-        float *sample_values_x2_y2 = new float[2];
-        float *sample_values_x3_y3 = new float[2];
-        float *sample_values_x4_y4 = new float[2];
+            GLfloat x_start = wn + (fftw_real) i * wn;
+            GLfloat y_start = hn + (fftw_real) j * hn;
 
-        for (int i = 0; i < sample_x; i++) {
-            for (int j = 0; j < sample_y; j++) {
-                idx = (j * sample_y) + i;
-                pick_vector_field_value(simulation, idx, sample_values);
-                GLfloat x_start = wn_sample + (fftw_real) i * wn_sample;
-                GLfloat y_start = hn_sample + (fftw_real) j * hn_sample;
-                // interpolate the sample values with the values of the computational grid points
-                // divide the x,y of the sample point with the step of the computational grid (wn or hn),
-                // ceil and then we get the coordinates of the 4 points of the computational grid to use
-                // for bilinear interpolation
-                int x_point = ceil(x_start / wn);
-                int y_point = ceil(y_start / hn);
-                idx_x1_y1 = ((y_point - 1) * DIM) + (x_point - 1);
-                idx_x2_y2 = ((y_point - 2) * DIM) + (x_point - 1);
-                idx_x3_y3 = ((y_point - 1) * DIM) + (x_point - 2);
-                idx_x4_y4 = ((y_point - 2) * DIM) + (x_point - 2);
-                pick_vector_field_value(simulation, idx_x1_y1, sample_values_x1_y1);
-                pick_vector_field_value(simulation, idx_x2_y2, sample_values_x2_y2);
-                pick_vector_field_value(simulation, idx_x3_y3, sample_values_x3_y3);
-                pick_vector_field_value(simulation, idx_x4_y4, sample_values_x4_y4);
-                // bilinear interpolation
-                GLfloat x1, y1, x2, y2;
-                x1 = wn + (fftw_real) (x_point - 1) * wn;
-                y1 = hn + (fftw_real) (y_point - 1) * hn;
-                x2 = wn + (fftw_real) (x_point - 2) * wn;
-                y2 = hn + (fftw_real) (y_point - 2) * hn;
-                GLfloat x, y;
-                GLfloat f1x = sample_values_x4_y4[0]*(x2 - x_start)*(y2 - y_start);
-                GLfloat f2x = sample_values_x2_y2[0]*(x_start - x1)*(y2 - y_start);
-                GLfloat f3x = sample_values_x3_y3[0]*(x2 - x_start)*(y_start - y1);
-                GLfloat f4x = sample_values_x1_y1[0]*(x_start - x1)*(y_start - y1);
-                x = (1 / ((x2 - x1)*(y2 - y1)))*(f1x + f2x + f3x + f4x);
-                GLfloat f1y = sample_values_x4_y4[1]*(x2 - x_start)*(y2 - y_start);
-                GLfloat f2y = sample_values_x2_y2[1]*(x_start - x1)*(y2 - y_start);
-                GLfloat f3y = sample_values_x3_y3[1]*(x2 - x_start)*(y_start - y1);
-                GLfloat f4y = sample_values_x1_y1[1]*(x_start - x1)*(y_start - y1);
-                y = (1 / ((x2 - x1)*(y2 - y1)))*(f1y + f2y + f3y + f4y);
+            float value_for_color = pick_scalar_field_value(simulation, idx);
 
-                magn = magnitude(x, y);
-                magn = pick_scaled_field(magn);
-
-                GLfloat angle = atan2(y, x) * 180 / M_PI;
-
-                switch (glyphType) {
-                    case SIMPLE_ARROWS:
-                        draw_simple_arrow(simulation, magn, x_start, y_start, angle, idx);
-                        break;
-                    case CONES_3D:
-                        draw_3d_cone(simulation, magn, x_start, y_start, angle, idx);
-                        break;
-                    case ARROWS_3D:
-                        draw_3d_arrow(simulation, magn, x_start, y_start, angle, idx);
-                        break;
-                }
+            switch (glyphType) {
+                case SIMPLE_ARROWS:
+                    draw_simple_arrow(magn, x_start, y_start, angle, value_for_color);
+                    break;
+                case CONES_3D:
+                    draw_3d_cone(magn, x_start, y_start, angle, value_for_color);
+                    break;
+                case ARROWS_3D:
+                    draw_3d_arrow(magn, x_start, y_start, angle, value_for_color);
+                    break;
             }
         }
     }
 }
 
-void Visualization::draw_simple_arrow(Simulation const &simulation, GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, size_t idx) {
+void Visualization::draw_glyphs_on_sampled_grid(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample) {
+    size_t idx_x1_y1, idx_x2_y2, idx_x3_y3, idx_x4_y4;
+    GLfloat magn;
+    float *sample_values_x1_y1 = new float[2];
+    float *sample_values_x2_y2 = new float[2];
+    float *sample_values_x3_y3 = new float[2];
+    float *sample_values_x4_y4 = new float[2];
+
+    for (int i = 0; i < sample_x; i++) {
+        for (int j = 0; j < sample_y; j++) {
+            GLfloat x_start = wn_sample + (fftw_real) i * wn_sample;
+            GLfloat y_start = hn_sample + (fftw_real) j * hn_sample;
+            // interpolate the sample values with the values of the computational grid points
+            // divide the x,y of the sample point with the step of the computational grid (wn or hn),
+            // ceil and then we get the coordinates of the 4 points of the computational grid to use
+            // for bilinear interpolation
+            int x_point = ceil(x_start / wn);
+            int y_point = ceil(y_start / hn);
+            idx_x1_y1 = ((y_point - 1) * DIM) + (x_point - 1);
+            idx_x2_y2 = ((y_point - 2) * DIM) + (x_point - 1);
+            idx_x3_y3 = ((y_point - 1) * DIM) + (x_point - 2);
+            idx_x4_y4 = ((y_point - 2) * DIM) + (x_point - 2);
+            pick_vector_field_value(simulation, idx_x1_y1, sample_values_x1_y1);
+            pick_vector_field_value(simulation, idx_x2_y2, sample_values_x2_y2);
+            pick_vector_field_value(simulation, idx_x3_y3, sample_values_x3_y3);
+            pick_vector_field_value(simulation, idx_x4_y4, sample_values_x4_y4);
+            // bilinear interpolation
+            GLfloat x1, y1, x2, y2;
+            x1 = wn + (fftw_real) (x_point - 1) * wn;
+            y1 = hn + (fftw_real) (y_point - 1) * hn;
+            x2 = wn + (fftw_real) (x_point - 2) * wn;
+            y2 = hn + (fftw_real) (y_point - 2) * hn;
+            GLfloat x, y;
+            GLfloat f1x = sample_values_x4_y4[0]*(x2 - x_start)*(y2 - y_start);
+            GLfloat f2x = sample_values_x2_y2[0]*(x_start - x1)*(y2 - y_start);
+            GLfloat f3x = sample_values_x3_y3[0]*(x2 - x_start)*(y_start - y1);
+            GLfloat f4x = sample_values_x1_y1[0]*(x_start - x1)*(y_start - y1);
+            x = (1 / ((x2 - x1)*(y2 - y1)))*(f1x + f2x + f3x + f4x);
+            GLfloat f1y = sample_values_x4_y4[1]*(x2 - x_start)*(y2 - y_start);
+            GLfloat f2y = sample_values_x2_y2[1]*(x_start - x1)*(y2 - y_start);
+            GLfloat f3y = sample_values_x3_y3[1]*(x2 - x_start)*(y_start - y1);
+            GLfloat f4y = sample_values_x1_y1[1]*(x_start - x1)*(y_start - y1);
+            y = (1 / ((x2 - x1)*(y2 - y1)))*(f1y + f2y + f3y + f4y);
+
+            magn = magnitude(x, y);
+            magn = pick_scaled_field(magn);
+
+            GLfloat angle = atan2(y, x) * 180 / M_PI;
+            
+            float value_for_color1 = pick_scalar_field_value(simulation, idx_x1_y1);
+            float value_for_color2 = pick_scalar_field_value(simulation, idx_x2_y2);
+            float value_for_color3 = pick_scalar_field_value(simulation, idx_x3_y3);
+            float value_for_color4 = pick_scalar_field_value(simulation, idx_x4_y4);
+            
+            float fx4y4 = value_for_color4 * (x2 - x_start) * (y2 - y_start);
+            float fx2y2 = value_for_color2 * (x_start - x1) * (y2 - y_start);
+            float fx3y3 = value_for_color3 * (x2 - x_start) * (y_start - y1);
+            float fx1y1 = value_for_color1 * (x_start - x1) * (y_start - y1);
+            float value_for_color = (1 / ((x2 - x1) * (y2 - y1))) * (fx1y1 + fx2y2 + fx3y3 + fx4y4);
+
+            switch (glyphType) {
+                case SIMPLE_ARROWS:
+                    draw_simple_arrow(magn, x_start, y_start, angle, value_for_color);
+                    break;
+                case CONES_3D:
+                    draw_3d_cone(magn, x_start, y_start, angle, value_for_color);
+                    break;
+                case ARROWS_3D:
+                    draw_3d_arrow(magn, x_start, y_start, angle, value_for_color);
+                    break;
+            }
+        }
+    }
+}
+
+void Visualization::draw_simple_arrow(GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, float value) {
     glEnable(GL_TEXTURE_1D);
     colormap->loadColormapTexture();
     GLfloat scale_x = magn * 1.5;
@@ -402,7 +419,7 @@ void Visualization::draw_simple_arrow(Simulation const &simulation, GLfloat magn
     glTranslatef(x_start, y_start, 0.0);
     glRotatef(angle, 0.0, 0.0, 1.0f);
     glTranslatef(-x_start, -y_start, 0.0);
-    setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+    setColor(value, TEXTURE);
     glTranslatef(x_start, y_start, 0);
     glBegin(GL_QUADS);
     glVertex2f(1 + scale_x, 0.5 + scale_y_quad);
@@ -420,11 +437,11 @@ void Visualization::draw_simple_arrow(Simulation const &simulation, GLfloat magn
     glDisable(GL_TEXTURE_1D);
 }
 
-void Visualization::draw_3d_cone(Simulation const &simulation, GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, size_t idx) {
+void Visualization::draw_3d_cone(GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, float value) {
     GLfloat base_scale = magn;
     GLfloat height_scale = magn * 2;
     glPushMatrix();
-    setColor(pick_scalar_field_value(simulation, idx), SIMPLE);
+    setColor(value, SIMPLE);
     glTranslatef(x_start, y_start, 0.0);
     glRotatef(angle, 0.0, 0.0, 1.0);
     glRotatef(90, 0.0, 1.0, 0.0);
@@ -432,13 +449,13 @@ void Visualization::draw_3d_cone(Simulation const &simulation, GLfloat magn, GLf
     glPopMatrix();
 }
 
-void Visualization::draw_3d_arrow(Simulation const &simulation, GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, size_t idx) {
+void Visualization::draw_3d_arrow(GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, float value) {
     static GLUquadricObj *p = gluNewQuadric();
     gluQuadricDrawStyle(p, GLU_FILL);
     GLfloat base_scale = magn;
     GLfloat height_scale = magn * 2;
     glPushMatrix();
-    setColor(pick_scalar_field_value(simulation, idx), SIMPLE);
+    setColor(value, SIMPLE);
     glTranslatef(x_start, y_start, 0.0);
     glRotatef(angle, 0.0, 0.0, 1.0);
     glRotatef(90, 0.0, 1.0, 0.0);

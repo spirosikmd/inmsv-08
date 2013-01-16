@@ -137,9 +137,11 @@ private:
     float pick_scalar_field_value(Simulation const &simulation, size_t idx);
     void pick_vector_field_value(Simulation const &simulation, size_t idx, float values[]);
     void draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
-    void draw_3d_cone(Simulation const &simulation, GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, size_t idx);
-    void draw_simple_arrow(Simulation const &simulation, GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, size_t idx);
-    void draw_3d_arrow(Simulation const &simulation, GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, size_t idx);
+    void draw_3d_cone(GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, float value);
+    void draw_simple_arrow(GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, float value);
+    void draw_3d_arrow(GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, float value);
+    void draw_glyphs_on_comp_grid(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
+    void draw_glyphs_on_sampled_grid(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
     GLfloat pick_scaled_field(float v);
 };
 
