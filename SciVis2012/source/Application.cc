@@ -440,6 +440,7 @@ void Application::initUI() {
     vectorDatasetsGroup->add_item(Visualization::VELOCITY, "Velocity v");
     vectorDatasetsGroup->add_item(Visualization::FORCE, "Force f");
     vectorDatasetsGroup->add_item(Visualization::DENSITY_GRADIENT, "Density Gradient");
+    vectorDatasetsGroup->add_item(Visualization::VELOCITY_MAGN_GRADIENT, "Velocity |V| Gradient");
     vectorDatasetsGroup->set_alignment(GLUI_ALIGN_RIGHT);
     glui->add_statictext_to_panel(datasetOptions, "                                              ");
 

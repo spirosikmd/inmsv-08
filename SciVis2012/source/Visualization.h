@@ -54,6 +54,7 @@ public:
         VELOCITY,
         FORCE,
         DENSITY_GRADIENT,
+        VELOCITY_MAGN_GRADIENT,
         NONE
     };
 
