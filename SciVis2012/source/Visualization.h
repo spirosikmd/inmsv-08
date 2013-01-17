@@ -39,10 +39,11 @@ public:
     };
 
     enum Option {
-        DrawSmoke, // draw the smoke or not
+        DRAW_SMOKE, // draw the smoke or not
         DrawVectorField, // draw the vector field or not (not used for now)
         UseDirectionColoring, // use direction color-coding or not (not used for now)
-        DrawGlyphs, // draw the velocities or not 
+        DRAW_GLYPHS, // draw the velocities or not
+        GRADIENT,
         OptionsCount // (automatically assigned)
     };
 
@@ -52,6 +53,7 @@ public:
         FORCE_MAGN,
         VELOCITY,
         FORCE,
+        DENSITY_GRADIENT,
         NONE
     };
 
@@ -145,6 +147,7 @@ private:
     void draw_glyphs_on_comp_grid(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
     void draw_glyphs_on_sampled_grid(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
     GLfloat pick_scaled_field(float v);
+    void gradient(Simulation const &simulation, int i, int j, float wn, float hn, int DIM, float grad[]);
 };
 
 #endif

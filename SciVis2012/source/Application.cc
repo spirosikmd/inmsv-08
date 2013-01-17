@@ -212,8 +212,8 @@ void Application::keyboard(unsigned char key, int x, int y) {
 
         case 'x':
         {
-            visualization.toggle(Visualization::DrawSmoke);
-            if (visualization.is_enabled(Visualization::DrawSmoke))
+            visualization.toggle(Visualization::DRAW_SMOKE);
+            if (visualization.is_enabled(Visualization::DRAW_SMOKE))
                 visualization.enable(Visualization::DrawVectorField);
         }
             break;
@@ -222,7 +222,7 @@ void Application::keyboard(unsigned char key, int x, int y) {
         {
             visualization.toggle(Visualization::DrawVectorField);
             if (visualization.is_enabled(Visualization::DrawVectorField))
-                visualization.enable(Visualization::DrawSmoke);
+                visualization.enable(Visualization::DRAW_SMOKE);
         }
             break;
 
@@ -439,16 +439,19 @@ void Application::initUI() {
     GLUI_Listbox *vectorDatasetsGroup = new GLUI_Listbox(datasetOptions, "Vector ", (int*) &vectorDataset, VECTOR_DATASET_LIST, buttonHandler);
     vectorDatasetsGroup->add_item(Visualization::VELOCITY, "Velocity v");
     vectorDatasetsGroup->add_item(Visualization::FORCE, "Force f");
+    vectorDatasetsGroup->add_item(Visualization::DENSITY_GRADIENT, "Density Gradient");
     vectorDatasetsGroup->set_alignment(GLUI_ALIGN_RIGHT);
     glui->add_statictext_to_panel(datasetOptions, "                                              ");
 
     // visualization technique
     GLUI_Panel *visualization_options = new GLUI_Panel(glui, "Options");
     visualization_options->set_alignment(GLUI_ALIGN_LEFT);
-    GLUI_Checkbox *glyphs_box = new GLUI_Checkbox(visualization_options, "Glyphs", &visualization.options[Visualization::DrawGlyphs]);
+    GLUI_Checkbox *glyphs_box = new GLUI_Checkbox(visualization_options, "Glyphs", &visualization.options[Visualization::DRAW_GLYPHS]);
     glyphs_box->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Checkbox *smoke_box = new GLUI_Checkbox(visualization_options, "Smoke", &visualization.options[Visualization::DrawSmoke]);
+    GLUI_Checkbox *smoke_box = new GLUI_Checkbox(visualization_options, "Smoke", &visualization.options[Visualization::DRAW_SMOKE]);
     smoke_box->set_alignment(GLUI_ALIGN_RIGHT);
+    GLUI_Checkbox *gradient_box = new GLUI_Checkbox(visualization_options, "Gradient", &visualization.options[Visualization::GRADIENT]);
+    gradient_box->set_alignment(GLUI_ALIGN_RIGHT);
     GLUI_Listbox *glyphTypeList = new GLUI_Listbox(visualization_options, "Glyph ", (int*) &glyphType, GLYPH_TYPE_LIST, buttonHandler);
     glyphTypeList->set_alignment(GLUI_ALIGN_RIGHT);
     glyphTypeList->add_item(Visualization::SIMPLE_ARROWS, "Simple Arrows");

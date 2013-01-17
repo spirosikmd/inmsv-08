@@ -17,15 +17,16 @@ Visualization::Visualization() {
     scalarDataset = DENSITY;
     vectorDataset = VELOCITY;
     options[UseDirectionColoring] = false; // not used for now
-    options[DrawSmoke] = false;
-    options[DrawGlyphs] = true;
+    options[DRAW_SMOKE] = false;
+    options[DRAW_GLYPHS] = true;
     options[DrawVectorField] = true; // not used for now
+    options[GRADIENT] = false;
 
-    datasets.insert(std::make_pair(DENSITY, Dataset(0, 1, CLAMPING)));
-    datasets.insert(std::make_pair(VELOCITY_MAGN, Dataset(0.01, 0.08, CLAMPING)));
-    datasets.insert(std::make_pair(FORCE_MAGN, Dataset(0, 0.15, CLAMPING)));
-    datasets.insert(std::make_pair(FORCE, Dataset(0, 1, CLAMPING)));
-    datasets.insert(std::make_pair(VELOCITY, Dataset(0, 1, CLAMPING)));
+    datasets.insert(make_pair(DENSITY, Dataset(0, 1, CLAMPING)));
+    datasets.insert(make_pair(VELOCITY_MAGN, Dataset(0.01, 0.08, CLAMPING)));
+    datasets.insert(make_pair(FORCE_MAGN, Dataset(0, 0.15, CLAMPING)));
+    datasets.insert(make_pair(FORCE, Dataset(0, 1, CLAMPING)));
+    datasets.insert(make_pair(VELOCITY, Dataset(0, 1, CLAMPING)));
 }
 
 void Visualization::initializeColormaps() {
@@ -62,14 +63,14 @@ void Visualization::initializeColormaps() {
     byg->putColor(BLUE, 0);
 
     Colormap* zebra = new Colormap();
-    for (int i = 0; i < 256; i = i + 64) {
-        for (int j = 0; j < 32; j++) {
-            zebra->putColor(WHITE, i + j);
+    for (int i = 0; i < 256; i = i + ((256 / 32)*2)) {
+        for (int j = 0; j < (256 / 32); j++) {
+            zebra->putColor(BLACK, i + j);
         }
     }
-    for (int i = 32; i < 256; i = i + 64) {
-        for (int j = 0; j < 32; j++) {
-            zebra->putColor(BLACK, i + j);
+    for (int i = (256 / 32); i < 256; i = i + ((256 / 32)*2)) {
+        for (int j = 0; j < (256 / 32); j++) {
+            zebra->putColor(WHITE, i + j);
         }
     }
 
@@ -199,10 +200,10 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     fftw_real wn_sample = (fftw_real) winWidth / (fftw_real) (sample_x + 1); // Sample Grid cell width 
     fftw_real hn_sample = (fftw_real) winHeight / (fftw_real) (sample_y + 1); // Sample Grid cell heigh
 
-    if (options[DrawSmoke]) {
+    if (options[DRAW_SMOKE]) {
         draw_smoke(simulation, DIM, wn, hn);
     }
-    if (options[DrawGlyphs]) {
+    if (options[DRAW_GLYPHS]) {
         draw_glyphs(simulation, DIM, wn, hn, wn_sample, hn_sample);
     }
 }
@@ -268,7 +269,11 @@ void Visualization::draw_glyphs_on_comp_grid(Simulation const &simulation, const
     for (int i = 0; i < DIM; i++) {
         for (int j = 0; j < DIM; j++) {
             idx = (j * DIM) + i;
-            pick_vector_field_value(simulation, idx, values);
+            if (options[GRADIENT]) {
+                gradient(simulation, i, j, wn, hn, DIM, values);
+            } else {
+                pick_vector_field_value(simulation, idx, values);
+            }
 
             magn = magnitude(values);
             magn = pick_scaled_field(magn);
@@ -467,12 +472,30 @@ GLfloat Visualization::pick_scaled_field(float v) {
         case FORCE:
             value = scale(v, 0, 0.15, 0, 10);
             break;
+        case DENSITY_GRADIENT:
+            value = scale(v, 0.001, 5, 0, 10);
+            break;
         case VELOCITY:
             value = scale(v, 0.00001, 0.08, 0, 10);
         default:
             break;
     }
     return value;
+}
+
+void Visualization::gradient(Simulation const &simulation, int i, int j, float wn, float hn, int DIM, float grad[]) {
+    float x = wn + (fftw_real) i * wn;
+    float y = hn + (fftw_real) j * hn;
+            
+    int x_point = ceil(x / wn);
+    int y_point = ceil(y / hn);
+    //    int topright = ((y_point - 1) * DIM) + (x_point - 1);
+    int bottomright = ((y_point - 2) * DIM) + (x_point - 1);
+    int topleft = ((y_point - 1) * DIM) + (x_point - 2);
+    int bottomleft = ((y_point - 2) * DIM) + (x_point - 2);
+
+    grad[0] = pick_scalar_field_value(simulation, bottomright) - pick_scalar_field_value(simulation, bottomleft);
+    grad[1] = pick_scalar_field_value(simulation, topleft) - pick_scalar_field_value(simulation, bottomleft);
 }
 
 void Visualization::setScalarMin(float min) {
