@@ -451,10 +451,11 @@ void Application::initUI() {
     glyphs_box->set_alignment(GLUI_ALIGN_RIGHT);
     GLUI_Checkbox *smoke_box = new GLUI_Checkbox(visualization_options, "Smoke", &visualization.options[Visualization::DRAW_SMOKE]);
     smoke_box->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Checkbox *gradient_box = new GLUI_Checkbox(visualization_options, "Gradient", &visualization.options[Visualization::GRADIENT]);
-    gradient_box->set_alignment(GLUI_ALIGN_RIGHT);
+//    GLUI_Checkbox *gradient_box = new GLUI_Checkbox(visualization_options, "Gradient", &visualization.options[Visualization::GRADIENT]);
+//    gradient_box->set_alignment(GLUI_ALIGN_RIGHT);
     GLUI_Listbox *glyphTypeList = new GLUI_Listbox(visualization_options, "Glyph ", (int*) &glyphType, GLYPH_TYPE_LIST, buttonHandler);
     glyphTypeList->set_alignment(GLUI_ALIGN_RIGHT);
+    glyphTypeList->add_item(Visualization::HEDGEHOGS, "Hedgehogs");
     glyphTypeList->add_item(Visualization::SIMPLE_ARROWS, "Simple Arrows");
     glyphTypeList->add_item(Visualization::CONES_3D, "3D Cones");
     glyphTypeList->add_item(Visualization::ARROWS_3D, "3D Arrows");

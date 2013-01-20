@@ -269,11 +269,7 @@ void Visualization::draw_glyphs_on_comp_grid(Simulation const &simulation, const
     for (int i = 0; i < DIM; i++) {
         for (int j = 0; j < DIM; j++) {
             idx = (j * DIM) + i;
-            if (options[GRADIENT]) {
-                gradient(simulation, i, j, wn, hn, DIM, xy);
-            } else {
-                pick_vector_field_value(simulation, idx, xy);
-            }
+            pick_vector_field_value(simulation, idx, xy, i, j, wn, hn, DIM);
 
             magn = magnitude(xy);
             magn = pick_scaled_field(magn);
@@ -290,6 +286,9 @@ void Visualization::draw_glyphs_on_comp_grid(Simulation const &simulation, const
             float value_for_color = pick_scalar_field_value(simulation, idx);
 
             switch (glyphType) {
+                case HEDGEHOGS:
+                    draw_hedgehogs(x_start, y_start, value_for_color, xy);
+                    break;
                 case SIMPLE_ARROWS:
                     draw_simple_arrow(magn, x_start, y_start, angle, value_for_color);
                     break;
@@ -336,22 +335,22 @@ void Visualization::draw_glyphs_on_sampled_grid(Simulation const &simulation, co
             y1 = hn + (fftw_real) (y_point - 1) * hn;
             x2 = wn + (fftw_real) (x_point - 2) * wn;
             y2 = hn + (fftw_real) (y_point - 2) * hn;
-            GLfloat x, y;
+            GLfloat *xy = new GLfloat[2];
             GLfloat f1x = sample_x4_y4[0]*(x2 - x_start)*(y2 - y_start);
             GLfloat f2x = sample_x2_y2[0]*(x_start - x1)*(y2 - y_start);
             GLfloat f3x = sample_x3_y3[0]*(x2 - x_start)*(y_start - y1);
             GLfloat f4x = sample_x1_y1[0]*(x_start - x1)*(y_start - y1);
-            x = (1 / ((x2 - x1)*(y2 - y1)))*(f1x + f2x + f3x + f4x);
+            xy[0] = (1 / ((x2 - x1)*(y2 - y1)))*(f1x + f2x + f3x + f4x);
             GLfloat f1y = sample_x4_y4[1]*(x2 - x_start)*(y2 - y_start);
             GLfloat f2y = sample_x2_y2[1]*(x_start - x1)*(y2 - y_start);
             GLfloat f3y = sample_x3_y3[1]*(x2 - x_start)*(y_start - y1);
             GLfloat f4y = sample_x1_y1[1]*(x_start - x1)*(y_start - y1);
-            y = (1 / ((x2 - x1)*(y2 - y1)))*(f1y + f2y + f3y + f4y);
+            xy[1] = (1 / ((x2 - x1)*(y2 - y1)))*(f1y + f2y + f3y + f4y);
 
-            magn = magnitude(x, y);
+            magn = magnitude(xy[0], xy[1]);
             magn = pick_scaled_field(magn);
 
-            GLfloat angle = atan2(y, x) * 180 / M_PI;
+            GLfloat angle = atan2(xy[1], xy[0]) * 180 / M_PI;
 
             float value_for_color1 = pick_scalar_field_value(simulation, idx_x1_y1);
             float value_for_color2 = pick_scalar_field_value(simulation, idx_x2_y2);
@@ -364,7 +363,11 @@ void Visualization::draw_glyphs_on_sampled_grid(Simulation const &simulation, co
             float fx1y1 = value_for_color1 * (x_start - x1) * (y_start - y1);
             float value_for_color = (1 / ((x2 - x1) * (y2 - y1))) * (fx1y1 + fx2y2 + fx3y3 + fx4y4);
 
+
             switch (glyphType) {
+                case HEDGEHOGS:
+                    draw_hedgehogs(x_start, y_start, value_for_color, xy);
+                    break;
                 case SIMPLE_ARROWS:
                     draw_simple_arrow(magn, x_start, y_start, angle, value_for_color);
                     break;
@@ -377,6 +380,17 @@ void Visualization::draw_glyphs_on_sampled_grid(Simulation const &simulation, co
             }
         }
     }
+}
+
+void Visualization::draw_hedgehogs(GLfloat x_start, GLfloat y_start, float value, float values[]) {
+    glEnable(GL_TEXTURE_1D);
+    colormap->loadColormapTexture();
+    glBegin(GL_LINES);
+    setColor(value, TEXTURE);
+    glVertex2f(x_start, y_start);
+    glVertex2f(x_start + vec_scale * values[0], y_start + vec_scale * values[1]);
+    glEnd();
+    glDisable(GL_TEXTURE_1D);
 }
 
 void Visualization::draw_simple_arrow(GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, float value) {
@@ -452,8 +466,14 @@ float Visualization::pick_scalar_field_value(Simulation const &simulation, size_
     return value;
 }
 
-void Visualization::pick_vector_field_value(Simulation const &simulation, size_t idx, float values[]) {
+void Visualization::pick_vector_field_value(Simulation const &simulation, size_t idx, float values[], int i, int j, float wn, float hn, int DIM) {
     switch (vectorDataset) {
+        case DENSITY_GRADIENT:
+            gradient(simulation, i, j, wn, hn, DIM, values);
+            break;
+        case VELOCITY_MAGN_GRADIENT:
+            gradient(simulation, i, j, wn, hn, DIM, values);
+            break;
         case FORCE:
             values[0] = simulation.fx[idx];
             values[1] = simulation.fy[idx];
@@ -476,7 +496,7 @@ GLfloat Visualization::pick_scaled_field(float v) {
             value = scale(v, 0.001, 5, 0, 10);
             break;
         case VELOCITY_MAGN_GRADIENT:
-            value = scale(v, 0.00001, 0.7, 0, 1);
+            value = scale(v, 0.00001, 0.08, 0, 10);
             break;
         case VELOCITY:
             value = scale(v, 0.00001, 0.08, 0, 10);
@@ -489,7 +509,7 @@ GLfloat Visualization::pick_scaled_field(float v) {
 void Visualization::gradient(Simulation const &simulation, int i, int j, float wn, float hn, int DIM, float grad[]) {
     float x = wn + (fftw_real) i * wn;
     float y = hn + (fftw_real) j * hn;
-            
+
     int x_point = ceil(x / wn);
     int y_point = ceil(y / hn);
     //    int topright = ((y_point - 1) * DIM) + (x_point - 1);
