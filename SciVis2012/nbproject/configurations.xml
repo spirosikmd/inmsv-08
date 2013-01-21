@@ -14,8 +14,12 @@
       <itemPath>source/Colorbar.h</itemPath>
       <itemPath>source/Colormap.cpp</itemPath>
       <itemPath>source/Colormap.h</itemPath>
+      <itemPath>source/Grid.cpp</itemPath>
+      <itemPath>source/Grid.h</itemPath>
       <itemPath>source/Simulation.cc</itemPath>
       <itemPath>source/Simulation.h</itemPath>
+      <itemPath>source/UniformGrid.cpp</itemPath>
+      <itemPath>source/UniformGrid.h</itemPath>
       <itemPath>source/Utilities.cc</itemPath>
       <itemPath>source/Utilities.h</itemPath>
       <itemPath>source/Visualization.cpp</itemPath>

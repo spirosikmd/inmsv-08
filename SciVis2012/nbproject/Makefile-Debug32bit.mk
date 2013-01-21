@@ -35,11 +35,13 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/source/Grid.o \
 	${OBJECTDIR}/source/Colorbar.o \
 	${OBJECTDIR}/source/Application.o \
 	${OBJECTDIR}/source/Utilities.o \
 	${OBJECTDIR}/source/Colormap.o \
 	${OBJECTDIR}/source/Visualization.o \
+	${OBJECTDIR}/source/UniformGrid.o \
 	${OBJECTDIR}/source/main.o \
 	${OBJECTDIR}/source/Simulation.o
 
@@ -68,6 +70,11 @@ ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/smoke: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/smoke ${OBJECTFILES} ${LDLIBSOPTIONS} 
 
+${OBJECTDIR}/source/Grid.o: source/Grid.cpp 
+	${MKDIR} -p ${OBJECTDIR}/source
+	${RM} $@.d
+	$(COMPILE.cc) -g -Werror -Ilibraries/fftw-2.1.5/include -MMD -MP -MF $@.d -o ${OBJECTDIR}/source/Grid.o source/Grid.cpp
+
 ${OBJECTDIR}/source/Colorbar.o: source/Colorbar.cpp 
 	${MKDIR} -p ${OBJECTDIR}/source
 	${RM} $@.d
@@ -92,6 +99,11 @@ ${OBJECTDIR}/source/Visualization.o: source/Visualization.cpp
 	${MKDIR} -p ${OBJECTDIR}/source
 	${RM} $@.d
 	$(COMPILE.cc) -g -Werror -Ilibraries/fftw-2.1.5/include -MMD -MP -MF $@.d -o ${OBJECTDIR}/source/Visualization.o source/Visualization.cpp
+
+${OBJECTDIR}/source/UniformGrid.o: source/UniformGrid.cpp 
+	${MKDIR} -p ${OBJECTDIR}/source
+	${RM} $@.d
+	$(COMPILE.cc) -g -Werror -Ilibraries/fftw-2.1.5/include -MMD -MP -MF $@.d -o ${OBJECTDIR}/source/UniformGrid.o source/UniformGrid.cpp
 
 ${OBJECTDIR}/source/main.o: source/main.cc 
 	${MKDIR} -p ${OBJECTDIR}/source

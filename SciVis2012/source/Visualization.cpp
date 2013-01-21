@@ -282,7 +282,7 @@ void Visualization::draw_glyphs_on_comp_grid(Simulation const &simulation, const
 
             GLfloat x_start = wn + (fftw_real) i * wn;
             GLfloat y_start = hn + (fftw_real) j * hn;
-
+            
             float value_for_color = pick_scalar_field_value(simulation, idx);
 
             switch (glyphType) {
