@@ -36,13 +36,14 @@ int UniformGrid::getCell(int c, int *v) {
     c -= C[1] * P;
     C[0] = c;
     
-    
     // now go from cell coordinates to vertex coordinates
     int i[2];
     int j = 0;
     for (i[0] = 0; i[0] < 2; i[0]++)
-        for (i[1] = 0; i[1] < 2; i[1]++)
+        for (i[1] = 0; i[1] < 2; i[1]++) {
+            cout << C[0] + i[0] << ' ' << C[1] + i[1] << endl;
             v[j++] = lex(C[0] + i[0], C[1] + i[1]);
+        }
     
     return 2;
 }

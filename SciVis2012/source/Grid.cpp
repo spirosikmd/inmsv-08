@@ -47,14 +47,28 @@ float* Grid::getC0Vector(int i) {
     return &(c0_vectors[3*i]);
 }
 
-float Grid::getC0Vector(int c) {
+float* Grid::getC0Vector(int c, float x, float y) {
     return getC0Vector(c);
 }
 
 float* Grid::getC1Vector(int i) {
-    return &(c0_vectors[3*i]);
+    return &(c1_vectors[3*i]);
 }
 
-float Grid::getC1Vector(int, float*) {
-    
+void Grid::getC1Vector(int c, float *p, float *v) {
+    int cell[MAX_CELL_SIZE];
+    int C = getCell(c, cell);
+    float q[3];
+    world2cell(c, p, q);
+    v[0] = v[1] = v[2] = 0;
+    for (int i = 0; i < C; i++) {
+        float *vi = getC1Vector(cell[i]);
+        v[0] += vi[0] * Phi(i, q[0], q[1]);
+        v[1] += vi[1] * Phi(i, q[0], q[1]);
+        v[2] += vi[2] * Phi(i, q[0], q[1]);
+    }
+}
+
+float Grid::Phi(int, float, float) {
+    return 0;
 }

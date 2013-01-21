@@ -10,7 +10,7 @@ using namespace std;
 
 int main(int argc, char** argv)
 {	
-//    UniformGrid *ug = new UniformGrid(40, 40, 0, 0, 1000, 800);
+    UniformGrid *ug = new UniformGrid(40, 40, 0, 0, 1000, 800);
 //    cout << "points: " << ug->numPoints() << '\n';
 //    cout << "cells: " << ug->numCells() << '\n';
 //    float *p = new float[2];
@@ -21,9 +21,10 @@ int main(int argc, char** argv)
 //    p[1] = 1;
 //    int c = ug->findCell(p);
 //    cout << "cell id: " << c << endl;
-//    int *v = new int[4];
-//    ug->getCell(c, v);
-//    cout << v[0] << ' ' << v[1] << ' ' << v[2] << ' ' << v[3] << endl;
+    int c = 5;
+    int *v = new int[4];
+    ug->getCell(c, v);
+    cout << v[0] << ' ' << v[1] << ' ' << v[2] << ' ' << v[3] << endl;
     try
     {		
         Application::outputUsage();

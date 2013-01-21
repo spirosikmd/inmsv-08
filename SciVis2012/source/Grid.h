@@ -26,10 +26,10 @@ public:
     float& getC1Scalar(int);
     float getC1Scalar(int, float *);
     float* getC0Vector(int);
-    float getC0Vector(int, float, float);
+    float* getC0Vector(int, float, float);
     float* getC1Vector(int);
-    float getC1Vector(int, float *);
-    float Phi(int, float float);
+    void getC1Vector(int, float *, float *);
+    float Phi(int, float, float);
     
 protected:
     vector<float> c0_scalars;
@@ -38,7 +38,7 @@ protected:
     vector<float> c1_vectors;
     
 private:
-    const int MAX_CELL_SIZE = 8;
+    static const int MAX_CELL_SIZE = 8;
 };
 
 #endif	/* GRID_H */
