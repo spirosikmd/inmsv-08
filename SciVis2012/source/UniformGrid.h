@@ -21,9 +21,11 @@ public:
     int getDimension1();
     int getDimension2();
     int lex(int, int);
+    
 protected:
     int N1, N2;
     float m1, m2;
+    
 private:
     float d1, d2;
 };

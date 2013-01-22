@@ -76,6 +76,8 @@ private:
     static int sample_x, sample_y;
 
     static Visualization::Mode scalarMode;
+    
+    static void renderColormap();
 
 };
 

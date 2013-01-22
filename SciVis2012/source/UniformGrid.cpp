@@ -40,10 +40,8 @@ int UniformGrid::getCell(int c, int *v) {
     int i[2];
     int j = 0;
     for (i[0] = 0; i[0] < 2; i[0]++)
-        for (i[1] = 0; i[1] < 2; i[1]++) {
-            cout << C[0] + i[0] << ' ' << C[1] + i[1] << endl;
+        for (i[1] = 0; i[1] < 2; i[1]++)
             v[j++] = lex(C[0] + i[0], C[1] + i[1]);
-        }
     
     return 2;
 }
@@ -54,8 +52,6 @@ int UniformGrid::findCell(float *p) {
     // compute cell coordinates C[0], C[1]
     C[0] = int((p[0] - m1) * N1/d1);
     C[1] = int((p[1] - m2) * N2/d2);
-    
-    cout << "C[0]: " << C[0] << "  C[1]: " << C[1] << endl;
     
     // test if p is inside the dataset
     if (C[0] < 0 || C[0] >= N1-1 || C[1] < 0 || C[1] >= N2-1)

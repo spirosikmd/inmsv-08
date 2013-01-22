@@ -133,14 +133,30 @@ void Application::display() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    glDisable(GL_LIGHTING);
-    visualization.getColormap()->render(visualization.getScalarScaleMin(), visualization.getScalarScaleMax(), 5);
-    glEnable(GL_LIGHTING);
+    renderColormap();
 
     visualization.visualize(simulation, winWidth, winHeight);
 
     glFlush();
     glutSwapBuffers();
+}
+
+void Application::renderColormap() {
+    glDisable(GL_LIGHTING);
+    float min = 0.0;
+    float max = 0.0;
+    switch (scalarMode) {
+        case Visualization::CLAMPING:
+            min = visualization.getScalarMin();
+            max = visualization.getScalarMax();
+            break;
+        case Visualization::SCALING:
+            min = visualization.getScalarScaleMin();
+            max = visualization.getScalarScaleMax();
+            break;
+    }
+    visualization.getColormap()->render(min, max, 5);
+    glEnable(GL_LIGHTING);
 }
 
 //reshape: Handle window resizing (reshaping) events
