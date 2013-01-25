@@ -18,3 +18,9 @@
 .DS_Store
 
 *.inc
+
+*synctex.gz
+
+*.fdb_latexmk
+
+*.log
