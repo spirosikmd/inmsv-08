@@ -1,0 +1,72 @@
+\documentclass[11pt]{scrartcl}
+\usepackage[english]{babel}
+\input{system/config}
+\input{system/titlepage}
+
+\setboolean{todo}{true}
+
+\title{SciVis}
+\subtitle{Visualization}
+
+\author{Christian Manteuffel\\Spyros Ioakeimidis}
+\date{\today}
+\email{}
+\version{1.0}
+\location{Groningen}
+\blurb{%
+	\textsc{University of Groningen}\\
+	Faculty of Mathematics and Natural Sciences\\
+	Department of Mathematics and Computing Science\\[0.2em]
+    Scientific Visualization
+}%
+
+
+\begin{document}
+	
+\renewcommand{\thepage}{\roman{page}}
+\pagestyle{empty}
+\maketitle
+
+\pagestyle{plain}
+\renewcommand{\thepage}{\Roman{page}}
+\setcounter{page}{1}
+\setcounter{section}{0}
+
+% Abstract	
+%\addcontentsline{toc}{section}{Abstract}	
+%\include{contents/00_abstract}
+		
+% Table of Content		
+\addcontentsline{toc}{section}{Contents}
+\tableofcontents   			
+\clearpage
+\addcontentsline{toc}{section}{List of Figures}
+\listoffigures
+%\addcontentsline{toc}{section}{List of Tables}
+%\listoftables
+\newpage
+	
+% Glossary
+\addcontentsline{toc}{section}{Glossary}
+\input{contents/glossary}
+\printglossaries 
+\newpage
+	
+% Content
+\setcounter{page}{1}
+\setcounter{section}{0}
+\renewcommand{\thepage}{\arabic{page}}	
+\input{contents/outline}
+\newpage
+
+% Bib
+\addcontentsline{toc}{section}{References}
+\nocite{*} %DO NOT UNCOMMENT, only for test purpose
+\bibliographystyle{IEEEtran}
+\bibliography{contents/references}
+\newpage
+
+% Appendix
+%\appendix	
+%\input{contents/appendix}	
+\end{document}

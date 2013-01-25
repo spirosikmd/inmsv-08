@@ -15,3 +15,6 @@
 /example-code/dist/
 /SciVis2012/build/
 /SciVis2012/dist/
+.DS_Store
+
+*.inc

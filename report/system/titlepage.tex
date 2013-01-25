@@ -1,0 +1,73 @@
+%!TEX root = ../Peerbox.tex
+
+\makeatletter
+	\def\clap#1{\hbox to 0pt{\hss #1\hss}}%
+	\def\line#1{%
+		\hbox to \hsize{%
+	    	\vbox{\centering #1}}
+	}%
+	\def\haut#1#2#3{%
+		\hbox to \hsize{%
+		\rlap{\vtop{\raggedright #1}}%
+    		\hss
+		\clap{\vtop{\centering #2}}%
+    		\hss
+    		\llap{\vtop{\raggedleft #3}}}%
+	}%
+	
+	\def\bas#1#2#3{%
+  		\hbox to \hsize{%
+    		\rlap{\vbox{\raggedright #1}}%
+    		\hss
+    		\clap{\vbox{\centering #2}}%
+    		\hss
+    		\llap{\vbox{\raggedleft #3}}}}%
+
+\def\maketitle{%
+	\thispagestyle{empty}\vbox to \vsize{%
+    	\haut{}{\@blurb}{}
+    	\vfill
+	  		\begin{center}
+			%	\includegraphics[width=\textwidth]{./figures/ApacheLogo.pdf}
+				\vspace{.5cm}
+	  		\end{center}
+	\begin{center}\leavevmode
+    		\normalfont
+	    	{\huge\raggedright \sf \@title\par}%    
+	    	{\raggedright  \sf \@subtitle\par}%  
+        		\vspace{1mm}
+    		\hrulefill\par
+    		{\raggedleft \sf\@author\par}%
+     		{\raggedleft \texttt\sf{\@email}\par}%
+    		\vskip 1cm
+
+	\end{center}%
+    	\vfill
+    	\bas{}{\@version}{}
+    	\bas{}{\@location, \@date}{}
+   	}%
+  	\cleardoublepage
+}
+
+\def\date#1{\def\@date{#1}}
+\def\author#1{\def\@author{#1}}
+\def\title#1{\def\@title{#1}}
+\def\location#1{\def\@location{#1}}
+\def\blurb#1{\def\@blurb{#1}}
+\def\email#1{\def\@email{#1}}
+\def\subtitle#1{\def\@subtitle{#1}}
+\def\version#1{\def\@version{#1}}
+
+\date{\today}
+\author{}
+\title{}
+\location{}
+\blurb{%
+    	\textsc{University of Groningen} \\[0.2em]
+	Faculty of Mathematics and Natural Sciences\\
+	Department of Computing Science\\
+   	Software Engineering and Architecture\\
+}%
+\email{}
+\version{}
+\makeatother
