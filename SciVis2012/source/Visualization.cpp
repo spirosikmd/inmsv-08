@@ -157,8 +157,8 @@ void Visualization::setColor(float vy, ColorType t) {
             break;
 
         case SCALING:
-            if (vy > dataset.scaleMax) datasets[scalarDataset].scaleMax = vy;
-            if (vy < dataset.scaleMin) datasets[scalarDataset].scaleMin = vy;
+            //if (vy > dataset.scaleMax) datasets[scalarDataset].scaleMax = vy;
+            //if (vy < dataset.scaleMin) datasets[scalarDataset].scaleMin = vy;
             switch (t) {
                 case TEXTURE:
                     colorIndex = scale(vy, dataset.scaleMin, dataset.scaleMax, 0, 1);
@@ -200,12 +200,23 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     fftw_real wn_sample = (fftw_real) winWidth / (fftw_real) (sample_x + 1); // Sample Grid cell width 
     fftw_real hn_sample = (fftw_real) winHeight / (fftw_real) (sample_y + 1); // Sample Grid cell heigh
 
+    
+    datasets[scalarDataset].scaleMax = -INFINITY;
+    datasets[scalarDataset].scaleMin = INFINITY;
+    for (int idx = 0; idx < DIM*DIM; idx++) {
+        float value = pick_scalar_field_value(simulation, idx);
+        if (value > datasets[scalarDataset].scaleMax) datasets[scalarDataset].scaleMax = value;
+        if (value < datasets[scalarDataset].scaleMin) datasets[scalarDataset].scaleMin = value;
+    }
+
     if (options[DRAW_SMOKE]) {
         draw_smoke(simulation, DIM, wn, hn);
     }
     if (options[DRAW_GLYPHS]) {
         draw_glyphs(simulation, DIM, wn, hn, wn_sample, hn_sample);
     }
+
+
 }
 
 void Visualization::draw_smoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
@@ -282,7 +293,7 @@ void Visualization::draw_glyphs_on_comp_grid(Simulation const &simulation, const
 
             GLfloat x_start = wn + (fftw_real) i * wn;
             GLfloat y_start = hn + (fftw_real) j * hn;
-            
+
             float value_for_color = pick_scalar_field_value(simulation, idx);
 
             switch (glyphType) {
