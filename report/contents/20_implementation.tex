@@ -5,7 +5,7 @@
 
 understand and implement a set of color mapping techniques for the fluid flow simulation
 
-three datasets: The fluid density rho, the fluid velocity magnitude | v |, and the force field magnitude | f |
+three datasets: The fluid density rho, the fluid velocity magnitude | v | fig:velocityZebra, and the force field magnitude | f | \ref{fig:forceScaled}
 
 \ref{fig:rainbowColormap}
 lookup table
@@ -29,6 +29,7 @@ legend  The legend should show both the colormap and the corresponding numerical
 
 
 scaling: the entire actual range (min..max) of the dataset at the current time moment is mapped to the visible colormap. This means, of course, that you have to update the numerical values displayed along with the color legend.
+\ref{fig:forceScaled}
 
 clamping: the data values are clamped between two user-prescribed min and max values. These values correspond to the entire range of your color legend. Actual data values higher than min, or lower than max, are actually clamped to min and max respectively. The user should be allowed to change min and max interactively, e.g. by means of some sliders or similar widgets.
  
@@ -82,14 +83,14 @@ clamping: the data values are clamped between two user-prescribed min and max va
 \begin{figure}[htbp]
 \centering
 \begin{minipage}[t]{0.48\textwidth}
-        \includegraphics[height=3in]{figures/colormaps/rainbowSmokeScaled.png}
-\caption{Scaled valued}
-\label{fig:revised:modelingLanguages}
+        \includegraphics[height=3in]{figures/colormaps/forceScaled.png}
+\caption{Scaling the colormap to the min and max of force always shows the maximum and minimum values at the current timestep although the values are quite small.}
+\label{fig:forceScaled}
 \end{minipage}\hspace{.04\textwidth}%
 \begin{minipage}[t]{0.48\textwidth}
-        \includegraphics[height=3in]{figures/colormaps/zebraSmoke.png}
-    \caption{Density visualized with a zebra colormap that shows areas with high variation.}
-    \label{fig:revised:reqFormat}
+        \includegraphics[height=3in]{figures/colormaps/velocityZebra.png}
+    \caption{Velocity visualized with a zebra colormap that highlights areas with high variation.}
+    \label{fig:velocityZebra}
 \end{minipage}
 \end{figure}
 
