@@ -24,3 +24,21 @@
 *.fdb_latexmk
 
 *.log
+
+*.aux
+
+*.bbl
+
+*.glo
+
+*.blg
+
+*.idx
+
+*.toc
+
+*.out
+
+*.lof
+
+*.ist
