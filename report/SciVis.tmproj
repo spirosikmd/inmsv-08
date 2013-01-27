@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>SciVis.tex</string>
+	<string>contents/20_implementation.tex</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -42,30 +42,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>0</integer>
-			</dict>
-			<key>columnSelection</key>
-			<false/>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
-			<key>selectFrom</key>
-			<dict>
-				<key>column</key>
 				<integer>26</integer>
 				<key>line</key>
 				<integer>0</integer>
 			</dict>
-			<key>selectTo</key>
-			<dict>
-				<key>column</key>
-				<integer>0</integer>
-				<key>line</key>
-				<integer>0</integer>
-			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
 		</dict>
 		<key>contents/10_introduction.tex</key>
 		<dict>
@@ -86,14 +70,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>26</integer>
+				<integer>22</integer>
 				<key>line</key>
-				<integer>0</integer>
+				<integer>85</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>0</integer>
+			<integer>53</integer>
 		</dict>
 		<key>contents/outline.tex</key>
 		<dict>
@@ -136,6 +120,6 @@
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{738, 148}, {720, 874}}</string>
+	<string>{{0, 4}, {720, 874}}</string>
 </dict>
 </plist>
