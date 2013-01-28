@@ -140,44 +140,34 @@ int Visualization::getSampleY() {
 }
 
 void Visualization::setColor(float vy, ColorType t) {
+    
     Dataset dataset = datasets[scalarDataset];
-    float colorIndex = 0;
+    float colorIndex = 0, min, max;
     switch (dataset.mode) {
         case CLAMPING:
             if (vy > dataset.max) vy = dataset.max;
             if (vy < dataset.min) vy = dataset.min;
-            switch (t) {
-                case TEXTURE:
-                    colorIndex = scale(vy, dataset.min, dataset.max, 0, 1);
-                    break;
-                case SIMPLE:
-                    colorIndex = scale(vy, dataset.min, dataset.max, 0, 255);
-                    break;
-            }
+            max = dataset.max;
+            min = dataset.min;
             break;
-
         case SCALING:
-            //if (vy > dataset.scaleMax) datasets[scalarDataset].scaleMax = vy;
-            //if (vy < dataset.scaleMin) datasets[scalarDataset].scaleMin = vy;
-            switch (t) {
-                case TEXTURE:
-                    colorIndex = scale(vy, dataset.scaleMin, dataset.scaleMax, 0, 1);
-                    break;
-                case SIMPLE:
-                    colorIndex = scale(vy, dataset.scaleMin, dataset.scaleMax, 0, 255);
-                    break;
-            }
+            max = dataset.scaleMax;
+            min = dataset.scaleMin;
             break;
     }
+
     switch (t) {
         case TEXTURE:
+            colorIndex = scale(vy, min, max, 0, 1);
             glTexCoord1f(colorIndex);
             break;
         case SIMPLE:
+            colorIndex = scale(vy, min, max, 0, 255);
             RGB color = colormap->getColorAt(colorIndex);
             glColor3f(color.red, color.green, color.blue);
             break;
     }
+    
 }
 
 Colormap* Visualization::getColormap() {
@@ -200,10 +190,10 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     fftw_real wn_sample = (fftw_real) winWidth / (fftw_real) (sample_x + 1); // Sample Grid cell width 
     fftw_real hn_sample = (fftw_real) winHeight / (fftw_real) (sample_y + 1); // Sample Grid cell heigh
 
-    
+
     datasets[scalarDataset].scaleMax = -INFINITY;
     datasets[scalarDataset].scaleMin = INFINITY;
-    for (int idx = 0; idx < DIM*DIM; idx++) {
+    for (int idx = 0; idx < DIM * DIM; idx++) {
         float value = pick_scalar_field_value(simulation, idx);
         if (value > datasets[scalarDataset].scaleMax) datasets[scalarDataset].scaleMax = value;
         if (value < datasets[scalarDataset].scaleMin) datasets[scalarDataset].scaleMin = value;

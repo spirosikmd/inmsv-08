@@ -48,22 +48,40 @@ In the current implementation the colormaps are defined programmatically but it 
 \end{figure}
 
 
-Furthermore the user has the possibility to change hue and saturation of the  colormap during runtime. In order to apply hue ($h$) and saturation ($s$), the colors are translated into the HSV color system. Due to the circular nature of the hue, $h$ shifts the color($c$) along the hue color wheel. Instead saturation is applied by multiplication, which implies that the saturation can only be decreased for any color. A less saturated and hue shifted version of the rainbow colormap is illustrated in Figure~\ref{fig:saturationAndHueColormap}.
+Furthermore the user has the possibility to change hue and saturation of the  colormap during runtime. In order to apply hue ($h$) and saturation ($s$), the colors are translated into the HSV color system. Due to the circular nature of the hue, $h$ shifts the color($c$) along the hue color wheel. Instead saturation is applied by multiplication, which implies that the saturation can only be decreased for any color.
 
 \begin{eqnarray*}
 c_{hue} &=&  (c_{hue} + h)~\%~1\\
 c_{sat} &=& c_{sat} * s
 \end{eqnarray*}
+A less saturated and hue shifted version of the rainbow colormap is illustrated in Figure~\ref{fig:saturationAndHueColormap}.
+
+One is the fundamental problems is to map the values to a particular color, especially if the range of values is not known in advance or the dataset contains a few but extreme peaks or valley. Two different mapping modes have been implemented, which are clamping and scaling. Clamping allows the user to specify the minimum and maximum value, all values larger or smaller are clamped to the maximum respectively to the minimum value. 
+In contrast, scaling uses the complete range of values in the dataset of the current timestep. This means that we have to calculate the current minimum and maximum value for every timestep before we map the values to a color.
+
+The minimum and maximum value is necessary in order to translate the value range to the color range. This is done by scaling the value range up or down to the range of 0 to 255 by using the following code snippet. The resulting float value is rounded to its nearest integer value, which determines the index within the color table. 
+
+\begin{lstlisting}][language=C]
+float scale(float v, float f_min, float f_max, float min, float max) {
+    return ((v - f_min)*(max - min) / (f_max - f_min) + min);
+}
+\end{lstlisting}
+
+Figure~\ref{fig:forceScaled} depicts the visualization of the force magnitude by using a rainbow colormap and the scaling mode. The displayed colors extend over the complete range of available colors, although the values are very small and the range of values is quite narrow. During runtime it can be observed that the legend is constantly updated as the values become increasingly smaller unless new force is added. 
+
+
+
+
+
+
+
 
 three datasets: The fluid density rho, the fluid velocity magnitude | v | fig:velocityZebra, and the force field magnitude | f | \ref{fig:forceScaled}
 
 
-how to specify a colormap
-parameterization of colormap (hue and saturation) \ref{fig:saturationAndHueColormap}
 
-defined colormaps \ref{fig:colormaps}
  
-vertex vs texture
+
 
 transform (linear or logarithmic)
 
@@ -72,7 +90,7 @@ banding
 legend  The legend should show both the colormap and the corresponding numerical values associated to various colors.
 
 scaling: the entire actual range (min..max) of the dataset at the current time moment is mapped to the visible colormap. This means, of course, that you have to update the numerical values displayed along with the color legend.
-\ref{fig:forceScaled}
+
 
 clamping: the data values are clamped between two user-prescribed min and max values. These values correspond to the entire range of your color legend. Actual data values higher than min, or lower than max, are actually clamped to min and max respectively. The user should be allowed to change min and max interactively, e.g. by means of some sliders or similar widgets.
  
