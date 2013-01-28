@@ -1,14 +1,28 @@
 %!TEX root = ../SciVis.tex
 \subsection{Skeleton compilation}
+
 \subsection{Color mapping}
+Colormapping is one of the most straight-forwards ways to visualize scalar values. This visualization technique maps each value to a specific color by using a scalar-to-color function (cf. Figure~\ref{fig:rainbowColormap}). 
+
+We implemented this function as a lookup-table because we think that is is easier to define custom colormaps than compared to a transfer function. A disadvantage is that the lookup-table probably is more complex because it requires additional methods to manage the table.
+
+We implemented the lookup-table as an array of 256 RGB color values. RGB has the advantage over HSV that it is additive, which makes linear interpolation easier. A colormap is defined by specifying a color at various points in the array. All other colors will be calculated by linearly interpolating between the specified color-points. For instance blue at index 0, yellow at index 127 and green at index 255. This will produce a colormap similar to the one shown in Figure~\ref{fig:colormaps}(d). 
 
 
-understand and implement a set of color mapping techniques for the fluid flow simulation
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=.8\textwidth]{figures/colormaps/lookuptable.pdf}
+    \caption{Conceptual model of the lookup-table. Missing colors are calculated by interpolating defined color-points.}
+    \label{fig:lookupTable}
+\end{figure}
+
+
+
+lookup table
+
 
 three datasets: The fluid density rho, the fluid velocity magnitude | v | fig:velocityZebra, and the force field magnitude | f | \ref{fig:forceScaled}
 
-\ref{fig:rainbowColormap}
-lookup table
 
 color interpolation
 
@@ -92,6 +106,7 @@ clamping: the data values are clamped between two user-prescribed min and max va
 \end{figure}
 
 
+\clearpage
 \subsection{Glyphs}
 
 
