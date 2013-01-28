@@ -140,23 +140,26 @@ One of the most important aspects of visualization is the invert mapping of colo
 
 \subsection{Glyphs}
 
+The dataset class, separation of concerns, map that stores vector and scalar dataset, max and min for colormap
 
-The aim of this step is for you to understand and implement a set of glyph techniques. Glyphs are icons that convey the value (orientation, magnitude) of a vector field by means of several graphical icons, such as arrows. Glyphs can also be used to visualize several types of fields together, such as one scalar field and one vector field, at the same spatial locations. In this step, you will design and implement several glyphs for visualizing three datasets: The fluid density rho, the fluid velocity v, and the force field f. For a description of these quantities, see the skeleton code.
- 
-There is already a very basic implementation of arrow glyphs, also known as hedgehogs, provided in the skeleton code. Using this implementation as a starting point, and also the material in the book and lectures, you have to implement yourself several new functionalities, as follows.
- 
-·        Implement a mechanism that lets you choose one scalar field and one vector field and visualizes their combination using glyphs. As scalar fields, you should be able to choose from: the density rho, the fluid velocity magnitude | v |, and the force field magnitude | f |. These are exactly the scalar fields used at step 2. As vector fields, you should be able to choose from: fluid velocity v and the force field f. Use the vector field direction and magnitude to control the orientation and length (respectively) of the arrows. Use the scalar field to control the arrows’ colors. For this, use the color map techniques designed at step 2.
- 
-·        Implement a mechanism to specify where to draw the glyphs. Start by modifying the mechanism currently implemented in the code which places the glyphs on a regular sampling of the grid. Provide interactive controls to specify the number of samples, in the x and y directions, where you want to evaluate the vector field. In case your sample points do not coincide with an actual computational grid point, provide interpolation mechanisms that compute the dataset values out of the grid neighbour point(s). Here, you can choose between nearest-neighbor (constant) and (bi)linear interpolation.
- 
-·        Implement a mechanism that lets you parameterize the glyph itself. Besides using simple two-dimensional arrows (hedgehogs), implement two other glyph types that are able to show both a vector field and a scalar field. Suggestions include, but are not limited to:
- 
+
+changing the viewport to 3D
+
+sub and supersampling
+vector interpolation (cf. exam question)
+
+design of glyphs, factor, orientation
+hedgehogs
 three-dimensional cones
 three-dimensional ellipsoids
 three-dimensional arrows consisting of a cone tip and a cylindrical shafts
 arrows implemented as two-dimensional nice-looking, high-quality, textures instead of simple polygonal shapes
- 
-Just as for the previous steps, provide interactive means to choose the datasets and types of glyphs at runtime. Consider carefully the glyph design: How thick to make the glyph? How long to make it? Should you scale the length linearly with the vector magnitude, or use another scale? Should you clamp the glyph’s minimal and maximal sizes to some values? If so, which are those?
+Consider carefully the glyph design: How thick to make the glyph? How long to make it? Should you scale the length linearly with the vector magnitude, or use another scale? Should you clamp the glyph’s minimal and maximal sizes to some values? If so, which are those?
+
+
+combining colormapping and glyphs
+difficulties with colorizing glut objects
+
 
 \begin{figure}[htbp]
 \centering
