@@ -1,13 +1,17 @@
 %!TEX root = ../SciVis.tex
 \subsection{Skeleton compilation}
 
+use the standard version
+recompiled the lib for x64 os x 
+changing to framework 
+different headerfiles
+
 \subsection{Color mapping}
 Colormapping is one of the most straight-forwards ways to visualize scalar values. This visualization technique maps each value to a specific color by using a scalar-to-color function (cf. Figure~\ref{fig:rainbowColormap}). 
 
 We implemented this function as a lookup-table because we think that is is easier to define custom colormaps than compared to a transfer function. A disadvantage is that the lookup-table probably is more complex because it requires additional methods to manage the table.
 
 We implemented the lookup-table as an array of 256 RGB color values. RGB has the advantage over HSV that it is additive, which makes linear interpolation easier. A colormap is defined by specifying a color at various points in the array. All other colors will be calculated by linearly interpolating between the specified color-points. For instance blue at index 0, yellow at index 127 and green at index 255. This will produce a colormap similar to the one shown in Figure~\ref{fig:colormaps}(d). 
-
 
 \begin{figure}[htbp]
     \centering
@@ -16,15 +20,43 @@ We implemented the lookup-table as an array of 256 RGB color values. RGB has the
     \label{fig:lookupTable}
 \end{figure}
 
+In the current implementation the colormaps are defined programmatically but it would be possible to easily create a user interface that lets the user define his own colormaps during runtime via dran'n'drop. The following colormaps have been predefined as illustrated in Figure~\ref{fig:colormaps}:
+\begin{enumerate}[(a)]
+    \item \textbf{Luminance (grayscale)} A simple universal colormap that adheres the linearity constraint. 
+    \item \textbf{Rainbow} A colorful colormap that draws attention to high values as they are displayed in red. However, this colormap is often considered confusing due to unclear perceptual ordering of values and obscurity of data \footnote{Rainbow Color Map (Still) Considered Harmful, David Borland and Russell M., IEEE Computer Graphics and Applications} 
+    \item \textbf{Heat} This type of colormap has a natural association with flames. Very high ``hot'' values are bright while lower values range from black to dark red.  
+    \item \textbf{Blue-Yellow-Green} A colormap that separates the range of values into low, middle and high values. 
+    \item \textbf{Black Gradient} A colormap that produces a gradient from any color to black.
+    \item \textbf{White Gradient} A colormap that produces a gradient from any color to white.  
+    \item \textbf{Zebra} A colormap that shows rapid value variations. This colormap makes it difficult to map certain regions to concrete values as low values cannot be distinguished from high values. 
+\end{enumerate}   
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tabular}{ccccccc}
+    \includegraphics[height=1.75in]{figures/colormaps/grayscale.png}&
+      \includegraphics[height=1.75in]{figures/colormaps/rainbow.png}&
+      \includegraphics[height=1.75in]{figures/colormaps/heatmap.png}&         
+     \includegraphics[height=1.75in]{figures/colormaps/blueYellowGreen.png}&
+      \includegraphics[height=1.75in]{figures/colormaps/blackGradient.png}&
+      \includegraphics[height=1.75in]{figures/colormaps/whiteGradient.png}&
+      \includegraphics[height=1.75in]{figures/colormaps/zebra.png}\\
+    (a)&(b)&(c)&(d)&(e)&(f)&(g)\\
+    \end{tabular}
+    \caption{Predefined colormaps: (a) Luminance, (b) Rainbow, (c) Heatmap, (d)  Blue-Green-Yellow, (e) Black Gradient (f) White Gradient (g) Zebra}
+    \label{fig:colormaps}
+\end{figure}
 
 
-lookup table
+Furthermore the user has the possibility to change hue and saturation of the  colormap during runtime. In order to apply hue ($h$) and saturation ($s$), the colors are translated into the HSV color system. Due to the circular nature of the hue, $h$ shifts the color($c$) along the hue color wheel. Instead saturation is applied by multiplication, which implies that the saturation can only be decreased for any color. A less saturated and hue shifted version of the rainbow colormap is illustrated in Figure~\ref{fig:saturationAndHueColormap}.
 
+\begin{eqnarray*}
+c_{hue} &=&  (c_{hue} + h)~\%~1\\
+c_{sat} &=& c_{sat} * s
+\end{eqnarray*}
 
 three datasets: The fluid density rho, the fluid velocity magnitude | v | fig:velocityZebra, and the force field magnitude | f | \ref{fig:forceScaled}
 
-
-color interpolation
 
 how to specify a colormap
 parameterization of colormap (hue and saturation) \ref{fig:saturationAndHueColormap}
@@ -44,21 +76,6 @@ scaling: the entire actual range (min..max) of the dataset at the current time m
 
 clamping: the data values are clamped between two user-prescribed min and max values. These values correspond to the entire range of your color legend. Actual data values higher than min, or lower than max, are actually clamped to min and max respectively. The user should be allowed to change min and max interactively, e.g. by means of some sliders or similar widgets.
  
-\begin{figure}[htbp]
-    \centering
-    \begin{tabular}{ccccccc}
-    \includegraphics[height=2in]{figures/colormaps/grayscale.png}&
-      \includegraphics[height=2in]{figures/colormaps/rainbow.png}&
-      \includegraphics[height=2in]{figures/colormaps/heatmap.png}&         
-     \includegraphics[height=2in]{figures/colormaps/blueYellowGreen.png}&
-      \includegraphics[height=2in]{figures/colormaps/blackGradient.png}&
-      \includegraphics[height=2in]{figures/colormaps/whiteGradient.png}&
-      \includegraphics[height=2in]{figures/colormaps/zebra.png}\\
-    (a)&(b)&(c)&(d)&(e)&(f)&(g)\\
-    \end{tabular}
-    \caption{Predefined colormaps: (a) Luminance, (b) Rainbow, (c) Heatmap, (d)  Blue-Green-Yellow, (e) Black Gradient (f) White Gradient (g) Zebra}
-    \label{fig:colormaps}
-\end{figure}
 
 
 
