@@ -222,7 +222,7 @@ float intersect(float pi, float pj, float vi, float vj, float v) {
 
 void getCell(int c, int *v, int DIM) {
     int C[2];
-    int P = DIM;
+    int P = DIM-1;
     // compute cell coordinates C[0], C[1]
     C[1] = c / P;
     c -= C[1] * P;
@@ -240,8 +240,8 @@ void getCell(int c, int *v, int DIM) {
 }
 
 void getPoint(int i, float *p, int dim, const fftw_real wn, const fftw_real hn) {
-    p[0] = (i % dim) * wn;
-    p[1] = (i / dim) * hn;
+    p[0] = wn + (i % dim) * wn;
+    p[1] = hn + (i / dim) * hn;
 }
 
 void Visualization::draw_isolines(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
@@ -281,6 +281,8 @@ void Visualization::draw_isolines(Simulation const &simulation, const int DIM, c
         v1 = v[1];
         v2 = v[2];
         v3 = v[3];
+
+        //cout << cellIndex << " " << v0 << " " << v1 << " " << v2 << " " << v3 << "\n";
 
         vl0 = pick_scalar_field_value(simulation, v0);
         vl1 = pick_scalar_field_value(simulation, v1);
@@ -335,7 +337,7 @@ void Visualization::draw_isolines(Simulation const &simulation, const int DIM, c
                 glEnd();
                 break;
             case 7:
-                case 8:
+            case 8:
                 te = intersect(p3[0], p2[0], vl3, vl2, densityIsoline);
                 le = intersect(p0[1], p3[1], vl0, vl3, densityIsoline);
                 glBegin(GL_LINES);
@@ -362,27 +364,19 @@ void Visualization::draw_isolines(Simulation const &simulation, const int DIM, c
                 break;
             case 12:
             case 3:
-                //                cout << vl0 << " " << vl1 << " " << vl2 << " " << vl3 << " " << densityIsoline << "\n";
-                //            cout << p0[0] << " " << p1[0] << " " << p2[0] << " " << p3[0] << "\n";
-                //          cout << p0[1] << " " << p1[1] << " " << p2[1] << " " << p3[1] << "\n";
-                
+
                 le = intersect(p0[1], p3[1], vl0, vl3, densityIsoline);
                 re = intersect(p1[1], p2[1], vl1, vl2, densityIsoline);
-                
-                
                 glBegin(GL_LINES);
                 glColor3f(1, 0, 0);
-                glVertex2f(p0[0], le);
                 glVertex2f(p1[0], re);
+                glVertex2f(p0[0], le);
                 glEnd();
                 break;
             case 13:
             case 2:
-                
-                cout << "case 13 ";
                 be = intersect(p0[0], p1[0], vl0, vl1, densityIsoline);
                 re = intersect(p1[1], p2[1], vl1, vl2, densityIsoline);
-                cout << "(" << p1[0] << "," << re << ")"  << " " << "(" << be << "," << p0[1] << ")" << "\n";
                 glBegin(GL_LINES);
                 glColor3f(1, 0, 0);
                 glVertex2f(p1[0], re);
@@ -391,7 +385,6 @@ void Visualization::draw_isolines(Simulation const &simulation, const int DIM, c
                 break;
             case 14:
             case 1:
-                cout << "case 14 ";
                 be = intersect(p0[0], p1[0], vl0, vl1, densityIsoline);
                 le = intersect(p0[1], p3[1], vl0, vl3, densityIsoline);
                 glBegin(GL_LINES);
@@ -399,6 +392,7 @@ void Visualization::draw_isolines(Simulation const &simulation, const int DIM, c
                 glVertex2f(p0[0], le);
                 glVertex2f(be, p0[1]);
                 glEnd();
+
                 break;
         }
     }
@@ -430,6 +424,7 @@ void Visualization::draw_smoke(Simulation const &simulation, const int DIM, cons
         glVertex2f(px, py);
 
         for (i = 0; i < DIM - 1; i++) {
+
             px = wn + (fftw_real) i * wn;
             py = hn + (fftw_real) (j + 1) * hn;
             idx = ((j + 1) * DIM) + i;
@@ -455,6 +450,7 @@ void Visualization::draw_smoke(Simulation const &simulation, const int DIM, cons
 void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample) {
     if (sample_x == DIM && sample_y == DIM)
         draw_glyphs_on_comp_grid(simulation, DIM, wn, hn, wn_sample, hn_sample);
+
     else
         draw_glyphs_on_sampled_grid(simulation, DIM, wn, hn, wn_sample, hn_sample);
 }
@@ -495,6 +491,7 @@ void Visualization::draw_glyphs_on_comp_grid(Simulation const &simulation, const
                     break;
                 case ARROWS_3D:
                     draw_3d_arrow(magn, x_start, y_start, angle, value_for_color);
+
                     break;
             }
         }
@@ -574,6 +571,7 @@ void Visualization::draw_glyphs_on_sampled_grid(Simulation const &simulation, co
                     break;
                 case ARROWS_3D:
                     draw_3d_arrow(magn, x_start, y_start, angle, value_for_color);
+
                     break;
             }
         }
@@ -581,6 +579,7 @@ void Visualization::draw_glyphs_on_sampled_grid(Simulation const &simulation, co
 }
 
 void Visualization::draw_hedgehogs(GLfloat x_start, GLfloat y_start, float value, float values[]) {
+
     glEnable(GL_TEXTURE_1D);
     colormap->loadColormapTexture();
     glBegin(GL_LINES);
@@ -592,6 +591,7 @@ void Visualization::draw_hedgehogs(GLfloat x_start, GLfloat y_start, float value
 }
 
 void Visualization::draw_simple_arrow(GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, float value) {
+
     glEnable(GL_TEXTURE_1D);
     colormap->loadColormapTexture();
     GLfloat scale_x = magn * 1.5;
@@ -620,6 +620,7 @@ void Visualization::draw_simple_arrow(GLfloat magn, GLfloat x_start, GLfloat y_s
 }
 
 void Visualization::draw_3d_cone(GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, float value) {
+
     GLfloat base_scale = magn;
     GLfloat height_scale = magn * 2;
     glPushMatrix();
@@ -632,6 +633,7 @@ void Visualization::draw_3d_cone(GLfloat magn, GLfloat x_start, GLfloat y_start,
 }
 
 void Visualization::draw_3d_arrow(GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, float value) {
+
     static GLUquadricObj *p = gluNewQuadric();
     gluQuadricDrawStyle(p, GLU_FILL);
     GLfloat base_scale = magn * 0.3;
@@ -658,6 +660,7 @@ float Visualization::pick_scalar_field_value(Simulation const &simulation, size_
             break;
         case DENSITY:
             value = simulation.rho[idx];
+
         default:
             break;
     }
@@ -679,6 +682,7 @@ void Visualization::pick_vector_field_value(Simulation const &simulation, size_t
         case VELOCITY:
             values[0] = simulation.vx[idx];
             values[1] = simulation.vy[idx];
+
         default:
             break;
     }
@@ -698,6 +702,7 @@ GLfloat Visualization::pick_scaled_field(float v) {
             break;
         case VELOCITY:
             value = scale(v, 0.00001, 0.08, 0, 10);
+
         default:
             break;
     }
@@ -705,6 +710,7 @@ GLfloat Visualization::pick_scaled_field(float v) {
 }
 
 void Visualization::gradient(Simulation const &simulation, int i, int j, float wn, float hn, int DIM, float grad[]) {
+
     float x = wn + (fftw_real) i * wn;
     float y = hn + (fftw_real) j * hn;
 
@@ -720,42 +726,52 @@ void Visualization::gradient(Simulation const &simulation, int i, int j, float w
 }
 
 void Visualization::setScalarMin(float min) {
+
     datasets[scalarDataset].min = min;
 }
 
 void Visualization::setScalarMax(float max) {
+
     datasets[scalarDataset].max = max;
 }
 
 void Visualization::setScalarMode(Mode mode) {
+
     datasets[scalarDataset].mode = mode;
 }
 
 float Visualization::getScalarMin() {
+
     return datasets[scalarDataset].min;
 }
 
 float Visualization::getScalarScaleMin() {
+
     return datasets[scalarDataset].scaleMin;
 }
 
 float Visualization::getScalarMax() {
+
     return datasets[scalarDataset].max;
 }
 
 float Visualization::getScalarScaleMax() {
+
     return datasets[scalarDataset].scaleMax;
 }
 
 Visualization::Mode Visualization::getScalarMode() {
+
     return datasets[scalarDataset].mode;
 }
 
 void Visualization::setGlyphType(GlyphType gt) {
+
     glyphType = gt;
 }
 
 void Visualization::setDensityIsoline(float di) {
+
     densityIsoline = di;
 }
 
