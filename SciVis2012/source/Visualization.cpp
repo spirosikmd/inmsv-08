@@ -204,18 +204,15 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
         draw_smoke(simulation, DIM, wn, hn);
     }
 
+    if (options[DRAW_ISOLINES]) {
+        draw_isoline(simulation, DIM, wn, hn, densityIsoline, DENSITY);
 
-    draw_isoline(simulation, DIM, wn, hn, 0.1, DENSITY);
-    draw_isoline(simulation, DIM, wn, hn, 0.2, DENSITY);
-    draw_isoline(simulation, DIM, wn, hn, 0.3, DENSITY);
-    draw_isoline(simulation, DIM, wn, hn, 0.4, DENSITY);
-    draw_isoline(simulation, DIM, wn, hn, 0.5, DENSITY);
-    draw_isoline(simulation, DIM, wn, hn, 0.6, DENSITY);
-    draw_isoline(simulation, DIM, wn, hn, 0.7, DENSITY);
-    draw_isoline(simulation, DIM, wn, hn, 0.8, DENSITY);
-    draw_isoline(simulation, DIM, wn, hn, 0.9, DENSITY);
-    draw_isoline(simulation, DIM, wn, hn, 1, DENSITY);
-
+        float range = fabs(densityRHO2Isoline - densityRHO1Isoline);
+        float isolineStep = range / numIsolines;
+        for (int i = 0; i < numIsolines; i++) {
+            draw_isoline(simulation, DIM, wn, hn, isolineStep * (i + 1), DENSITY);
+        }
+    }
 
     glEnable(GL_LIGHTING); // so the renderer considers light
     glEnable(GL_LIGHT0); // turn LIGHT0 on
@@ -258,7 +255,6 @@ void getPoint(int i, float *p, int dim, const fftw_real wn, const fftw_real hn) 
 }
 
 void Visualization::draw_isoline(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, float isovalue, DatasetType dataset) {
-    bool colorizeIsolines = true;
     DatasetType tmpDataset = scalarDataset;
     scalarDataset = dataset;
     int numberOfCells = (DIM - 1) * (DIM - 1);
@@ -307,11 +303,12 @@ void Visualization::draw_isoline(Simulation const &simulation, const int DIM, co
         getPoint(v1, p1, DIM, wn, hn);
         getPoint(v2, p2, DIM, wn, hn);
         getPoint(v3, p3, DIM, wn, hn);
-        glEnable(GL_TEXTURE_1D);
+        
         glPushMatrix();
 
         colormap->loadColormapTexture();
-        if (colorizeIsolines) {
+        if (options[COLORIZE]) {
+            glEnable(GL_TEXTURE_1D);
             setColor(isovalue, TEXTURE);
         } else {
             glColor3f(0, 0, 0);
@@ -407,8 +404,8 @@ void Visualization::draw_isoline(Simulation const &simulation, const int DIM, co
 
                 break;
         }
-        glPopMatrix();
         glDisable(GL_TEXTURE_1D);
+        glPopMatrix();
     }
     scalarDataset = tmpDataset;
 }
@@ -784,10 +781,21 @@ void Visualization::setGlyphType(GlyphType gt) {
 }
 
 void Visualization::setDensityIsoline(float di) {
-
     densityIsoline = di;
 }
 
 float Visualization::getDensityIsoline() {
     return densityIsoline;
+}
+
+void Visualization::setDensityRHO1Isoline(float di) {
+    densityRHO1Isoline = di;
+}
+
+void Visualization::setDensityRHO2Isoline(float di) {
+    densityRHO2Isoline = di;
+}
+
+void Visualization::setNumIsolines(int n) {
+    numIsolines = n;
 }

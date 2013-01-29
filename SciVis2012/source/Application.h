@@ -25,6 +25,9 @@ private:
         VECTOR_DATASET_LIST,
         GLYPH_TYPE_LIST,
         DENSITY_ISOLINE_SPINNER,
+        DENSITY_RHO1_ISOLINE_SPINNER,
+        DENSITY_RHO2_ISOLINE_SPINNER,
+        NUMBER_ISOLINES_SPINNER,
         DIM_SPINNER,
         SAMPLE_X_SPINNER,
         SAMPLE_Y_SPINNER
@@ -76,6 +79,9 @@ private:
     static int dim;
     static int sample_x, sample_y;
     static float densityIsoline;
+    static float densityRHO1Isoline;
+    static float densityRHO2Isoline;
+    static int numberIsolines;
 
     static Visualization::Mode scalarMode;
     

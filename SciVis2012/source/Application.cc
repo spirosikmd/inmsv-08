@@ -23,6 +23,9 @@ int Application::selectedNumOfColors;
 float Application::hueValue;
 float Application::saturationValue;
 float Application::densityIsoline;
+float Application::densityRHO1Isoline;
+float Application::densityRHO2Isoline;
+int Application::numberIsolines;
 
 Visualization::DatasetType Application::scalarDataset;
 float Application::scalarMax;
@@ -382,6 +385,15 @@ void Application::buttonHandler(int id) {
         case DENSITY_ISOLINE_SPINNER:
             visualization.setDensityIsoline(densityIsoline);
             break;
+        case DENSITY_RHO1_ISOLINE_SPINNER:
+            visualization.setDensityRHO1Isoline(densityRHO1Isoline);
+            break;
+        case DENSITY_RHO2_ISOLINE_SPINNER:
+            visualization.setDensityRHO2Isoline(densityRHO2Isoline);
+            break;
+        case NUMBER_ISOLINES_SPINNER:
+            visualization.setNumIsolines(numberIsolines);
+            break;
         default:
             break;
     }
@@ -459,14 +471,25 @@ void Application::initUI() {
     vectorDatasetsGroup->set_alignment(GLUI_ALIGN_RIGHT);
     glui->add_statictext_to_panel(datasetOptions, "                                              ");
 
-    
+    // contouring
     GLUI_Panel *contouring_options = new GLUI_Panel(glui, "Contouring");
     contouring_options->set_alignment(GLUI_ALIGN_LEFT);
     
     GLUI_Spinner *density_isoline_spinner = new GLUI_Spinner(contouring_options, "Density rho ", &densityIsoline, DENSITY_ISOLINE_SPINNER, buttonHandler);
     density_isoline_spinner->set_alignment(GLUI_ALIGN_RIGHT);
     
-    
+    glui->add_separator_to_panel(contouring_options);
+    GLUI_Spinner *density_rho1_isoline_spinner = new GLUI_Spinner(contouring_options, "Density rho1 ", &densityRHO1Isoline, DENSITY_RHO1_ISOLINE_SPINNER, buttonHandler);
+    density_rho1_isoline_spinner->set_alignment(GLUI_ALIGN_RIGHT);
+    GLUI_Spinner *density_rho2_isoline_spinner = new GLUI_Spinner(contouring_options, "Density rho2 ", &densityRHO2Isoline, DENSITY_RHO2_ISOLINE_SPINNER, buttonHandler);
+    density_rho2_isoline_spinner->set_alignment(GLUI_ALIGN_RIGHT);
+    GLUI_Spinner *number_isolines_spinner = new GLUI_Spinner(contouring_options, "N Isolines ", &numberIsolines, NUMBER_ISOLINES_SPINNER, buttonHandler);
+    number_isolines_spinner->set_alignment(GLUI_ALIGN_RIGHT);
+    GLUI_Checkbox *isoline_box = new GLUI_Checkbox(contouring_options, "Draw Isolines ", &visualization.options[Visualization::DRAW_ISOLINES]);
+    isoline_box->set_alignment(GLUI_ALIGN_RIGHT);
+    GLUI_Checkbox *isoline_colorize_box = new GLUI_Checkbox(contouring_options, "Colorize ", &visualization.options[Visualization::COLORIZE]);
+    isoline_colorize_box->set_alignment(GLUI_ALIGN_RIGHT);
+    glui->add_statictext_to_panel(contouring_options, "                                              ");
     
     // visualization technique
     GLUI_Panel *visualization_options = new GLUI_Panel(glui, "Options");

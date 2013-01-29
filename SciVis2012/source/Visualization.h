@@ -40,10 +40,12 @@ public:
 
     enum Option {
         DRAW_SMOKE, // draw the smoke or not
+        DRAW_ISOLINES,
         DrawVectorField, // draw the vector field or not (not used for now)
         UseDirectionColoring, // use direction color-coding or not (not used for now)
         DRAW_GLYPHS, // draw the velocities or not
         GRADIENT,
+        COLORIZE,
         OptionsCount // (automatically assigned)
     };
 
@@ -122,6 +124,9 @@ public:
 
     void setDensityIsoline(float);
     float getDensityIsoline();
+    void setDensityRHO1Isoline(float);
+    void setDensityRHO2Isoline(float);
+    void setNumIsolines(int);
     void setGlyphType(GlyphType);
 
 private:
@@ -135,6 +140,9 @@ private:
     Colormap* colormap;
     float hue, saturation;
     float densityIsoline;
+    float densityRHO1Isoline;
+    float densityRHO2Isoline;
+    int numIsolines;
     DatasetType scalarDataset;
     DatasetType vectorDataset;
     GlyphType glyphType;
