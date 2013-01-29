@@ -93,11 +93,8 @@ void Application::initialize(int *argc, char** argv) {
     glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
     glLightfv(GL_LIGHT0, GL_SPECULAR, white);
     glLightfv(GL_LIGHT0, GL_POSITION, direction);
-
-    glEnable(GL_LIGHTING); // so the renderer considers light
-    glEnable(GL_LIGHT0); // turn LIGHT0 on
-    glEnable(GL_DEPTH_TEST); // so the renderer considers depth
-    glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
+    
+    
 
     glutMainLoop(); // enter main loop
 }
@@ -133,10 +130,10 @@ void Application::display() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    renderColormap();
+    
 
     visualization.visualize(simulation, winWidth, winHeight);
-
+    renderColormap();
     glFlush();
     glutSwapBuffers();
 }
