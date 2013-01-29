@@ -215,28 +215,22 @@ int lex(int n1, int n2, int dim) {
     return n1 + n2*dim;
 }
 
-float intersect(float pi, float pj, float vi, float vj, float v) {
-
+float getIntersection(float pi, float pj, float vi, float vj, float v) {
     return (pi * (vj - v) + pj * (v - vi)) / (vj - vi);
 }
 
 void getCell(int c, int *v, int DIM) {
     int C[2];
     int P = DIM-1;
-    // compute cell coordinates C[0], C[1]
+
     C[1] = c / P;
     c -= C[1] * P;
     C[0] = c;
-
-    // now go from cell coordinates to vertex coordinates
-    int i[2];
-    int j = 0;
 
     v[0] = lex(C[0], C[1], DIM);
     v[1] = lex(C[0] + 1, C[1] + 0, DIM);
     v[2] = lex(C[0] + 1, C[1] + 1, DIM);
     v[3] = lex(C[0] + 0, C[1] + 1, DIM);
-
 }
 
 void getPoint(int i, float *p, int dim, const fftw_real wn, const fftw_real hn) {
@@ -282,8 +276,6 @@ void Visualization::draw_isolines(Simulation const &simulation, const int DIM, c
         v2 = v[2];
         v3 = v[3];
 
-        //cout << cellIndex << " " << v0 << " " << v1 << " " << v2 << " " << v3 << "\n";
-
         vl0 = pick_scalar_field_value(simulation, v0);
         vl1 = pick_scalar_field_value(simulation, v1);
         vl2 = pick_scalar_field_value(simulation, v2);
@@ -302,8 +294,8 @@ void Visualization::draw_isolines(Simulation const &simulation, const int DIM, c
                 break;
             case 4:
             case 11:
-                re = intersect(p1[1], p2[1], vl1, vl2, densityIsoline);
-                te = intersect(p3[0], p2[0], vl3, vl2, densityIsoline);
+                re = getIntersection(p1[1], p2[1], vl1, vl2, densityIsoline);
+                te = getIntersection(p3[0], p2[0], vl3, vl2, densityIsoline);
                 glBegin(GL_LINES);
                 glColor3f(1, 0, 0);
                 glVertex2f(te, p3[1]);
@@ -311,10 +303,10 @@ void Visualization::draw_isolines(Simulation const &simulation, const int DIM, c
                 glEnd();
                 break;
             case 5:
-                re = intersect(p1[1], p2[1], vl1, vl2, densityIsoline);
-                te = intersect(p3[0], p2[0], vl3, vl2, densityIsoline);
-                le = intersect(p0[1], p3[1], vl0, vl3, densityIsoline);
-                be = intersect(p0[0], p1[0], vl0, vl1, densityIsoline);
+                re = getIntersection(p1[1], p2[1], vl1, vl2, densityIsoline);
+                te = getIntersection(p3[0], p2[0], vl3, vl2, densityIsoline);
+                le = getIntersection(p0[1], p3[1], vl0, vl3, densityIsoline);
+                be = getIntersection(p0[0], p1[0], vl0, vl1, densityIsoline);
                 glBegin(GL_LINES);
                 glColor3f(1, 0, 0);
                 glVertex2f(te, p3[1]);
@@ -328,8 +320,8 @@ void Visualization::draw_isolines(Simulation const &simulation, const int DIM, c
                 break;
             case 6:
             case 9:
-                te = intersect(p3[0], p2[0], vl3, vl2, densityIsoline);
-                be = intersect(p0[0], p1[0], vl0, vl1, densityIsoline);
+                te = getIntersection(p3[0], p2[0], vl3, vl2, densityIsoline);
+                be = getIntersection(p0[0], p1[0], vl0, vl1, densityIsoline);
                 glBegin(GL_LINES);
                 glColor3f(1, 0, 0);
                 glVertex2f(te, p3[1]);
@@ -338,8 +330,8 @@ void Visualization::draw_isolines(Simulation const &simulation, const int DIM, c
                 break;
             case 7:
             case 8:
-                te = intersect(p3[0], p2[0], vl3, vl2, densityIsoline);
-                le = intersect(p0[1], p3[1], vl0, vl3, densityIsoline);
+                te = getIntersection(p3[0], p2[0], vl3, vl2, densityIsoline);
+                le = getIntersection(p0[1], p3[1], vl0, vl3, densityIsoline);
                 glBegin(GL_LINES);
                 glColor3f(1, 0, 0);
                 glVertex2f(te, p3[1]);
@@ -347,10 +339,10 @@ void Visualization::draw_isolines(Simulation const &simulation, const int DIM, c
                 glEnd();
                 break;
             case 10:
-                re = intersect(p1[1], p2[1], vl1, vl2, densityIsoline);
-                te = intersect(p3[0], p2[0], vl3, vl2, densityIsoline);
-                le = intersect(p0[1], p3[1], vl0, vl3, densityIsoline);
-                be = intersect(p0[0], p1[0], vl0, vl1, densityIsoline);
+                re = getIntersection(p1[1], p2[1], vl1, vl2, densityIsoline);
+                te = getIntersection(p3[0], p2[0], vl3, vl2, densityIsoline);
+                le = getIntersection(p0[1], p3[1], vl0, vl3, densityIsoline);
+                be = getIntersection(p0[0], p1[0], vl0, vl1, densityIsoline);
                 glBegin(GL_LINES);
                 glColor3f(1, 0, 0);
                 glVertex2f(te, p3[1]);
@@ -365,8 +357,8 @@ void Visualization::draw_isolines(Simulation const &simulation, const int DIM, c
             case 12:
             case 3:
 
-                le = intersect(p0[1], p3[1], vl0, vl3, densityIsoline);
-                re = intersect(p1[1], p2[1], vl1, vl2, densityIsoline);
+                le = getIntersection(p0[1], p3[1], vl0, vl3, densityIsoline);
+                re = getIntersection(p1[1], p2[1], vl1, vl2, densityIsoline);
                 glBegin(GL_LINES);
                 glColor3f(1, 0, 0);
                 glVertex2f(p1[0], re);
@@ -375,8 +367,8 @@ void Visualization::draw_isolines(Simulation const &simulation, const int DIM, c
                 break;
             case 13:
             case 2:
-                be = intersect(p0[0], p1[0], vl0, vl1, densityIsoline);
-                re = intersect(p1[1], p2[1], vl1, vl2, densityIsoline);
+                be = getIntersection(p0[0], p1[0], vl0, vl1, densityIsoline);
+                re = getIntersection(p1[1], p2[1], vl1, vl2, densityIsoline);
                 glBegin(GL_LINES);
                 glColor3f(1, 0, 0);
                 glVertex2f(p1[0], re);
@@ -385,8 +377,8 @@ void Visualization::draw_isolines(Simulation const &simulation, const int DIM, c
                 break;
             case 14:
             case 1:
-                be = intersect(p0[0], p1[0], vl0, vl1, densityIsoline);
-                le = intersect(p0[1], p3[1], vl0, vl3, densityIsoline);
+                be = getIntersection(p0[0], p1[0], vl0, vl1, densityIsoline);
+                le = getIntersection(p0[1], p3[1], vl0, vl3, densityIsoline);
                 glBegin(GL_LINES);
                 glColor3f(1, 0, 0);
                 glVertex2f(p0[0], le);

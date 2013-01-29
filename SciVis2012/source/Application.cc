@@ -1,6 +1,3 @@
-
-#include "Colorbar.h"
-
 #include "Application.h"
 #include <iostream>
 #include <GLUT/glut.h>
@@ -136,7 +133,7 @@ void Application::display() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-//    renderColormap();
+    renderColormap();
 
     visualization.visualize(simulation, winWidth, winHeight);
 
