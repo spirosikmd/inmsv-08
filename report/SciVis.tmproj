@@ -70,14 +70,14 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>9</integer>
+				<integer>21</integer>
 				<key>line</key>
-				<integer>118</integer>
+				<integer>147</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
-			<integer>608</integer>
+			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>101</integer>
+			<integer>44</integer>
 		</dict>
 		<key>contents/outline.tex</key>
 		<dict>
@@ -120,6 +120,6 @@
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{1035, 87}, {720, 874}}</string>
+	<string>{{1365, 4}, {683, 1126}}</string>
 </dict>
 </plist>
