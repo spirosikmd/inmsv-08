@@ -120,6 +120,8 @@ public:
     float getScalarScaleMax();
     Mode getScalarMode();
 
+    void setDensityIsoline(float);
+    float getDensityIsoline();
     void setGlyphType(GlyphType);
 
 private:
@@ -132,12 +134,14 @@ private:
     int options[OptionsCount]; // options boolean array
     Colormap* colormap;
     float hue, saturation;
+    float densityIsoline;
     DatasetType scalarDataset;
     DatasetType vectorDataset;
     GlyphType glyphType;
     int sample_x, sample_y;
 
     void draw_smoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+    void draw_isolines(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_velocities(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_forces(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     float pick_scalar_field_value(Simulation const &simulation, size_t idx);

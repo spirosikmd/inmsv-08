@@ -14,6 +14,7 @@ Visualization::Visualization() {
     vec_scale = 1000;
     sample_x = 40;
     sample_y = 40;
+    densityIsoline = .5;
     scalarDataset = DENSITY;
     vectorDataset = VELOCITY;
     options[UseDirectionColoring] = false; // not used for now
@@ -140,7 +141,7 @@ int Visualization::getSampleY() {
 }
 
 void Visualization::setColor(float vy, ColorType t) {
-    
+
     Dataset dataset = datasets[scalarDataset];
     float colorIndex = 0, min, max;
     switch (dataset.mode) {
@@ -167,7 +168,7 @@ void Visualization::setColor(float vy, ColorType t) {
             glColor3f(color.red, color.green, color.blue);
             break;
     }
-    
+
 }
 
 Colormap* Visualization::getColormap() {
@@ -202,8 +203,204 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     if (options[DRAW_SMOKE]) {
         draw_smoke(simulation, DIM, wn, hn);
     }
+
+    draw_isolines(simulation, DIM, wn, hn);
+
     if (options[DRAW_GLYPHS]) {
         draw_glyphs(simulation, DIM, wn, hn, wn_sample, hn_sample);
+    }
+}
+
+int lex(int n1, int n2, int dim) {
+    return n1 + n2*dim;
+}
+
+float intersect(float pi, float pj, float vi, float vj, float v) {
+
+    return (pi * (vj - v) + pj * (v - vi)) / (vj - vi);
+}
+
+void getCell(int c, int *v, int DIM) {
+    int C[2];
+    int P = DIM;
+    // compute cell coordinates C[0], C[1]
+    C[1] = c / P;
+    c -= C[1] * P;
+    C[0] = c;
+
+    // now go from cell coordinates to vertex coordinates
+    int i[2];
+    int j = 0;
+
+    v[0] = lex(C[0], C[1], DIM);
+    v[1] = lex(C[0] + 1, C[1] + 0, DIM);
+    v[2] = lex(C[0] + 1, C[1] + 1, DIM);
+    v[3] = lex(C[0] + 0, C[1] + 1, DIM);
+
+}
+
+void getPoint(int i, float *p, int dim, const fftw_real wn, const fftw_real hn) {
+    p[0] = (i % dim) * wn;
+    p[1] = (i / dim) * hn;
+}
+
+void Visualization::draw_isolines(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
+    int numberOfCells = (DIM - 1) * (DIM - 1);
+    //only works if density is current dataset
+    int *cellStates = new int[numberOfCells];
+
+    for (int cellIndex = 0; cellIndex < numberOfCells; cellIndex++) {
+        int *v = new int[4];
+        getCell(cellIndex, v, DIM);
+
+        for (int cellVertex = 0; cellVertex < 4; cellVertex++) {
+            int idx = v[cellVertex];
+            float v = pick_scalar_field_value(simulation, idx);
+            if (v <= densityIsoline) {
+                cellStates[cellIndex] |= 1 << cellVertex;
+                //inside
+            }
+        }
+    }
+    //     marching squares      
+    int v0, v1, v2, v3;
+    float vl0, vl1, vl2, vl3;
+    float *p0 = new float[2];
+    float *p1 = new float[2];
+    float *p2 = new float[2];
+    float *p3 = new float[2];
+    float be, le, te, re;
+
+    for (int cellIndex = 0; cellIndex < numberOfCells; cellIndex++) {
+
+        int *v = new int[4];
+        getCell(cellIndex, v, DIM);
+        int cellState = cellStates[cellIndex];
+
+        v0 = v[0];
+        v1 = v[1];
+        v2 = v[2];
+        v3 = v[3];
+
+        vl0 = pick_scalar_field_value(simulation, v0);
+        vl1 = pick_scalar_field_value(simulation, v1);
+        vl2 = pick_scalar_field_value(simulation, v2);
+        vl3 = pick_scalar_field_value(simulation, v3);
+
+        getPoint(v0, p0, DIM, wn, hn);
+        getPoint(v1, p1, DIM, wn, hn);
+        getPoint(v2, p2, DIM, wn, hn);
+        getPoint(v3, p3, DIM, wn, hn);
+
+
+        switch (cellState) {
+            case 0:
+            case 15:
+                //do nothing
+                break;
+            case 4:
+            case 11:
+                re = intersect(p1[1], p2[1], vl1, vl2, densityIsoline);
+                te = intersect(p3[0], p2[0], vl3, vl2, densityIsoline);
+                glBegin(GL_LINES);
+                glColor3f(1, 0, 0);
+                glVertex2f(te, p3[1]);
+                glVertex2f(p1[0], re);
+                glEnd();
+                break;
+            case 5:
+                re = intersect(p1[1], p2[1], vl1, vl2, densityIsoline);
+                te = intersect(p3[0], p2[0], vl3, vl2, densityIsoline);
+                le = intersect(p0[1], p3[1], vl0, vl3, densityIsoline);
+                be = intersect(p0[0], p1[0], vl0, vl1, densityIsoline);
+                glBegin(GL_LINES);
+                glColor3f(1, 0, 0);
+                glVertex2f(te, p3[1]);
+                glVertex2f(p1[0], re);
+                glEnd();
+                glBegin(GL_LINES);
+                glColor3f(1, 0, 0);
+                glVertex2f(p0[0], le);
+                glVertex2f(be, p0[1]);
+                glEnd();
+                break;
+            case 6:
+            case 9:
+                te = intersect(p3[0], p2[0], vl3, vl2, densityIsoline);
+                be = intersect(p0[0], p1[0], vl0, vl1, densityIsoline);
+                glBegin(GL_LINES);
+                glColor3f(1, 0, 0);
+                glVertex2f(te, p3[1]);
+                glVertex2f(be, p0[1]);
+                glEnd();
+                break;
+            case 7:
+                case 8:
+                te = intersect(p3[0], p2[0], vl3, vl2, densityIsoline);
+                le = intersect(p0[1], p3[1], vl0, vl3, densityIsoline);
+                glBegin(GL_LINES);
+                glColor3f(1, 0, 0);
+                glVertex2f(te, p3[1]);
+                glVertex2f(p0[0], le);
+                glEnd();
+                break;
+            case 10:
+                re = intersect(p1[1], p2[1], vl1, vl2, densityIsoline);
+                te = intersect(p3[0], p2[0], vl3, vl2, densityIsoline);
+                le = intersect(p0[1], p3[1], vl0, vl3, densityIsoline);
+                be = intersect(p0[0], p1[0], vl0, vl1, densityIsoline);
+                glBegin(GL_LINES);
+                glColor3f(1, 0, 0);
+                glVertex2f(te, p3[1]);
+                glVertex2f(p0[0], le);
+                glEnd();
+                glBegin(GL_LINES);
+                glColor3f(1, 0, 0);
+                glVertex2f(p1[0], re);
+                glVertex2f(be, p0[1]);
+                glEnd();
+                break;
+            case 12:
+            case 3:
+                //                cout << vl0 << " " << vl1 << " " << vl2 << " " << vl3 << " " << densityIsoline << "\n";
+                //            cout << p0[0] << " " << p1[0] << " " << p2[0] << " " << p3[0] << "\n";
+                //          cout << p0[1] << " " << p1[1] << " " << p2[1] << " " << p3[1] << "\n";
+                
+                le = intersect(p0[1], p3[1], vl0, vl3, densityIsoline);
+                re = intersect(p1[1], p2[1], vl1, vl2, densityIsoline);
+                
+                
+                glBegin(GL_LINES);
+                glColor3f(1, 0, 0);
+                glVertex2f(p0[0], le);
+                glVertex2f(p1[0], re);
+                glEnd();
+                break;
+            case 13:
+            case 2:
+                
+                cout << "case 13 ";
+                be = intersect(p0[0], p1[0], vl0, vl1, densityIsoline);
+                re = intersect(p1[1], p2[1], vl1, vl2, densityIsoline);
+                cout << "(" << p1[0] << "," << re << ")"  << " " << "(" << be << "," << p0[1] << ")" << "\n";
+                glBegin(GL_LINES);
+                glColor3f(1, 0, 0);
+                glVertex2f(p1[0], re);
+                glVertex2f(be, p0[1]);
+                glEnd();
+                break;
+            case 14:
+            case 1:
+                cout << "case 14 ";
+                be = intersect(p0[0], p1[0], vl0, vl1, densityIsoline);
+                le = intersect(p0[1], p3[1], vl0, vl3, densityIsoline);
+                glBegin(GL_LINES);
+                glColor3f(1, 0, 0);
+                glVertex2f(p0[0], le);
+                glVertex2f(be, p0[1]);
+                glEnd();
+                break;
+        }
     }
 
 
@@ -556,6 +753,14 @@ Visualization::Mode Visualization::getScalarMode() {
 
 void Visualization::setGlyphType(GlyphType gt) {
     glyphType = gt;
+}
+
+void Visualization::setDensityIsoline(float di) {
+    densityIsoline = di;
+}
+
+float Visualization::getDensityIsoline() {
+    return densityIsoline;
 }
 
 //void Visualization::draw_velocities(Simulation const &simulation, const int DIM, fftw_real wn, fftw_real hn) {

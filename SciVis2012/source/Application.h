@@ -24,6 +24,7 @@ private:
         SCALAR_MIN_SPINNER,
         VECTOR_DATASET_LIST,
         GLYPH_TYPE_LIST,
+        DENSITY_ISOLINE_SPINNER,
         DIM_SPINNER,
         SAMPLE_X_SPINNER,
         SAMPLE_Y_SPINNER
@@ -74,6 +75,7 @@ private:
     static float saturationValue;
     static int dim;
     static int sample_x, sample_y;
+    static float densityIsoline;
 
     static Visualization::Mode scalarMode;
     

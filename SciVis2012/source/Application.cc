@@ -25,6 +25,7 @@ Colormap* Application::colormap;
 int Application::selectedNumOfColors;
 float Application::hueValue;
 float Application::saturationValue;
+float Application::densityIsoline;
 
 Visualization::DatasetType Application::scalarDataset;
 float Application::scalarMax;
@@ -71,6 +72,8 @@ void Application::initialize(int *argc, char** argv) {
     scalarMax = visualization.getScalarMax();
     scalarMin = visualization.getScalarMin();
     scalarMode = visualization.getScalarMode();
+    
+    densityIsoline = visualization.getDensityIsoline();
     
     dim = simulation.get_DIM();
     
@@ -382,7 +385,9 @@ void Application::buttonHandler(int id) {
         case SAMPLE_Y_SPINNER:
             visualization.setSampleY(sample_y);
             break;
-            
+        case DENSITY_ISOLINE_SPINNER:
+            visualization.setDensityIsoline(densityIsoline);
+            break;
         default:
             break;
     }
@@ -460,6 +465,15 @@ void Application::initUI() {
     vectorDatasetsGroup->set_alignment(GLUI_ALIGN_RIGHT);
     glui->add_statictext_to_panel(datasetOptions, "                                              ");
 
+    
+    GLUI_Panel *contouring_options = new GLUI_Panel(glui, "Contouring");
+    contouring_options->set_alignment(GLUI_ALIGN_LEFT);
+    
+    GLUI_Spinner *density_isoline_spinner = new GLUI_Spinner(contouring_options, "Density rho ", &densityIsoline, DENSITY_ISOLINE_SPINNER, buttonHandler);
+    density_isoline_spinner->set_alignment(GLUI_ALIGN_RIGHT);
+    
+    
+    
     // visualization technique
     GLUI_Panel *visualization_options = new GLUI_Panel(glui, "Options");
     visualization_options->set_alignment(GLUI_ALIGN_LEFT);
