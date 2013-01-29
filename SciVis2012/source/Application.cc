@@ -72,11 +72,11 @@ void Application::initialize(int *argc, char** argv) {
     scalarMax = visualization.getScalarMax();
     scalarMin = visualization.getScalarMin();
     scalarMode = visualization.getScalarMode();
-    
+
     densityIsoline = visualization.getDensityIsoline();
-    
+
     dim = simulation.get_DIM();
-    
+
     sample_x = visualization.getSampleX();
     sample_y = visualization.getSampleY();
 
@@ -96,8 +96,8 @@ void Application::initialize(int *argc, char** argv) {
     glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
     glLightfv(GL_LIGHT0, GL_SPECULAR, white);
     glLightfv(GL_LIGHT0, GL_POSITION, direction);
-    
-    
+
+
 
     glutMainLoop(); // enter main loop
 }
@@ -125,18 +125,20 @@ void Application::outputUsage() {
 void Application::display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-    glViewport(0.0f, 0.0f, (GLfloat) winWidth, (GLfloat) winHeight);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    glOrtho(0.0, (GLdouble) winWidth, 0.0, (GLdouble) winHeight, -10, 10);
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
 
-    
+    glEnable(GL_LIGHTING); // so the renderer considers light
+    glEnable(GL_LIGHT0); // turn LIGHT0 on
+    glEnable(GL_DEPTH_TEST); // so the renderer considers depth
+    glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
+    glShadeModel(GL_SMOOTH);
+    glTranslatef(-winWidth/2, -200, -1500);
+    //glutSolidTeapot(50);
 
     visualization.visualize(simulation, winWidth, winHeight);
-    renderColormap();
+    //renderColormap();
     glFlush();
     glutSwapBuffers();
 }
@@ -184,6 +186,23 @@ void Application::reshape(int w, int h) {
 
     winWidth = w;
     winHeight = h;
+
+
+    //    glViewport(0.0f, 0.0f, (GLfloat) winWidth, (GLfloat) winHeight);
+    //    glMatrixMode(GL_PROJECTION);
+    //    glLoadIdentity();
+    //    glOrtho(0.0, (GLdouble) winWidth, 0.0, (GLdouble) winHeight, -10, 10);
+    glViewport(0, 0, (GLsizei) w, (GLsizei) h);
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    gluPerspective(45.0, (GLfloat) w / h,
+            1.0, 2000.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(0.0, -100.0, 0.0,
+            0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0);
 }
 
 //keyboard: Handle key presses
@@ -369,7 +388,7 @@ void Application::buttonHandler(int id) {
         case GLYPH_TYPE_LIST:
             visualization.setGlyphType(glyphType);
             break;
-            
+
         case DIM_SPINNER:
             simulation.set_DIM(dim);
             simulation.init_simulation();
@@ -378,7 +397,7 @@ void Application::buttonHandler(int id) {
         case SAMPLE_X_SPINNER:
             visualization.setSampleX(sample_x);
             break;
-            
+
         case SAMPLE_Y_SPINNER:
             visualization.setSampleY(sample_y);
             break;
@@ -474,10 +493,10 @@ void Application::initUI() {
     // contouring
     GLUI_Panel *contouring_options = new GLUI_Panel(glui, "Contouring");
     contouring_options->set_alignment(GLUI_ALIGN_LEFT);
-    
+
     GLUI_Spinner *density_isoline_spinner = new GLUI_Spinner(contouring_options, "Density rho ", &densityIsoline, DENSITY_ISOLINE_SPINNER, buttonHandler);
     density_isoline_spinner->set_alignment(GLUI_ALIGN_RIGHT);
-    
+
     glui->add_separator_to_panel(contouring_options);
     GLUI_Spinner *density_rho1_isoline_spinner = new GLUI_Spinner(contouring_options, "Density rho1 ", &densityRHO1Isoline, DENSITY_RHO1_ISOLINE_SPINNER, buttonHandler);
     density_rho1_isoline_spinner->set_alignment(GLUI_ALIGN_RIGHT);
@@ -485,12 +504,11 @@ void Application::initUI() {
     density_rho2_isoline_spinner->set_alignment(GLUI_ALIGN_RIGHT);
     GLUI_Spinner *number_isolines_spinner = new GLUI_Spinner(contouring_options, "N Isolines ", &numberIsolines, NUMBER_ISOLINES_SPINNER, buttonHandler);
     number_isolines_spinner->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Checkbox *isoline_box = new GLUI_Checkbox(contouring_options, "Draw Isolines ", &visualization.options[Visualization::DRAW_ISOLINES]);
-    isoline_box->set_alignment(GLUI_ALIGN_RIGHT);
+
     GLUI_Checkbox *isoline_colorize_box = new GLUI_Checkbox(contouring_options, "Colorize ", &visualization.options[Visualization::COLORIZE]);
     isoline_colorize_box->set_alignment(GLUI_ALIGN_RIGHT);
     glui->add_statictext_to_panel(contouring_options, "                                              ");
-    
+
     // visualization technique
     GLUI_Panel *visualization_options = new GLUI_Panel(glui, "Options");
     visualization_options->set_alignment(GLUI_ALIGN_LEFT);
@@ -498,8 +516,12 @@ void Application::initUI() {
     glyphs_box->set_alignment(GLUI_ALIGN_RIGHT);
     GLUI_Checkbox *smoke_box = new GLUI_Checkbox(visualization_options, "Smoke", &visualization.options[Visualization::DRAW_SMOKE]);
     smoke_box->set_alignment(GLUI_ALIGN_RIGHT);
-//    GLUI_Checkbox *gradient_box = new GLUI_Checkbox(visualization_options, "Gradient", &visualization.options[Visualization::GRADIENT]);
-//    gradient_box->set_alignment(GLUI_ALIGN_RIGHT);
+    GLUI_Checkbox *isoline_box = new GLUI_Checkbox(visualization_options, "Draw Isolines ", &visualization.options[Visualization::DRAW_ISOLINES]);
+    isoline_box->set_alignment(GLUI_ALIGN_RIGHT);
+    GLUI_Checkbox *height_box = new GLUI_Checkbox(visualization_options, "Draw Heightplot ", &visualization.options[Visualization::DRAW_HEIGHTPLOT]);
+    height_box->set_alignment(GLUI_ALIGN_RIGHT);
+    //    GLUI_Checkbox *gradient_box = new GLUI_Checkbox(visualization_options, "Gradient", &visualization.options[Visualization::GRADIENT]);
+    //    gradient_box->set_alignment(GLUI_ALIGN_RIGHT);
     GLUI_Listbox *glyphTypeList = new GLUI_Listbox(visualization_options, "Glyph ", (int*) &glyphType, GLYPH_TYPE_LIST, buttonHandler);
     glyphTypeList->set_alignment(GLUI_ALIGN_RIGHT);
     glyphTypeList->add_item(Visualization::HEDGEHOGS, "Hedgehogs");

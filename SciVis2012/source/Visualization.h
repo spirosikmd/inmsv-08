@@ -46,6 +46,7 @@ public:
         DRAW_GLYPHS, // draw the velocities or not
         GRADIENT,
         COLORIZE,
+        DRAW_HEIGHTPLOT,
         OptionsCount // (automatically assigned)
     };
 
@@ -148,6 +149,8 @@ private:
     GlyphType glyphType;
     int sample_x, sample_y;
 
+    float getHeight(float vy, float maxheight);
+    void draw_heightplot(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_smoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_isoline(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, float, DatasetType);
     void draw_velocities(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);

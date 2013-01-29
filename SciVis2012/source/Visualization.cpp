@@ -1,6 +1,7 @@
 #include <algorithm>
 #include <cmath>
 #include <GLUT/glut.h>
+#include <vector>
 #include <iostream>
 #include "Visualization.h"
 #include "Simulation.h"
@@ -19,7 +20,9 @@ Visualization::Visualization() {
     vectorDataset = VELOCITY;
     options[UseDirectionColoring] = false; // not used for now
     options[DRAW_SMOKE] = false;
-    options[DRAW_GLYPHS] = true;
+    options[DRAW_GLYPHS] = false;
+    options[DRAW_ISOLINES] = false;
+    options[DRAW_HEIGHTPLOT] = true;
     options[DrawVectorField] = true; // not used for now
     options[GRADIENT] = false;
 
@@ -140,6 +143,25 @@ int Visualization::getSampleY() {
     return sample_y;
 }
 
+float Visualization::getHeight(float vy, float maxheight) {
+    Dataset dataset = datasets[scalarDataset];
+    float colorIndex = 0, min, max;
+    switch (dataset.mode) {
+        case CLAMPING:
+            if (vy > dataset.max) vy = dataset.max;
+            if (vy < dataset.min) vy = dataset.min;
+            max = dataset.max;
+            min = dataset.min;
+            break;
+        case SCALING:
+            max = dataset.scaleMax;
+            min = dataset.scaleMin;
+            break;
+    }
+
+    return scale(vy, min, max, 0, maxheight);
+}
+
 void Visualization::setColor(float vy, ColorType t) {
 
     Dataset dataset = datasets[scalarDataset];
@@ -200,31 +222,45 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
         if (value < datasets[scalarDataset].scaleMin) datasets[scalarDataset].scaleMin = value;
     }
 
-    if (options[DRAW_SMOKE]) {
-        draw_smoke(simulation, DIM, wn, hn);
-    }
+    if (options[DRAW_HEIGHTPLOT]) {
+        glEnable(GL_LIGHTING); // so the renderer considers light
+        glEnable(GL_LIGHT0); // turn LIGHT0 on
+        glEnable(GL_DEPTH_TEST); // so the renderer considers depth
+        glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
+        draw_heightplot(simulation, DIM, wn, hn);
+        glDisable(GL_COLOR_MATERIAL);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_LIGHT0);
+        glDisable(GL_LIGHTING); // so the renderer considers light
+    } else {
 
-    if (options[DRAW_ISOLINES]) {
-        draw_isoline(simulation, DIM, wn, hn, densityIsoline, DENSITY);
-
-        float range = fabs(densityRHO2Isoline - densityRHO1Isoline);
-        float isolineStep = range / numIsolines;
-        for (int i = 0; i < numIsolines; i++) {
-            draw_isoline(simulation, DIM, wn, hn, isolineStep * (i + 1), DENSITY);
+        if (options[DRAW_SMOKE]) {
+            draw_smoke(simulation, DIM, wn, hn);
         }
-    }
 
-    glEnable(GL_LIGHTING); // so the renderer considers light
-    glEnable(GL_LIGHT0); // turn LIGHT0 on
-    glEnable(GL_DEPTH_TEST); // so the renderer considers depth
-    glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
-    if (options[DRAW_GLYPHS]) {
-        draw_glyphs(simulation, DIM, wn, hn, wn_sample, hn_sample);
+        if (options[DRAW_ISOLINES]) {
+            draw_isoline(simulation, DIM, wn, hn, densityIsoline, DENSITY);
+
+            float range = fabs(densityRHO2Isoline - densityRHO1Isoline);
+            float isolineStep = range / numIsolines;
+            for (int i = 0; i < numIsolines; i++) {
+                draw_isoline(simulation, DIM, wn, hn, isolineStep * (i + 1), DENSITY);
+            }
+        }
+
+        glEnable(GL_LIGHTING); // so the renderer considers light
+        glEnable(GL_LIGHT0); // turn LIGHT0 on
+        glEnable(GL_DEPTH_TEST); // so the renderer considers depth
+        glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
+        glShadeModel(GL_SMOOTH);
+        if (options[DRAW_GLYPHS]) {
+            draw_glyphs(simulation, DIM, wn, hn, wn_sample, hn_sample);
+        }
+        glDisable(GL_COLOR_MATERIAL);
+        glDisable(GL_DEPTH_TEST);
+        glDisable(GL_LIGHT0);
+        glDisable(GL_LIGHTING); // so the renderer considers light
     }
-    glDisable(GL_COLOR_MATERIAL);
-    glDisable(GL_DEPTH_TEST);
-    glDisable(GL_LIGHT0);
-    glDisable(GL_LIGHTING); // so the renderer considers light
 }
 
 int lex(int n1, int n2, int dim) {
@@ -303,7 +339,7 @@ void Visualization::draw_isoline(Simulation const &simulation, const int DIM, co
         getPoint(v1, p1, DIM, wn, hn);
         getPoint(v2, p2, DIM, wn, hn);
         getPoint(v3, p3, DIM, wn, hn);
-        
+
         glPushMatrix();
 
         colormap->loadColormapTexture();
@@ -408,6 +444,200 @@ void Visualization::draw_isoline(Simulation const &simulation, const int DIM, co
         glPopMatrix();
     }
     scalarDataset = tmpDataset;
+}
+
+void crossproduct(float *U, float *V, float *R) {
+    R[0] = (U[1] * V[2])-(V[1] * U[2]);
+    R[1] = -(U[0] * V[2])+(V[0] * U[2]);
+    R[2] = (U[0] * V[1])-(U[1] * V[0]);
+}
+
+void normalize(float *R) {
+    float m = sqrt(pow(R[0], 2) + pow(R[1], 2) + pow(R[2], 2));
+    R[0] = R[0] / m;
+    R[1] = R[1] / m;
+    R[2] = R[2] / m;
+}
+
+void Visualization::draw_heightplot(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
+    int i, j, idx;
+    double px, py, pz;
+
+    GLenum error = glGetError();
+    if (error != 0) {
+        std::cout << error << '\n';
+    }
+
+    float maxHeight = 50;
+    //calculate normals
+    int v0, v1, v2, v3;
+    int *v = new int[4];
+    float z0, z1, z2, z3;
+    float *p0 = new float[2];
+    float *p1 = new float[2];
+    float *p2 = new float[2];
+    float *p3 = new float[2];
+    float *N1 = new float[3];
+    float *N2 = new float[3];
+    int numberOfCells = (DIM - 1) * (DIM - 1);
+
+    vector<vector<vector<float> > > surfaceNormals;
+
+    // Set up sizes. (HEIGHT x WIDTH)
+    surfaceNormals.resize(numberOfCells);
+    for (int i = 0; i < numberOfCells; ++i) {
+        surfaceNormals[i].resize(2);
+        for (int j = 0; j < 2; ++j)
+            surfaceNormals[i][j].resize(3);
+    }
+
+    for (int cellIndex = 0; cellIndex < numberOfCells; cellIndex++) {
+        getCell(cellIndex, v, DIM);
+        v0 = v[0];
+        v1 = v[1];
+        v2 = v[2];
+        v3 = v[3];
+        z0 = getHeight(pick_scalar_field_value(simulation, v0), maxHeight);
+        z1 = getHeight(pick_scalar_field_value(simulation, v1), maxHeight);
+        z2 = getHeight(pick_scalar_field_value(simulation, v2), maxHeight);
+        z3 = getHeight(pick_scalar_field_value(simulation, v3), maxHeight);
+
+        getPoint(v0, p0, DIM, wn, hn);
+        getPoint(v1, p1, DIM, wn, hn);
+        getPoint(v2, p2, DIM, wn, hn);
+        getPoint(v3, p3, DIM, wn, hn);
+
+        float U1[] = {p3[0] - p0[0], p3[1] - p0[1], z3 - z0};
+        float V1[] = {p1[0] - p3[0], p1[1] - p3[1], z1 - z3};
+        float U2[] = {p1[0] - p2[0], p1[1] - p2[1], z1 - z2};
+        float V2[] = {p3[0] - p1[0], p3[1] - p1[1], z3 - z1};
+        crossproduct(U1, V1, N1);
+        crossproduct(U2, V2, N2);
+        normalize(N1);
+        normalize(N2);
+        surfaceNormals[cellIndex][0][0] = N1[0];
+        surfaceNormals[cellIndex][0][1] = N1[0];
+        surfaceNormals[cellIndex][0][2] = N1[0];
+        surfaceNormals[cellIndex][1][0] = N2[0];
+        surfaceNormals[cellIndex][1][1] = N2[1];
+        surfaceNormals[cellIndex][1][2] = N2[2];
+    }
+
+    int numberOfVertices = DIM * DIM;
+    vector<vector<float> > vertexNormals;
+    vertexNormals.resize(numberOfVertices);
+    for (int i = 0; i < numberOfVertices; ++i) {
+        vertexNormals[i].resize(3);
+    }
+    for (int vertexIndex = 0; vertexIndex < numberOfVertices; vertexIndex++) {
+        int j = vertexIndex / DIM;
+        int i = vertexIndex % DIM;
+        int lbc = ((j - 1)*(DIM - 1)) + (i - 1);
+        int rbc = ((j - 1)*(DIM - 1)) + i;
+        int ltc = (j * (DIM - 1)) + (i - 1);
+        int rtc = (j * (DIM - 1)) + i;
+
+        if (i == 0) {
+            ltc = -1;
+            lbc = -1;
+        } else if (i == DIM-1) {
+            rtc = -1;
+            rbc = -1;
+        }
+        if (j == 0) {
+            lbc = -1;
+            rbc = -1;
+        } else if (j == DIM-1) {
+            ltc = -1;
+            rtc = -1;
+        }
+
+        //cout << vertexIndex << " " << ltc << " " << rtc << " " << rbc << " " << lbc << "\n"; 
+        
+        int N = 0;
+        float x, y, z;
+        
+        if (ltc > -1) {
+            x += surfaceNormals[ltc][0][0];
+            x += surfaceNormals[ltc][1][0];
+            y += surfaceNormals[ltc][0][1];
+            y += surfaceNormals[ltc][1][1];
+            z += surfaceNormals[ltc][0][2];
+            z += surfaceNormals[ltc][1][2];
+            N += 2;
+        }
+
+        if (rtc > -1) {
+            x += surfaceNormals[rtc][0][0];
+            y += surfaceNormals[rtc][0][1];
+            z += surfaceNormals[rtc][0][2];
+            N += 1;
+        }
+
+        if (rbc > -1) {
+            x += surfaceNormals[rbc][0][0];
+            x += surfaceNormals[rbc][1][0];
+            y += surfaceNormals[rbc][0][1];
+            y += surfaceNormals[rbc][1][1];
+            z += surfaceNormals[rbc][0][2];
+            z += surfaceNormals[rbc][1][2];
+            N += 2;
+        }
+
+        if (lbc > -1) {
+            x += surfaceNormals[lbc][0][0];
+            y += surfaceNormals[lbc][0][1];
+            z += surfaceNormals[lbc][0][2];
+            N += 1;
+        }
+
+        vertexNormals[vertexIndex][0] = x / N;
+        vertexNormals[vertexIndex][1] = y / N;
+        vertexNormals[vertexIndex][2] = z / N;
+    }
+
+    glEnable(GL_TEXTURE_1D);
+    colormap->loadColormapTexture();
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    for (j = 0; j < DIM - 1; j++) //draw smoke
+    {
+        glBegin(GL_TRIANGLE_STRIP);
+        i = 0;
+        px = wn + (fftw_real) i * wn;
+        py = hn + (fftw_real) j * hn;
+        idx = (j * DIM) + i;
+        pz = getHeight(pick_scalar_field_value(simulation, idx), maxHeight);
+        setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+        glNormal3f(vertexNormals[idx][0],vertexNormals[idx][2],vertexNormals[idx][1]);
+        glVertex3f(px, pz,py);
+
+        for (i = 0; i < DIM - 1; i++) {
+            px = wn + (fftw_real) i * wn;
+            py = hn + (fftw_real) (j + 1) * hn;
+            idx = ((j + 1) * DIM) + i;
+            pz = getHeight(pick_scalar_field_value(simulation, idx), maxHeight);
+            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+            glNormal3f(vertexNormals[idx][0],vertexNormals[idx][2],vertexNormals[idx][1]);
+            glVertex3f(px, pz,py);
+            px = wn + (fftw_real) (i + 1) * wn;
+            py = hn + (fftw_real) j * hn;
+            idx = (j * DIM) + (i + 1);
+            pz = getHeight(pick_scalar_field_value(simulation, idx), maxHeight);
+            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+            glNormal3f(vertexNormals[idx][0],vertexNormals[idx][2],vertexNormals[idx][1]);
+            glVertex3f(px, pz,py);
+        }
+
+        px = wn + (fftw_real) (DIM - 1) * wn;
+        py = hn + (fftw_real) (j + 1) * hn;
+        idx = ((j + 1) * DIM) + (DIM - 1);
+        pz = getHeight(pick_scalar_field_value(simulation, idx), maxHeight);
+        setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+        glNormal3f(vertexNormals[idx][0],vertexNormals[idx][2],vertexNormals[idx][1]);
+        glVertex3f(px, pz,py);
+        glEnd();
+    }
+    glDisable(GL_TEXTURE_1D);
 }
 
 void Visualization::draw_smoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
