@@ -154,7 +154,7 @@ void Application::display() {
     glPushMatrix();
     glRotatef(angle, 1, 0, 0);
 
-    glutSolidTeapot(50);
+    //glutSolidTeapot(50);
     glPushMatrix();
     glScalef(-2, 2, 2);
     glRotatef(180, 0, 1, 0);
