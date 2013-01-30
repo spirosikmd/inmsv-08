@@ -92,6 +92,7 @@ public:
     };
 
     void visualize(Simulation const &simulation, int winWidth, int winHeight);
+    void visualize3D(Simulation const &simulation, int winWidth, int winHeight);
     void toggle(Option option);
     void enable(Option option);
     void disable(Option option);
@@ -168,6 +169,7 @@ private:
     void draw_3d_arrow(GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, float value);
     void draw_glyphs_on_comp_grid(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
     void draw_glyphs_on_sampled_grid(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
+    void draw_streamlines(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     GLfloat pick_scaled_field(float v);
     void gradient(Simulation const &simulation, int i, int j, float wn, float hn, int DIM, float grad[]);
 };

@@ -209,6 +209,35 @@ Colormap* Visualization::loadColormap(ColorMode cm) {
 
 //visualize: This is the main visualization function
 
+void Visualization::visualize3D(Simulation const &simulation, int winWidth, int winHeight) {
+    const int DIM = Simulation::DIM;
+    fftw_real wn = (fftw_real) winWidth / (fftw_real) (DIM + 1); // Computational Grid cell width
+    fftw_real hn = (fftw_real) winHeight / (fftw_real) (DIM + 1); // Computational Grid cell heigh
+
+    fftw_real wn_sample = (fftw_real) winWidth / (fftw_real) (sample_x + 1); // Sample Grid cell width 
+    fftw_real hn_sample = (fftw_real) winHeight / (fftw_real) (sample_y + 1); // Sample Grid cell heigh
+
+    datasets[scalarDataset].scaleMax = -INFINITY;
+    datasets[scalarDataset].scaleMin = INFINITY;
+    for (int idx = 0; idx < DIM * DIM; idx++) {
+        float value = pick_scalar_field_value(simulation, idx);
+        if (value > datasets[scalarDataset].scaleMax) datasets[scalarDataset].scaleMax = value;
+        if (value < datasets[scalarDataset].scaleMin) datasets[scalarDataset].scaleMin = value;
+    }
+
+    datasets[heightplotDataset].scaleMax = -INFINITY;
+    datasets[heightplotDataset].scaleMin = INFINITY;
+    for (int idx = 0; idx < DIM * DIM; idx++) {
+        float value = pick_scalar_field_value(heightplotDataset, simulation, idx);
+        if (value > datasets[heightplotDataset].scaleMax) datasets[heightplotDataset].scaleMax = value;
+        if (value < datasets[heightplotDataset].scaleMin) datasets[heightplotDataset].scaleMin = value;
+    }
+
+    if (options[DRAW_HEIGHTPLOT]) {
+        draw_heightplot(simulation, DIM, wn, hn);
+    }
+}
+
 void Visualization::visualize(Simulation const &simulation, int winWidth, int winHeight) {
     const int DIM = Simulation::DIM;
     fftw_real wn = (fftw_real) winWidth / (fftw_real) (DIM + 1); // Computational Grid cell width
@@ -218,55 +247,34 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     fftw_real hn_sample = (fftw_real) winHeight / (fftw_real) (sample_y + 1); // Sample Grid cell heigh
 
 
-    datasets[scalarDataset].scaleMax = -INFINITY;
-    datasets[scalarDataset].scaleMin = INFINITY;
-    for (int idx = 0; idx < DIM * DIM; idx++) {
-        float value = pick_scalar_field_value(simulation, idx);
-        if (value > datasets[scalarDataset].scaleMax) datasets[scalarDataset].scaleMax = value;
-        if (value < datasets[scalarDataset].scaleMin) datasets[scalarDataset].scaleMin = value;
+
+    if (options[DRAW_SMOKE]) {
+        draw_smoke(simulation, DIM, wn, hn);
     }
-    
-    datasets[heightplotDataset].scaleMax = -INFINITY;
-    datasets[heightplotDataset].scaleMin = INFINITY;
-    for (int idx = 0; idx < DIM * DIM; idx++) {
-        float value = pick_scalar_field_value(heightplotDataset,simulation, idx);
-        if (value > datasets[heightplotDataset].scaleMax) datasets[heightplotDataset].scaleMax = value;
-        if (value < datasets[heightplotDataset].scaleMin) datasets[heightplotDataset].scaleMin = value;
+
+    if (options[DRAW_ISOLINES]) {
+        draw_isoline(simulation, DIM, wn, hn, densityIsoline);
+
+        float range = fabs(densityRHO2Isoline - densityRHO1Isoline);
+        float isolineStep = range / numIsolines;
+        for (int i = 0; i < numIsolines; i++) {
+            draw_isoline(simulation, DIM, wn, hn, isolineStep * (i + 1));
+        }
     }
-    
-    
 
-    if (options[DRAW_HEIGHTPLOT]) {
-        draw_heightplot(simulation, DIM, wn, hn);
-    } else {
-
-        if (options[DRAW_SMOKE]) {
-            draw_smoke(simulation, DIM, wn, hn);
-        }
-
-        if (options[DRAW_ISOLINES]) {
-            draw_isoline(simulation, DIM, wn, hn, densityIsoline);
-
-            float range = fabs(densityRHO2Isoline - densityRHO1Isoline);
-            float isolineStep = range / numIsolines;
-            for (int i = 0; i < numIsolines; i++) {
-                draw_isoline(simulation, DIM, wn, hn, isolineStep * (i + 1));
-            }
-        }
-
-        //        glEnable(GL_LIGHTING); // so the renderer considers light
-        //        glEnable(GL_LIGHT0); // turn LIGHT0 on
-        //        glEnable(GL_DEPTH_TEST); // so the renderer considers depth
-        //        glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
-        //        glShadeModel(GL_SMOOTH);
-        if (options[DRAW_GLYPHS]) {
-            draw_glyphs(simulation, DIM, wn, hn, wn_sample, hn_sample);
-        }
-        //        glDisable(GL_COLOR_MATERIAL);
-        //        glDisable(GL_DEPTH_TEST);
-        //        glDisable(GL_LIGHT0);
-        //        glDisable(GL_LIGHTING); // so the renderer considers light
+    //        glEnable(GL_LIGHTING); // so the renderer considers light
+    //        glEnable(GL_LIGHT0); // turn LIGHT0 on
+    //        glEnable(GL_DEPTH_TEST); // so the renderer considers depth
+    //        glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
+    //        glShadeModel(GL_SMOOTH);
+    if (options[DRAW_GLYPHS]) {
+        draw_glyphs(simulation, DIM, wn, hn, wn_sample, hn_sample);
     }
+    //        glDisable(GL_COLOR_MATERIAL);
+    //        glDisable(GL_DEPTH_TEST);
+    //        glDisable(GL_LIGHT0);
+    //        glDisable(GL_LIGHTING); // so the renderer considers light
+
 }
 
 int lex(int n1, int n2, int dim) {
@@ -463,7 +471,7 @@ void normalize(float *R) {
 }
 
 void Visualization::draw_heightplot(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
-   
+
     int i, j, idx;
     double px, py, pz;
 
@@ -652,6 +660,69 @@ void Visualization::draw_smoke(Simulation const &simulation, const int DIM, cons
     int i, j, idx;
     double px, py;
 
+    GLenum error = glGetError();
+    if (error != 0) {
+        std::cout << error << '\n';
+    }
+    glEnable(GL_TEXTURE_1D);
+    colormap->loadColormapTexture();
+
+    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    for (j = 0; j < DIM - 1; j++) //draw smoke
+    {
+        glBegin(GL_TRIANGLE_STRIP);
+
+        i = 0;
+        px = wn + (fftw_real) i * wn;
+        py = hn + (fftw_real) j * hn;
+        idx = (j * DIM) + i;
+        setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+        glVertex2f(px, py);
+
+        for (i = 0; i < DIM - 1; i++) {
+
+            px = wn + (fftw_real) i * wn;
+            py = hn + (fftw_real) (j + 1) * hn;
+            idx = ((j + 1) * DIM) + i;
+            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+            glVertex2f(px, py);
+            px = wn + (fftw_real) (i + 1) * wn;
+            py = hn + (fftw_real) j * hn;
+            idx = (j * DIM) + (i + 1);
+            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+            glVertex2f(px, py);
+        }
+
+        px = wn + (fftw_real) (DIM - 1) * wn;
+        py = hn + (fftw_real) (j + 1) * hn;
+        idx = ((j + 1) * DIM) + (DIM - 1);
+        setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+        glVertex2f(px, py);
+        glEnd();
+    }
+    glDisable(GL_TEXTURE_1D);
+}
+
+void Visualization::draw_streamlines(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
+    int i, j, idx;
+    double px, py;
+    
+    float dt = 1/3 * sqrt( pow(wn,2) + pow(hn,2));
+    int maxLength = 100;
+    float x=0;
+    float y=0;
+    
+    for (int step = 0; step < maxLength ; step++) {
+        
+        float *v = new float[];
+        getVectorForPoint(x,y,v);
+        x = x + v[0]*dt;
+        y = y + v[1]*dt;
+        
+        delete v[];
+    }
+    
+    
     GLenum error = glGetError();
     if (error != 0) {
         std::cout << error << '\n';

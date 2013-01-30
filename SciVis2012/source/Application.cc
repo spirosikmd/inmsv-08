@@ -115,6 +115,11 @@ void Application::display() {
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, (GLsizei) winWidth, (GLsizei) winHeight);
+    
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    gluPerspective(45.0, (GLfloat) winWidth / winHeight,
+            1.0, 2000.0);
     glEnable(GL_LIGHTING); // so the renderer considers light
     glEnable(GL_LIGHT0); // turn LIGHT0 on
     glEnable(GL_DEPTH_TEST); // so the renderer considers depth
@@ -124,6 +129,7 @@ void Application::display() {
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
+    glPushMatrix();
     gluLookAt(0.0, 1000.0, 1000.0,
             0.0, 0.0, 0.0,
             0.0, 1.0, 0.0);
@@ -153,15 +159,24 @@ void Application::display() {
     glScalef(-2, 2, 2);
     glRotatef(180, 0, 1, 0);
     glTranslatef(-winWidth / 2, 0, -winHeight / 2);
-    visualization.visualize(simulation, winWidth, winHeight);
+    
+  visualization.visualize3D(simulation, winWidth, winHeight);
     glPopMatrix();
     glPopMatrix();
     glDisable(GL_COLOR_MATERIAL);
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHT0);
     glDisable(GL_LIGHTING); // so the renderer considers light
+    glPopMatrix();
 
-    //renderColormap();
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+    glOrtho(0.0, (GLdouble) winWidth, 0.0, (GLdouble) winHeight, -10, 10);
+   glMatrixMode(GL_MODELVIEW);
+   glLoadIdentity();
+   visualization.visualize(simulation, winWidth, winHeight);
+    renderColormap();
+    
     glFlush();
     glutSwapBuffers();
     GLenum error = glGetError();
@@ -215,10 +230,7 @@ void Application::reshape(int w, int h) {
     winHeight = h;
 
 
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-    gluPerspective(45.0, (GLfloat) winWidth / winHeight,
-            1.0, 2000.0);
+    
 
 
 
