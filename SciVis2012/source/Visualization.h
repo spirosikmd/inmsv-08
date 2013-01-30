@@ -47,6 +47,7 @@ public:
         GRADIENT,
         COLORIZE,
         DRAW_HEIGHTPLOT,
+        DRAW_NORMALS,
         OptionsCount // (automatically assigned)
     };
 
@@ -109,6 +110,7 @@ public:
     void magnitude_to_color(float x, float y);
     void setScalarDataset(DatasetType sdm);
     void setVectorDataset(DatasetType vdm);
+    void setHeightplotDataset(DatasetType sdm);
     void setSampleX(int x);
     int getSampleX();
     void setSampleY(int y);
@@ -146,6 +148,7 @@ private:
     int numIsolines;
     DatasetType scalarDataset;
     DatasetType vectorDataset;
+    DatasetType heightplotDataset;
     GlyphType glyphType;
     int sample_x, sample_y;
 
@@ -156,6 +159,7 @@ private:
     void draw_velocities(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_forces(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     float pick_scalar_field_value(Simulation const &simulation, size_t idx);
+    float pick_scalar_field_value(DatasetType ds, Simulation const &simulation, size_t idx);
     void pick_vector_field_value(Simulation const &simulation, size_t idx, float values[], int i = 0, int j = 0, float wn = 0.0, float hn = 0.0, int DIM = 0);
     void draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
     void draw_hedgehogs(GLfloat x_start, GLfloat y_start, float value, float values[]);

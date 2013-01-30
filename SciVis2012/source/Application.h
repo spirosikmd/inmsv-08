@@ -28,6 +28,7 @@ private:
         DENSITY_RHO1_ISOLINE_SPINNER,
         DENSITY_RHO2_ISOLINE_SPINNER,
         NUMBER_ISOLINES_SPINNER,
+        HEIGHTPLOT_DATASET_LIST,
         DIM_SPINNER,
         SAMPLE_X_SPINNER,
         SAMPLE_Y_SPINNER
@@ -45,6 +46,7 @@ public:
     static void update();
     static void reshape(int w, int h); // Handle window resizing (reshaping) events
     static void keyboard(unsigned char key, int x, int y); // Handle key presses
+    static void special(int key, int x, int y); // Handle key presses
     static void drag(int mx, int my); // Handle mouse drag
     static void visualize();
     static void quit();
@@ -71,6 +73,7 @@ private:
     static float scalarMax, scalarMin;
 
     static Visualization::DatasetType vectorDataset;
+    static Visualization::DatasetType heightplotDataset;
 
     static Visualization::GlyphType glyphType;
 
@@ -82,7 +85,8 @@ private:
     static float densityRHO1Isoline;
     static float densityRHO2Isoline;
     static int numberIsolines;
-
+    static int angle;
+    static int translate_x, translate_z;
     static Visualization::Mode scalarMode;
     
     static void renderColormap();

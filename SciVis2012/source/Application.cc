@@ -26,12 +26,15 @@ float Application::densityIsoline;
 float Application::densityRHO1Isoline;
 float Application::densityRHO2Isoline;
 int Application::numberIsolines;
-
+int Application::angle;
+int Application::translate_x;
+int Application::translate_z;
 Visualization::DatasetType Application::scalarDataset;
 float Application::scalarMax;
 float Application::scalarMin;
 
 Visualization::DatasetType Application::vectorDataset;
+Visualization::DatasetType Application::heightplotDataset;
 Visualization::GlyphType Application::glyphType;
 int Application::dim;
 int Application::sample_x;
@@ -55,6 +58,7 @@ void Application::initialize(int *argc, char** argv) {
     // pass static functions as callback to GLUT
     glutDisplayFunc(display);
     glutMotionFunc(drag);
+    glutSpecialFunc(special);
     glutKeyboardFunc(keyboard);
 
     // pass static functions as callback to GLUI
@@ -83,20 +87,6 @@ void Application::initialize(int *argc, char** argv) {
     initUI();
     glui->sync_live();
 
-    GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
-    GLfloat cyan[] = {0.0, 1.0, 1.0, 1.0};
-    GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
-    GLfloat direction[] = {1.0, 1.0, 5.0, 0.0};
-
-    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, cyan);
-    glMaterialfv(GL_FRONT, GL_SPECULAR, white);
-    glMaterialf(GL_FRONT, GL_SHININESS, 30);
-
-    glLightfv(GL_LIGHT0, GL_AMBIENT, black);
-    glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
-    glLightfv(GL_LIGHT0, GL_SPECULAR, white);
-    glLightfv(GL_LIGHT0, GL_POSITION, direction);
-
 
 
     glutMainLoop(); // enter main loop
@@ -124,20 +114,66 @@ void Application::outputUsage() {
 
 void Application::display() {
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-
-
-    glMatrixMode(GL_MODELVIEW);
+glViewport(0, 0, (GLsizei) winWidth, (GLsizei) winHeight);
+    glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
 
+    gluPerspective(45.0, (GLfloat) winWidth / winHeight,
+            1.0, 2000.0);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    gluLookAt(0.0, -100.0, 0.0,
+            0.0, 0.0, 0.0,
+            0.0, 1.0, 0.0);
+    glShadeModel(GL_SMOOTH);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    glPushMatrix();
     glEnable(GL_LIGHTING); // so the renderer considers light
     glEnable(GL_LIGHT0); // turn LIGHT0 on
     glEnable(GL_DEPTH_TEST); // so the renderer considers depth
     glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
-    glShadeModel(GL_SMOOTH);
-    glTranslatef(-winWidth/2, -200, -1500);
+
+    GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
+    GLfloat cyan[] = {0.0, 1.0, 1.0, 1.0};
+    GLfloat whiteAmbient[] = {1.0, 1.0, 1.0, .25};
+    GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
+    GLfloat direction[] = {0.0, 1000.0, 1000.0, 0.0};
+
+    glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, cyan);
+    glMaterialfv(GL_FRONT, GL_SPECULAR, white);
+    glMaterialf(GL_FRONT_AND_BACK, GL_SHININESS, 30);
+    //    glMaterialfv(GL_FRONT_AND_BACK, GL_EMISSION, white);
+    
+    glEnable(GL_LIGHTING); // so the renderer considers light
+    glEnable(GL_LIGHT0); // turn LIGHT0 on
+    glEnable(GL_DEPTH_TEST); // so the renderer considers depth
+    glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
+    glLightfv(GL_LIGHT0, GL_AMBIENT, black);
+    glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
+    glLightfv(GL_LIGHT0, GL_SPECULAR, white);
+    glLightfv(GL_LIGHT0, GL_POSITION, direction);
+
+         glEnable(GL_NORMALIZE);
+
+    
+    
+    glTranslatef(translate_x, 0, translate_z);
+    glPushMatrix();
+    glTranslatef(-winWidth / 2, -20, -1500);
+    //glRotatef(180, 0, 1, 0);
+    glRotatef(angle, 1, 0, 0);
+    
     //glutSolidTeapot(50);
 
+    glutSolidTeapot(100);
     visualization.visualize(simulation, winWidth, winHeight);
+    glDisable(GL_COLOR_MATERIAL);
+    glDisable(GL_DEPTH_TEST);
+    glDisable(GL_LIGHT0);
+    glDisable(GL_LIGHTING); // so the renderer considers light
+    glPopMatrix();
+    glPopMatrix();
     //renderColormap();
     glFlush();
     glutSwapBuffers();
@@ -192,19 +228,27 @@ void Application::reshape(int w, int h) {
     //    glMatrixMode(GL_PROJECTION);
     //    glLoadIdentity();
     //    glOrtho(0.0, (GLdouble) winWidth, 0.0, (GLdouble) winHeight, -10, 10);
-    glViewport(0, 0, (GLsizei) w, (GLsizei) h);
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    gluPerspective(45.0, (GLfloat) w / h,
-            1.0, 2000.0);
-    glMatrixMode(GL_MODELVIEW);
-    glLoadIdentity();
-    gluLookAt(0.0, -100.0, 0.0,
-            0.0, 0.0, 0.0,
-            0.0, 1.0, 0.0);
 }
 
+void Application::special(int key, int x, int y) {
+    int magnitude = 15;
+    switch (key) {
+        case GLUT_KEY_UP:
+            translate_z += magnitude;
+            break;
+        case GLUT_KEY_DOWN:
+            translate_z -= magnitude;
+            break;
+        case GLUT_KEY_LEFT:
+            translate_x += magnitude;
+            break;
+        case GLUT_KEY_RIGHT:
+            translate_x -= magnitude;
+            break;
+    }
+
+    GLUI_Master.sync_live_all();
+}
 //keyboard: Handle key presses
 
 void Application::keyboard(unsigned char key, int x, int y) {
@@ -277,7 +321,12 @@ void Application::keyboard(unsigned char key, int x, int y) {
             quit();
         }
             break;
-
+        case 'u':
+            angle = (angle + 1) % 180;
+            break;
+        case 'j':
+            angle = (angle - 1) % 180;
+            break;
         default:
         {
         }
@@ -285,7 +334,7 @@ void Application::keyboard(unsigned char key, int x, int y) {
     }
 
     // sync live variables
-    GLUI_Master.sync_live_all();
+
 }
 
 // drag: When the user drags with the mouse, add a force that corresponds to the direction of the mouse
@@ -413,6 +462,9 @@ void Application::buttonHandler(int id) {
         case NUMBER_ISOLINES_SPINNER:
             visualization.setNumIsolines(numberIsolines);
             break;
+        case HEIGHTPLOT_DATASET_LIST:
+            visualization.setHeightplotDataset(heightplotDataset);
+            break;
         default:
             break;
     }
@@ -509,6 +561,17 @@ void Application::initUI() {
     isoline_colorize_box->set_alignment(GLUI_ALIGN_RIGHT);
     glui->add_statictext_to_panel(contouring_options, "                                              ");
 
+
+    GLUI_Panel *heightplot_options = new GLUI_Panel(glui, "Heightplot");
+    GLUI_Listbox *heightplotDatasetsGroup = new GLUI_Listbox(heightplot_options, "Dataset ", (int*) &heightplotDataset, HEIGHTPLOT_DATASET_LIST, buttonHandler);
+    heightplotDatasetsGroup->set_alignment(GLUI_ALIGN_RIGHT);
+    heightplotDatasetsGroup->add_item(Visualization::DENSITY, "Density rho");
+    heightplotDatasetsGroup->add_item(Visualization::VELOCITY_MAGN, "Velocity |v|");
+    heightplotDatasetsGroup->add_item(Visualization::FORCE_MAGN, "Force |f|");
+    GLUI_Checkbox *normals_box = new GLUI_Checkbox(heightplot_options, "Draw Normals", &visualization.options[Visualization::DRAW_NORMALS]);
+    normals_box->set_alignment(GLUI_ALIGN_RIGHT);
+    glui->add_statictext_to_panel(heightplot_options, "                                              ");
+
     // visualization technique
     GLUI_Panel *visualization_options = new GLUI_Panel(glui, "Options");
     visualization_options->set_alignment(GLUI_ALIGN_LEFT);
@@ -544,7 +607,6 @@ void Application::initUI() {
     // quit
     GLUI_Button *quit = new GLUI_Button(glui, "Quit", QUIT_BUTTON, buttonHandler);
     quit->set_alignment(GLUI_ALIGN_CENTER);
-
 }
 
 void Application::quit() {

@@ -23,7 +23,7 @@ Visualization::Visualization() {
     options[DRAW_GLYPHS] = false;
     options[DRAW_ISOLINES] = false;
     options[DRAW_HEIGHTPLOT] = true;
-    options[DrawVectorField] = true; // not used for now
+    options[DrawVectorField] = false; // not used for now
     options[GRADIENT] = false;
 
     datasets.insert(make_pair(DENSITY, Dataset(0, 1, CLAMPING)));
@@ -127,6 +127,10 @@ void Visualization::setVectorDataset(DatasetType vdm) {
     vectorDataset = vdm;
 }
 
+void Visualization::setHeightplotDataset(DatasetType hdm) {
+    heightplotDataset = hdm;
+}
+
 void Visualization::setSampleX(int x) {
     sample_x = x;
 }
@@ -223,15 +227,7 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     }
 
     if (options[DRAW_HEIGHTPLOT]) {
-        glEnable(GL_LIGHTING); // so the renderer considers light
-        glEnable(GL_LIGHT0); // turn LIGHT0 on
-        glEnable(GL_DEPTH_TEST); // so the renderer considers depth
-        glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
         draw_heightplot(simulation, DIM, wn, hn);
-        glDisable(GL_COLOR_MATERIAL);
-        glDisable(GL_DEPTH_TEST);
-        glDisable(GL_LIGHT0);
-        glDisable(GL_LIGHTING); // so the renderer considers light
     } else {
 
         if (options[DRAW_SMOKE]) {
@@ -497,10 +493,10 @@ void Visualization::draw_heightplot(Simulation const &simulation, const int DIM,
         v1 = v[1];
         v2 = v[2];
         v3 = v[3];
-        z0 = getHeight(pick_scalar_field_value(simulation, v0), maxHeight);
-        z1 = getHeight(pick_scalar_field_value(simulation, v1), maxHeight);
-        z2 = getHeight(pick_scalar_field_value(simulation, v2), maxHeight);
-        z3 = getHeight(pick_scalar_field_value(simulation, v3), maxHeight);
+        z0 = getHeight(pick_scalar_field_value(heightplotDataset, simulation, v0), maxHeight);
+        z1 = getHeight(pick_scalar_field_value(heightplotDataset, simulation, v1), maxHeight);
+        z2 = getHeight(pick_scalar_field_value(heightplotDataset, simulation, v2), maxHeight);
+        z3 = getHeight(pick_scalar_field_value(heightplotDataset, simulation, v3), maxHeight);
 
         getPoint(v0, p0, DIM, wn, hn);
         getPoint(v1, p1, DIM, wn, hn);
@@ -515,12 +511,14 @@ void Visualization::draw_heightplot(Simulation const &simulation, const int DIM,
         crossproduct(U2, V2, N2);
         normalize(N1);
         normalize(N2);
-        surfaceNormals[cellIndex][0][0] = N1[0];
-        surfaceNormals[cellIndex][0][1] = N1[0];
-        surfaceNormals[cellIndex][0][2] = N1[0];
-        surfaceNormals[cellIndex][1][0] = N2[0];
-        surfaceNormals[cellIndex][1][1] = N2[1];
-        surfaceNormals[cellIndex][1][2] = N2[2];
+        //cout << N1[0] << " " << N1[2] << " " << N1[1] << " - ";
+        //cout << N2[0] << " " << N2[2] << " " << N2[1] << "\n";
+        surfaceNormals[cellIndex][0][0] = N1[0]* -1;
+        surfaceNormals[cellIndex][0][1] = N1[1]* -1;
+        surfaceNormals[cellIndex][0][2] = N1[2] * -1;
+        surfaceNormals[cellIndex][1][0] = N2[0]* -1;
+        surfaceNormals[cellIndex][1][1] = N2[1]* -1;
+        surfaceNormals[cellIndex][1][2] = N2[2] * -1;
     }
 
     int numberOfVertices = DIM * DIM;
@@ -540,65 +538,79 @@ void Visualization::draw_heightplot(Simulation const &simulation, const int DIM,
         if (i == 0) {
             ltc = -1;
             lbc = -1;
-        } else if (i == DIM-1) {
+        } else if (i == DIM - 1) {
             rtc = -1;
             rbc = -1;
         }
         if (j == 0) {
             lbc = -1;
             rbc = -1;
-        } else if (j == DIM-1) {
+        } else if (j == DIM - 1) {
             ltc = -1;
             rtc = -1;
         }
 
         //cout << vertexIndex << " " << ltc << " " << rtc << " " << rbc << " " << lbc << "\n"; 
-        
-        int N = 0;
-        float x, y, z;
-        
+
+        float N = 0;
+        float x = 0, y = 0, z = 0;
+
         if (ltc > -1) {
-            x += surfaceNormals[ltc][0][0];
-            x += surfaceNormals[ltc][1][0];
-            y += surfaceNormals[ltc][0][1];
-            y += surfaceNormals[ltc][1][1];
-            z += surfaceNormals[ltc][0][2];
-            z += surfaceNormals[ltc][1][2];
-            N += 2;
+            x = x + surfaceNormals[ltc][0][0];
+            x = x + surfaceNormals[ltc][1][0];
+            y = y + surfaceNormals[ltc][0][1];
+            y = y + surfaceNormals[ltc][1][1];
+
+            z = z + surfaceNormals[ltc][0][2];
+            z = z + surfaceNormals[ltc][1][2];
+            N = N + 2;
         }
+
+
 
         if (rtc > -1) {
-            x += surfaceNormals[rtc][0][0];
-            y += surfaceNormals[rtc][0][1];
-            z += surfaceNormals[rtc][0][2];
-            N += 1;
+            x = x + surfaceNormals[rtc][0][0];
+            y = y + surfaceNormals[rtc][0][1];
+            z = z + surfaceNormals[rtc][0][2];
+            N = N + 1;
         }
+
+
 
         if (rbc > -1) {
-            x += surfaceNormals[rbc][0][0];
-            x += surfaceNormals[rbc][1][0];
-            y += surfaceNormals[rbc][0][1];
-            y += surfaceNormals[rbc][1][1];
-            z += surfaceNormals[rbc][0][2];
-            z += surfaceNormals[rbc][1][2];
-            N += 2;
+            x = x + surfaceNormals[rbc][0][0];
+            x = x + surfaceNormals[rbc][1][0];
+            y = y + surfaceNormals[rbc][0][1];
+            y = y + surfaceNormals[rbc][1][1];
+            z = z + surfaceNormals[rbc][0][2];
+            z = z + surfaceNormals[rbc][1][2];
+            N = N + 2;
         }
 
+
+
         if (lbc > -1) {
-            x += surfaceNormals[lbc][0][0];
-            y += surfaceNormals[lbc][0][1];
-            z += surfaceNormals[lbc][0][2];
-            N += 1;
+            x = x + surfaceNormals[lbc][0][0];
+            y = y + surfaceNormals[lbc][0][1];
+            z = z + surfaceNormals[lbc][0][2];
+            N = N + 1;
         }
+
+
 
         vertexNormals[vertexIndex][0] = x / N;
         vertexNormals[vertexIndex][1] = y / N;
         vertexNormals[vertexIndex][2] = z / N;
+
+        // cout << vertexNormals[vertexIndex][0] << " " << vertexNormals[vertexIndex][2] << " " << vertexNormals[vertexIndex][1] << " | " << N << "\n\n";
     }
 
+    
     glEnable(GL_TEXTURE_1D);
+    glPushMatrix();
     colormap->loadColormapTexture();
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+
     for (j = 0; j < DIM - 1; j++) //draw smoke
     {
         glBegin(GL_TRIANGLE_STRIP);
@@ -606,38 +618,55 @@ void Visualization::draw_heightplot(Simulation const &simulation, const int DIM,
         px = wn + (fftw_real) i * wn;
         py = hn + (fftw_real) j * hn;
         idx = (j * DIM) + i;
-        pz = getHeight(pick_scalar_field_value(simulation, idx), maxHeight);
+        pz = getHeight(pick_scalar_field_value(heightplotDataset, simulation, idx), maxHeight);
         setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
-        glNormal3f(vertexNormals[idx][0],vertexNormals[idx][2],vertexNormals[idx][1]);
-        glVertex3f(px, pz,py);
+        glNormal3f(vertexNormals[idx][0]*10, vertexNormals[idx][2]*10, vertexNormals[idx][1]*10);
+        glVertex3f(px, pz, py);
 
         for (i = 0; i < DIM - 1; i++) {
             px = wn + (fftw_real) i * wn;
             py = hn + (fftw_real) (j + 1) * hn;
             idx = ((j + 1) * DIM) + i;
-            pz = getHeight(pick_scalar_field_value(simulation, idx), maxHeight);
+            pz = getHeight(pick_scalar_field_value(heightplotDataset, simulation, idx), maxHeight);
             setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
-            glNormal3f(vertexNormals[idx][0],vertexNormals[idx][2],vertexNormals[idx][1]);
-            glVertex3f(px, pz,py);
+            glNormal3f(vertexNormals[idx][0]*10, vertexNormals[idx][2]*10, vertexNormals[idx][1]*10);
+            glVertex3f(px, pz, py);
             px = wn + (fftw_real) (i + 1) * wn;
             py = hn + (fftw_real) j * hn;
             idx = (j * DIM) + (i + 1);
-            pz = getHeight(pick_scalar_field_value(simulation, idx), maxHeight);
+            pz = getHeight(pick_scalar_field_value(heightplotDataset, simulation, idx), maxHeight);
             setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
-            glNormal3f(vertexNormals[idx][0],vertexNormals[idx][2],vertexNormals[idx][1]);
-            glVertex3f(px, pz,py);
+            glNormal3f(vertexNormals[idx][0]*10, vertexNormals[idx][2]*10, vertexNormals[idx][1]*10);
+            glVertex3f(px, pz, py);
         }
 
         px = wn + (fftw_real) (DIM - 1) * wn;
         py = hn + (fftw_real) (j + 1) * hn;
         idx = ((j + 1) * DIM) + (DIM - 1);
-        pz = getHeight(pick_scalar_field_value(simulation, idx), maxHeight);
+        pz = getHeight(pick_scalar_field_value(heightplotDataset, simulation, idx), maxHeight);
         setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
-        glNormal3f(vertexNormals[idx][0],vertexNormals[idx][2],vertexNormals[idx][1]);
-        glVertex3f(px, pz,py);
+        glNormal3f(vertexNormals[idx][0]*10, vertexNormals[idx][2]*10, vertexNormals[idx][1]*10);
+        glVertex3f(px, pz, py);
         glEnd();
     }
+
+    if (options[DRAW_NORMALS]) {
+        for (int idx = 0; idx < DIM * DIM; idx++) {
+            int a = idx / DIM;
+            int b = idx % DIM;
+            px = wn + (fftw_real) b * wn;
+            py = hn + (fftw_real) a * hn;
+            pz = getHeight(pick_scalar_field_value(heightplotDataset, simulation, idx), maxHeight);
+            glBegin(GL_LINES);
+            setColor(1, TEXTURE);
+            glVertex3f(px, pz, py);
+            glVertex3f(px + vertexNormals[idx][0] * 10, pz + vertexNormals[idx][2]* 10, py + vertexNormals[idx][1]* 10);
+            glEnd();
+        }
+    }
+    glPopMatrix();
     glDisable(GL_TEXTURE_1D);
+    
 }
 
 void Visualization::draw_smoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
@@ -887,6 +916,24 @@ void Visualization::draw_3d_arrow(GLfloat magn, GLfloat x_start, GLfloat y_start
     glTranslatef(0, 0, 3 + height_scale);
     gluCylinder(p, 2 + base_scale, 0, 2 + height_scale, 10, 5);
     glPopMatrix();
+}
+
+float Visualization::pick_scalar_field_value(DatasetType ds, Simulation const &simulation, size_t idx) {
+    float value = 0.0;
+    switch (ds) {
+        case VELOCITY_MAGN:
+            value = magnitude(simulation.vx[idx], simulation.vy[idx]);
+            break;
+        case FORCE_MAGN:
+            value = magnitude(simulation.fx[idx], simulation.fy[idx]);
+            break;
+        case DENSITY:
+            value = simulation.rho[idx];
+
+        default:
+            break;
+    }
+    return value;
 }
 
 float Visualization::pick_scalar_field_value(Simulation const &simulation, size_t idx) {
