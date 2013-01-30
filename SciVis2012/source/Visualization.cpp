@@ -214,8 +214,8 @@ void Visualization::visualize3D(Simulation const &simulation, int winWidth, int 
     fftw_real wn = (fftw_real) winWidth / (fftw_real) (DIM + 1); // Computational Grid cell width
     fftw_real hn = (fftw_real) winHeight / (fftw_real) (DIM + 1); // Computational Grid cell heigh
 
-    fftw_real wn_sample = (fftw_real) winWidth / (fftw_real) (sample_x + 1); // Sample Grid cell width 
-    fftw_real hn_sample = (fftw_real) winHeight / (fftw_real) (sample_y + 1); // Sample Grid cell heigh
+    //    fftw_real wn_sample = (fftw_real) winWidth / (fftw_real) (sample_x + 1); // Sample Grid cell width 
+    //    fftw_real hn_sample = (fftw_real) winHeight / (fftw_real) (sample_y + 1); // Sample Grid cell heigh
 
     datasets[scalarDataset].scaleMax = -INFINITY;
     datasets[scalarDataset].scaleMin = INFINITY;
@@ -250,6 +250,7 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
 
     if (options[DRAW_SMOKE]) {
         draw_smoke(simulation, DIM, wn, hn);
+        draw_streamlines(simulation, DIM, wn, hn);
     }
 
     if (options[DRAW_ISOLINES]) {
@@ -703,67 +704,128 @@ void Visualization::draw_smoke(Simulation const &simulation, const int DIM, cons
     glDisable(GL_TEXTURE_1D);
 }
 
+int findCell(float x, float y, int DIM, float wn, float hn) {
+    int C[2];
+
+    // compute cell coordinates C[0], C[1]
+    C[0] = int(x * DIM / wn);
+    C[1] = int(y * DIM / hn);
+
+    // test if p is inside the dataset
+    if (C[0] < 0 || C[0] >= DIM - 1 || C[1] < 0 || C[1] >= DIM - 1)
+        return -1;
+
+    // go from cell coordinates to cell index
+    return C[0] + C[1] * DIM;
+}
+
 void Visualization::draw_streamlines(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
-    int i, j, idx;
-    double px, py;
-    
-    float dt = 1/3 * sqrt( pow(wn,2) + pow(hn,2));
+    //    int i, j, idx;
+    //    double px, py;
+
+    float dt = 1.0 / 3 * sqrt(pow(wn, 2) + pow(hn, 2));
     int maxLength = 100;
-    float x=0;
-    float y=0;
+    float x = 500;
+    float y = 500;
     
-    for (int step = 0; step < maxLength ; step++) {
+    glBegin(GL_LINES);
+    glVertex2f(x, y);
+
+    for (int step = 0; step < maxLength; step++) {
+
+        float *xy_new = new float[2];
+        int *v = new int[4];
+        float *sample_x1_y1 = new float[2];
+        float *sample_x2_y2 = new float[2];
+        float *sample_x3_y3 = new float[2];
+        float *sample_x4_y4 = new float[2];
+
+        int x_point = floor(x / wn);
+        int y_point = floor(y / hn);
+
+        int c = lex(x_point, y_point, DIM);
+
+        getCell(c, v, DIM);
+
+        pick_vector_field_value(simulation, v[0], sample_x1_y1);
+        pick_vector_field_value(simulation, v[1], sample_x2_y2);
+        pick_vector_field_value(simulation, v[3], sample_x3_y3);
+        pick_vector_field_value(simulation, v[2], sample_x4_y4);
+        // bilinear interpolation
+        GLfloat x1, y1, x2, y2;
+        x1 = wn + (fftw_real) (x_point - 1) * wn;
+        y1 = hn + (fftw_real) (y_point - 1) * hn;
+        x2 = wn + (fftw_real) (x_point - 2) * wn;
+        y2 = hn + (fftw_real) (y_point - 2) * hn;
+        GLfloat f1x = sample_x4_y4[0]*(x2 - x_point)*(y2 - y_point);
+        GLfloat f2x = sample_x2_y2[0]*(x_point - x1)*(y2 - y_point);
+        GLfloat f3x = sample_x3_y3[0]*(x2 - x_point)*(y_point - y1);
+        GLfloat f4x = sample_x1_y1[0]*(x_point - x1)*(y_point - y1);
+        xy_new[0] = (1 / ((x2 - x1)*(y2 - y1)))*(f1x + f2x + f3x + f4x);
+        GLfloat f1y = sample_x4_y4[1]*(x2 - x_point)*(y2 - y_point);
+        GLfloat f2y = sample_x2_y2[1]*(x_point - x1)*(y2 - y_point);
+        GLfloat f3y = sample_x3_y3[1]*(x2 - x_point)*(y_point - y1);
+        GLfloat f4y = sample_x1_y1[1]*(x_point - x1)*(y_point - y1);
+        xy_new[1] = (1 / ((x2 - x1)*(y2 - y1)))*(f1y + f2y + f3y + f4y);
+
+
+        cout << xy_new[0] << " " << xy_new[1] << '\n';
+
+
+        x_point = x_point + xy_new[0] * dt;
+        y_point = y_point + xy_new[1] * dt;
         
-        float *v = new float[];
-        getVectorForPoint(x,y,v);
-        x = x + v[0]*dt;
-        y = y + v[1]*dt;
-        
-        delete v[];
+        glVertex2f(x_point, y_point);        
+
+        delete[] v;
+        delete[] xy_new;
+        delete[] sample_x1_y1;
+        delete[] sample_x2_y2;
+        delete[] sample_x3_y3;
+        delete[] sample_x4_y4;
     }
-    
-    
+    glEnd();
+
     GLenum error = glGetError();
     if (error != 0) {
         std::cout << error << '\n';
     }
-    glEnable(GL_TEXTURE_1D);
-    colormap->loadColormapTexture();
-
-    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    for (j = 0; j < DIM - 1; j++) //draw smoke
-    {
-        glBegin(GL_TRIANGLE_STRIP);
-
-        i = 0;
-        px = wn + (fftw_real) i * wn;
-        py = hn + (fftw_real) j * hn;
-        idx = (j * DIM) + i;
-        setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
-        glVertex2f(px, py);
-
-        for (i = 0; i < DIM - 1; i++) {
-
-            px = wn + (fftw_real) i * wn;
-            py = hn + (fftw_real) (j + 1) * hn;
-            idx = ((j + 1) * DIM) + i;
-            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
-            glVertex2f(px, py);
-            px = wn + (fftw_real) (i + 1) * wn;
-            py = hn + (fftw_real) j * hn;
-            idx = (j * DIM) + (i + 1);
-            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
-            glVertex2f(px, py);
-        }
-
-        px = wn + (fftw_real) (DIM - 1) * wn;
-        py = hn + (fftw_real) (j + 1) * hn;
-        idx = ((j + 1) * DIM) + (DIM - 1);
-        setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
-        glVertex2f(px, py);
-        glEnd();
-    }
-    glDisable(GL_TEXTURE_1D);
+    //    colormap->loadColormapTexture();
+    //
+    //    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
+    //    for (j = 0; j < DIM - 1; j++) //draw smoke
+    //    {
+    //        glBegin(GL_TRIANGLE_STRIP);
+    //
+    //        i = 0;
+    //        px = wn + (fftw_real) i * wn;
+    //        py = hn + (fftw_real) j * hn;
+    //        idx = (j * DIM) + i;
+    //        setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+    //        glVertex2f(px, py);
+    //
+    //        for (i = 0; i < DIM - 1; i++) {
+    //
+    //            px = wn + (fftw_real) i * wn;
+    //            py = hn + (fftw_real) (j + 1) * hn;
+    //            idx = ((j + 1) * DIM) + i;
+    //            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+    //            glVertex2f(px, py);
+    //            px = wn + (fftw_real) (i + 1) * wn;
+    //            py = hn + (fftw_real) j * hn;
+    //            idx = (j * DIM) + (i + 1);
+    //            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+    //            glVertex2f(px, py);
+    //        }
+    //
+    //        px = wn + (fftw_real) (DIM - 1) * wn;
+    //        py = hn + (fftw_real) (j + 1) * hn;
+    //        idx = ((j + 1) * DIM) + (DIM - 1);
+    //        setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
+    //        glVertex2f(px, py);
+    //        glEnd();
+    //    }
+    //    glDisable(GL_TEXTURE_1D);
 }
 
 void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample) {
