@@ -499,73 +499,90 @@ void Visualization::draw_streamtubes(Simulation const &simulation, const int DIM
             float x = idx % DIM;
             float y = idx / DIM;
 
-//            float vx = pick_timescalar_field_value(idx, time);
-//            pick_timevector_field_value(idx, v, time);
-//            px = wn + (fftw_real) x * wn;
-//            py = hn + (fftw_real) y * hn;
-//            pz = zn + time *zn;
-//            glPushMatrix();
-//            glTranslatef(px, py, pz);
-//            glBegin(GL_LINES);
-//            setColor(vx, SIMPLE);
-//            glVertex3f(0, 0, 0);
-//            glVertex3f(v[0]*1000, v[1]*1000, 20);
-//            glEnd();
-//            glPopMatrix();
+            float vx = pick_timescalar_field_value(idx, time);
+            pick_timevector_field_value(idx, v, time);
+            px = wn + (fftw_real) x * wn;
+            py = hn + (fftw_real) y * hn;
+            pz = time *zn;
+            //            glPushMatrix();
+            //            glTranslatef(px, py, pz);
+            //            glBegin(GL_LINES);
+            //            setColor(vx, SIMPLE);
+            //            glVertex3f(0, 0, 0);
+            //            glVertex3f(v[0]*1000, v[1]*1000, 20);
+            //            glEnd();
+            //            glPopMatrix();
         }
     }
     float x_max = DIM * wn + wn;
     float y_max = DIM * hn + hn;
-    float z_max = capacity * zn + zn;
+    float z_max = capacity * zn;
 
     glBegin(GL_LINE_LOOP);
     glColor3f(1, 1, 1);
-    glVertex3f(wn, hn, zn);
-    glVertex3f(x_max - wn, hn, zn);
-    glVertex3f(x_max - wn, y_max - hn, zn);
-    glVertex3f(wn, y_max - hn, zn);
+    glVertex3f(wn, hn, 0);
+    glVertex3f(x_max - wn, hn, 0);
+    glVertex3f(x_max - wn, y_max - hn, 0);
+    glVertex3f(wn, y_max - hn, 0);
     glEnd();
     glBegin(GL_LINE_LOOP);
     glColor3f(1, 1, 1);
-    glVertex3f(wn, hn, z_max - zn);
-    glVertex3f(x_max - wn, hn, z_max - zn);
-    glVertex3f(x_max - wn, y_max - hn, z_max - zn);
-    glVertex3f(wn, y_max - hn, z_max - zn);
+    glVertex3f(wn, hn, z_max);
+    glVertex3f(x_max - wn, hn, z_max);
+    glVertex3f(x_max - wn, y_max - hn, z_max);
+    glVertex3f(wn, y_max - hn, z_max);
     glEnd();
     glBegin(GL_LINES);
     glColor3f(1, 1, 1);
-    glVertex3f(wn, hn, zn);
-    glVertex3f(wn, hn, z_max - zn);
-    glVertex3f(wn, y_max - hn, zn);
-    glVertex3f(wn, y_max - hn, z_max - zn);
-    glVertex3f(x_max - wn, hn, zn);
-    glVertex3f(x_max - wn, hn, z_max - zn);
-    glVertex3f(x_max - wn, y_max - hn, zn);
-    glVertex3f(x_max - wn, y_max - hn, z_max - zn);
+    glVertex3f(wn, hn, 0);
+    glVertex3f(wn, hn, z_max);
+    glVertex3f(wn, y_max - hn, 0);
+    glVertex3f(wn, y_max - hn, z_max);
+    glVertex3f(x_max - wn, hn, 0);
+    glVertex3f(x_max - wn, hn, z_max);
+    glVertex3f(x_max - wn, y_max - hn, 0);
+    glVertex3f(x_max - wn, y_max - hn, z_max);
     glEnd();
 
-    float dt = 2;
+    float dt = 5;
     int maxLength = 1000;
     float x = 500;
     float y = 500;
     float z = zn;
 
-    draw_streamtube(x+100, y, z, dt, maxLength, DIM, wn, hn, zn);
-    draw_streamtube(x, y, z, dt, maxLength, DIM, wn, hn, zn);
-    draw_streamtube(x+100, y-100, z, dt, maxLength, DIM, wn, hn, zn);
+    draw_streamtube(calculateStreamtubePoints(x + 100, y, z, dt, maxLength, DIM, wn, hn, zn));
+    draw_streamtube(calculateStreamtubePoints(x, y, z, dt, maxLength, DIM, wn, hn, zn));
+    draw_streamtube(calculateStreamtubePoints(x + 100, y - 100, z, dt, maxLength, DIM, wn, hn, zn));
 }
 
-void Visualization::draw_streamtube(float x, float y, float z, float dt, int maxLength, int DIM, float wn, float hn, float zn) {
+void Visualization::draw_streamtube(vector<vector<float > > points) {
+    for (int sp = 0; sp < points.size(); sp++) {
+        glColor3f(0, 1, 0);
+        glPushMatrix();
+        glTranslatef(points[sp][0], points[sp][1], points[sp][2]);
+        glutSolidCube(10);
+        glPopMatrix();
+    }
+}
+
+vector<vector<float > > Visualization::calculateStreamtubePoints(float x, float y, float z, float dt, int maxLength, int DIM, float wn, float hn, float zn) {
     int capacity = Application::timeslices.getCapacity();
+    vector<vector<float > > points;
+
+    vector<float> p;
+    p.resize(3);
+    p[0] = x;
+    p[1] = y;
+    p[2] = z;
+    points.push_back(p);
 
     for (int step = 0; step < maxLength; step++) {
-
         int x_point = floor(x / wn) - 1;
         int y_point = floor(y / hn) - 1;
         int z_point = floor(z / zn) - 1;
 
-        if (x_point < 0 || x_point >= DIM || y_point < 0 || y_point >= DIM || z_point < 0 || z_point >= capacity) {
-            break;
+        if (x_point < 0 || x_point >= DIM - 1 || y_point < 0 || y_point >= DIM - 1 || z_point < 0 || z_point >= capacity - 1) {
+            return points;
         }
 
         float *interpolated = new float[2];
@@ -578,7 +595,6 @@ void Visualization::draw_streamtube(float x, float y, float z, float dt, int max
         float *v011 = new float[3];
         float *v111 = new float[3];
         float *v101 = new float[3];
-
 
         int c = (y_point * (DIM - 1)) + x_point;
         getCell(c, v, DIM);
@@ -601,7 +617,6 @@ void Visualization::draw_streamtube(float x, float y, float z, float dt, int max
         z0 = zn + (fftw_real) (z_point) * zn;
         z1 = zn + (fftw_real) (z_point + 1) * zn;
 
-
         float xd, yd, zd;
         xd = (x - x0) / (x1 - x0);
         yd = (y - y0) / (y1 - y0);
@@ -616,7 +631,6 @@ void Visualization::draw_streamtube(float x, float y, float z, float dt, int max
         c1 = c01 * (1 - yd) + c11*yd;
         interpolated[0] = c0 * (1 - zd) + c1*zd;
 
-
         c00 = v000[1]*(1 - xd) + v100[1] * xd;
         c10 = v010[1]*(1 - xd) + v110[1] * xd;
         c01 = v001[1]*(1 - xd) + v101[1] * xd;
@@ -624,110 +638,21 @@ void Visualization::draw_streamtube(float x, float y, float z, float dt, int max
         c0 = c00 * (1 - yd) + c10*yd;
         c1 = c01 * (1 - yd) + c11*yd;
         interpolated[1] = c0 * (1 - zd) + c1*zd;
+        interpolated[2] = 1;
 
+        normalize2(interpolated);
+        normalize3(interpolated);
 
+        x = x + interpolated[0] * dt;
+        y = y + interpolated[1] * dt;
+        z = z + interpolated[2] * dt;
 
-        //normalize2(interpolated);
-//        if (step == 0) {
-//            printPoint(v000);
-//            printPoint(v100);
-//            printPoint(v110);
-//            printPoint(v010);
-//            printPoint(v001);
-//            printPoint(v101);
-//            printPoint(v111);
-//            printPoint(v011);
-//            cout << "(" << interpolated[0] << "|" << interpolated[1] << "| 1) \n\n";
-//        }
-        
-        glPushMatrix();
-        glTranslatef(x0, y0, z0);
-            if (step == 0) {
-        cout << x0 << " " << y0 << " " << z0 << "\n";
-            }
-        glBegin(GL_LINES);
-        //setColor(1, SIMPLE);
-        glColor3f(1,1,1);
-        glVertex3f(0, 0, 0);
-        glVertex3f(v000[0]*1000, v000[1]*1000, 20);
-        glEnd();
-        glPopMatrix();
-        
-        glPushMatrix();
-        glTranslatef(x1, y0, z0);
-        glBegin(GL_LINES);
-        glColor3f(1,1,1);
-        glVertex3f(0, 0, 0);
-        glVertex3f(v100[0]*1000, v100[1]*1000, 20);
-        glEnd();
-        glPopMatrix();
-        
-        glPushMatrix();
-        glTranslatef(x1, y1, z0);
-        glBegin(GL_LINES);
-        glColor3f(1,1,1);
-        glVertex3f(0, 0, 0);
-        glVertex3f(v110[0]*1000, v110[1]*1000, 20);
-        glEnd();
-        glPopMatrix();
-        
-        glPushMatrix();
-        glTranslatef(x0, y1, z0);
-        glBegin(GL_LINES);
-        glColor3f(1,1,1);
-        glVertex3f(0, 0, 0);
-        glVertex3f(v010[0]*1000, v010[1]*1000, 20);
-        glEnd();
-        glPopMatrix();
-        
-        glPushMatrix();
-        glTranslatef(x0, y0, z1);
-        glBegin(GL_LINES);
-        glColor3f(1,1,1);
-        glVertex3f(0, 0, 0);
-        glVertex3f(v001[0]*1000, v001[1]*1000, 20);
-        glEnd();
-        glPopMatrix();
-        
-        glPushMatrix();
-        glTranslatef(x1, y0, z1);
-        glBegin(GL_LINES);
-        glColor3f(1,1,1);
-        glVertex3f(0, 0, 0);
-        glVertex3f(v101[0]*1000, v101[1]*1000, 20);
-        glEnd();
-        glPopMatrix();
-                
-        
-        glPushMatrix();
-        glTranslatef(x1, y1, z1);
-        glBegin(GL_LINES);
-        glColor3f(1,1,1);
-        glVertex3f(0, 0, 0);
-        glVertex3f(v111[0]*1000, v111[1]*1000, 20);
-        glEnd();
-        glPopMatrix();
-        
-        glPushMatrix();
-        glTranslatef(x0, y1, z1);
-        glBegin(GL_LINES);
-        glColor3f(1,1,1);
-        glVertex3f(0, 0, 0);
-        glVertex3f(v011[0]*1000, v011[1]*1000, 20);
-        glEnd();
-        glPopMatrix();
-        
-        
-        
-        glBegin(GL_LINES);
-        if (step%2==0) glColor3f(1,1,1);
-        else glColor3f(0,1,0);
-        glVertex3f(x, y, z);
-        x = x + interpolated[0] * 1000;
-        y = y + interpolated[1] * 1000;
-        z = z + dt;
-        glVertex3f(x, y, z);
-        glEnd();
+        vector<float> stp;
+        stp.resize(3);
+        stp[0] = x;
+        stp[1] = y;
+        stp[2] = z;
+        points.push_back(stp);
 
         delete[] v;
         delete[] interpolated;
@@ -740,7 +665,7 @@ void Visualization::draw_streamtube(float x, float y, float z, float dt, int max
         delete[] v111;
         delete[] v101;
     }
-
+    return points;
 }
 
 void Visualization::draw_heightplot(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
