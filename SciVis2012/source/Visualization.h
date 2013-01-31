@@ -157,6 +157,7 @@ private:
 
     float getHeight(float vy, float maxheight);
     void draw_streamtubes(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+    void draw_streamtube(float x, float y, float z, float dt, int maxLength, int DIM, float wn, float hn, float zn);
     void draw_heightplot(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_smoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_isoline(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, float);
