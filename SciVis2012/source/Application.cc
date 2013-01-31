@@ -31,6 +31,7 @@ int Application::angle;
 int Application::translate_x;
 int Application::translate_y;
 int Application::translate_z;
+int Application::distance;
 Visualization::DatasetType Application::scalarDataset;
 float Application::scalarMax;
 float Application::scalarMin;
@@ -133,7 +134,7 @@ void Application::display() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glPushMatrix();
-    gluLookAt(0.0, 3000.0, 3000.0,
+    gluLookAt(0.0, 3000.0-distance, 3000.0-distance,
             0.0+translate_x, 0.0+translate_y, 0.0+translate_z,
             0.0, 1.0, 0.0);
 
@@ -319,11 +320,6 @@ void Application::keyboard(unsigned char key, int x, int y) {
         }
             break;
 
-        case 'm':
-        {
-        }
-            break;
-
         case 'a':
         {
             simulation.toggle_frozen();
@@ -346,6 +342,12 @@ void Application::keyboard(unsigned char key, int x, int y) {
             break;
         case 'k':
             translate_y -= magnitude;
+            break;
+            case 'n':
+            distance += 100;
+            break;
+        case 'm':
+            distance -= 100;
             break;
         default:
         {

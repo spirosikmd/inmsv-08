@@ -87,7 +87,7 @@ private:
     static float densityRHO2Isoline;
     static int numberIsolines;
     static int angle;
-    static int translate_x, translate_z, translate_y;
+    static int translate_x, translate_z, translate_y,distance;
     static Visualization::Mode scalarMode;
 
     static void renderColormap();

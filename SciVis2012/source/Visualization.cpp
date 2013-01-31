@@ -482,6 +482,10 @@ void normalize3(float *R) {
     R[2] = R[2] / m;
 }
 
+void printPoint(float *xyz_new) {
+    cout << "(" << xyz_new[0] << "|" << xyz_new[1] << "|" << xyz_new[2] << ")\n";
+}
+
 void Visualization::draw_streamtubes(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
 
     double px, py, pz;
@@ -500,54 +504,172 @@ void Visualization::draw_streamtubes(Simulation const &simulation, const int DIM
             pick_timevector_field_value(idx, v, time);
             px = wn + (fftw_real) x * wn;
             py = hn + (fftw_real) y * hn;
-            pz = zn + time *zn;
-            glPushMatrix();
-            glTranslatef(px, py, pz);
 
 
-            if (idx == 1) {
-                cout << "Time " << time << ":: " << vx << " " << v[0] << " " << v[1] << "\n";
-            }
-
-            glBegin(GL_LINES);
-            setColor(vx, SIMPLE);
-            glVertex3f(0, 0, 0);
-            glVertex3f(v[0], v[1], 20);
-            glEnd();
-            glPopMatrix();
+            pz = time *zn;
+            //            glPushMatrix();
+            //            glTranslatef(px, py, pz);
+            //            glBegin(GL_LINES);
+            //            setColor(vx, SIMPLE);
+            //            glVertex3f(0, 0, 0);
+            //            glVertex3f(v[0]*1000, v[1]*1000, 20);
+            //            glEnd();
+            //            glPopMatrix();
         }
     }
     float x_max = DIM * wn + wn;
     float y_max = DIM * hn + hn;
-    float z_max = capacity * zn + zn;
+    float z_max = capacity * zn;
 
     glBegin(GL_LINE_LOOP);
     glColor3f(1, 1, 1);
-    glVertex3f(wn, hn, zn);
-    glVertex3f(x_max - wn, hn, zn);
-    glVertex3f(x_max - wn, y_max - hn, zn);
-    glVertex3f(wn, y_max - hn, zn);
+
+    glVertex3f(wn, hn, 0);
+    glVertex3f(x_max - wn, hn, 0);
+    glVertex3f(x_max - wn, y_max - hn, 0);
+    glVertex3f(wn, y_max - hn, 0);
     glEnd();
     glBegin(GL_LINE_LOOP);
     glColor3f(1, 1, 1);
-    glVertex3f(wn, hn, z_max - zn);
-    glVertex3f(x_max - wn, hn, z_max - zn);
-    glVertex3f(x_max - wn, y_max - hn, z_max - zn);
-    glVertex3f(wn, y_max - hn, z_max - zn);
+    glVertex3f(wn, hn, z_max);
+    glVertex3f(x_max - wn, hn, z_max);
+    glVertex3f(x_max - wn, y_max - hn, z_max);
+    glVertex3f(wn, y_max - hn, z_max);
     glEnd();
     glBegin(GL_LINES);
     glColor3f(1, 1, 1);
-    glVertex3f(wn, hn, zn);
-    glVertex3f(wn, hn, z_max - zn);
-    glVertex3f(wn, y_max - hn, zn);
-    glVertex3f(wn, y_max - hn, z_max - zn);
-    glVertex3f(x_max - wn, hn, zn);
-    glVertex3f(x_max - wn, hn, z_max - zn);
-    glVertex3f(x_max - wn, y_max - hn, zn);
-    glVertex3f(x_max - wn, y_max - hn, z_max - zn);
+    glVertex3f(wn, hn, 0);
+    glVertex3f(wn, hn, z_max);
+    glVertex3f(wn, y_max - hn, 0);
+    glVertex3f(wn, y_max - hn, z_max);
+    glVertex3f(x_max - wn, hn, 0);
+    glVertex3f(x_max - wn, hn, z_max);
+    glVertex3f(x_max - wn, y_max - hn, 0);
+    glVertex3f(x_max - wn, y_max - hn, z_max);
     glEnd();
 
+    float dt = 5;
+    int maxLength = 1000;
+    float x = 500;
+    float y = 500;
+    float z = zn;
 
+    draw_streamtube(calculateStreamtubePoints(x + 100, y, z, dt, maxLength, DIM, wn, hn, zn));
+    draw_streamtube(calculateStreamtubePoints(x, y, z, dt, maxLength, DIM, wn, hn, zn));
+    draw_streamtube(calculateStreamtubePoints(x + 100, y - 100, z, dt, maxLength, DIM, wn, hn, zn));
+}
+
+void Visualization::draw_streamtube(vector<vector<float > > points) {
+    for (int sp = 0; sp < points.size(); sp++) {
+        glColor3f(0, 1, 0);
+        glPushMatrix();
+        glTranslatef(points[sp][0], points[sp][1], points[sp][2]);
+        glutSolidCube(10);
+        glPopMatrix();
+    }
+}
+
+vector<vector<float > > Visualization::calculateStreamtubePoints(float x, float y, float z, float dt, int maxLength, int DIM, float wn, float hn, float zn) {
+    int capacity = Application::timeslices.getCapacity();
+    vector<vector<float > > points;
+
+    vector<float> p;
+    p.resize(3);
+    p[0] = x;
+    p[1] = y;
+    p[2] = z;
+    points.push_back(p);
+
+    for (int step = 0; step < maxLength; step++) {
+        int x_point = floor(x / wn) - 1;
+        int y_point = floor(y / hn) - 1;
+        int z_point = floor(z / zn) - 1;
+
+        if (x_point < 0 || x_point >= DIM - 1 || y_point < 0 || y_point >= DIM - 1 || z_point < 0 || z_point >= capacity - 1) {
+            return points;
+        }
+
+        float *interpolated = new float[2];
+        int *v = new int[8];
+        float *v000 = new float[3];
+        float *v010 = new float[3];
+        float *v110 = new float[3];
+        float *v100 = new float[3];
+        float *v001 = new float[3];
+        float *v011 = new float[3];
+        float *v111 = new float[3];
+        float *v101 = new float[3];
+
+        int c = (y_point * (DIM - 1)) + x_point;
+        getCell(c, v, DIM);
+
+        pick_timevector_field_value(v[0], v000, z_point);
+        pick_timevector_field_value(v[3], v010, z_point);
+        pick_timevector_field_value(v[2], v110, z_point);
+        pick_timevector_field_value(v[1], v100, z_point);
+        pick_timevector_field_value(v[0], v001, z_point + 1);
+        pick_timevector_field_value(v[3], v011, z_point + 1);
+        pick_timevector_field_value(v[2], v111, z_point + 1);
+        pick_timevector_field_value(v[1], v101, z_point + 1);
+
+        // trilinear interpolation
+        float x0, y0, z0, x1, y1, z1;
+        x0 = wn + (fftw_real) (x_point) * wn;
+        x1 = wn + (fftw_real) (x_point + 1) * wn;
+        y0 = hn + (fftw_real) (y_point) * hn;
+        y1 = hn + (fftw_real) (y_point + 1) * hn;
+        z0 = zn + (fftw_real) (z_point) * zn;
+        z1 = zn + (fftw_real) (z_point + 1) * zn;
+
+        float xd, yd, zd;
+        xd = (x - x0) / (x1 - x0);
+        yd = (y - y0) / (y1 - y0);
+        zd = (z - z0) / (z1 - z0);
+
+        float c00, c01, c10, c11, c0, c1;
+        c00 = v000[0]*(1 - xd) + v100[0] * xd;
+        c10 = v010[0]*(1 - xd) + v110[0] * xd;
+        c01 = v001[0]*(1 - xd) + v101[0] * xd;
+        c11 = v011[0]*(1 - xd) + v111[0] * xd;
+        c0 = c00 * (1 - yd) + c10*yd;
+        c1 = c01 * (1 - yd) + c11*yd;
+        interpolated[0] = c0 * (1 - zd) + c1*zd;
+
+        c00 = v000[1]*(1 - xd) + v100[1] * xd;
+        c10 = v010[1]*(1 - xd) + v110[1] * xd;
+        c01 = v001[1]*(1 - xd) + v101[1] * xd;
+        c11 = v011[1]*(1 - xd) + v111[1] * xd;
+        c0 = c00 * (1 - yd) + c10*yd;
+        c1 = c01 * (1 - yd) + c11*yd;
+        interpolated[1] = c0 * (1 - zd) + c1*zd;
+        interpolated[2] = 1;
+
+        normalize2(interpolated);
+        normalize3(interpolated);
+
+        x = x + interpolated[0] * dt;
+        y = y + interpolated[1] * dt;
+        z = z + interpolated[2] * dt;
+
+        vector<float> stp;
+        stp.resize(3);
+        stp[0] = x;
+        stp[1] = y;
+        stp[2] = z;
+        points.push_back(stp);
+
+        delete[] v;
+        delete[] interpolated;
+        delete[] v000;
+        delete[] v010;
+        delete[] v110;
+        delete[] v100;
+        delete[] v001;
+        delete[] v011;
+        delete[] v111;
+        delete[] v101;
+    }
+    return points;
 }
 
 void Visualization::draw_heightplot(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
@@ -850,14 +972,14 @@ void Visualization::draw_streamlines(Simulation const &simulation, const int DIM
         GLfloat f4y = sample_x1_y1[1]*(x - x1)*(y - y1);
         xy_new[1] = (1 / ((x2 - x1)*(y2 - y1)))*(f1y + f2y + f3y + f4y);
 
-        normalize2(xy_new);
-        //        if (step == 0) {
-        //            cout << "(" << sample_x1_y1[0] << "|" << sample_x1_y1[1] << ")\n";
-        //            cout << "(" << sample_x2_y2[0] << "|" << sample_x2_y2[1] << ")\n";
-        //            cout << "(" << sample_x3_y3[0] << "|" << sample_x3_y3[1] << ")\n";
-        //            cout << "(" << sample_x4_y4[0] << "|" << sample_x4_y4[1] << ") \n";
-        //            cout << "(" << xy_new[0] << "|" << xy_new[1] << ") \n\n";
-        //        }
+        //normalize2(xy_new);
+        if (step == 0) {
+            cout << "(" << sample_x1_y1[0] << "|" << sample_x1_y1[1] << ")\n";
+            cout << "(" << sample_x2_y2[0] << "|" << sample_x2_y2[1] << ")\n";
+            cout << "(" << sample_x3_y3[0] << "|" << sample_x3_y3[1] << ")\n";
+            cout << "(" << sample_x4_y4[0] << "|" << sample_x4_y4[1] << ") \n";
+            cout << "(" << xy_new[0] << "|" << xy_new[1] << ") \n\n";
+        }
         x = x + xy_new[0] * dt;
         y = y + xy_new[1] * dt;
 
@@ -876,42 +998,6 @@ void Visualization::draw_streamlines(Simulation const &simulation, const int DIM
     if (error != 0) {
         std::cout << error << '\n';
     }
-    //    colormap->loadColormapTexture();
-    //
-    //    glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
-    //    for (j = 0; j < DIM - 1; j++) //draw smoke
-    //    {
-    //        glBegin(GL_TRIANGLE_STRIP);
-    //
-    //        i = 0;
-    //        px = wn + (fftw_real) i * wn;
-    //        py = hn + (fftw_real) j * hn;
-    //        idx = (j * DIM) + i;
-    //        setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
-    //        glVertex2f(px, py);
-    //
-    //        for (i = 0; i < DIM - 1; i++) {
-    //
-    //            px = wn + (fftw_real) i * wn;
-    //            py = hn + (fftw_real) (j + 1) * hn;
-    //            idx = ((j + 1) * DIM) + i;
-    //            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
-    //            glVertex2f(px, py);
-    //            px = wn + (fftw_real) (i + 1) * wn;
-    //            py = hn + (fftw_real) j * hn;
-    //            idx = (j * DIM) + (i + 1);
-    //            setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
-    //            glVertex2f(px, py);
-    //        }
-    //
-    //        px = wn + (fftw_real) (DIM - 1) * wn;
-    //        py = hn + (fftw_real) (j + 1) * hn;
-    //        idx = ((j + 1) * DIM) + (DIM - 1);
-    //        setColor(pick_scalar_field_value(simulation, idx), TEXTURE);
-    //        glVertex2f(px, py);
-    //        glEnd();
-    //    }
-    //    glDisable(GL_TEXTURE_1D);
 }
 
 void Visualization::draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample) {
@@ -1188,6 +1274,7 @@ void Visualization::pick_timevector_field_value(size_t idx, float values[], int 
         default:
             break;
     }
+    values[2] = 1;
 }
 
 float Visualization::pick_timescalar_field_value(size_t idx, int t) {
