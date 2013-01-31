@@ -733,7 +733,7 @@ void Visualization::draw_streamlines(Simulation const &simulation, const int DIM
     int maxLength = 10;
     float x = 500;
     float y = 500;
-    
+
     glBegin(GL_LINE_STRIP);
     glVertex2f(x, y);
     for (int step = 0; step < maxLength; step++) {
@@ -745,26 +745,27 @@ void Visualization::draw_streamlines(Simulation const &simulation, const int DIM
         float *sample_x3_y3 = new float[2];
         float *sample_x4_y4 = new float[2];
 
-        int x_point = floor(x / wn);
-        int y_point = floor(y / hn);
-        
-        int c = (y_point * (DIM-1)) + x_point;
-        
-       // int c = lex(x_point, y_point, DIM);
-        
+        int x_point = floor(x / wn)-1;
+        int y_point = floor(y / hn)-1;
+
+        int c = (y_point * (DIM - 1)) + x_point;
+
         getCell(c, v, DIM);
-        
+
         pick_vector_field_value(simulation, v[2], sample_x1_y1);
         pick_vector_field_value(simulation, v[1], sample_x2_y2);
         pick_vector_field_value(simulation, v[0], sample_x3_y3);
         pick_vector_field_value(simulation, v[3], sample_x4_y4);
-        
+
         // bilinear interpolation
         GLfloat x1, y1, x2, y2;
-        x1 = wn + (fftw_real) (x_point - 1) * wn;
-        y1 = hn + (fftw_real) (y_point - 1) * hn;
-        x2 = wn + (fftw_real) (x_point - 2) * wn;
-        y2 = hn + (fftw_real) (y_point - 2) * hn;
+        x1 = wn + (fftw_real) (x_point) * wn;
+        y1 = hn + (fftw_real) (y_point) * hn;
+        x2 = wn + (fftw_real) (x_point +1) * wn;
+        y2 = hn + (fftw_real) (y_point +1) * hn;
+//        if (step == 0) {
+//            cout << x1 << ' ' << y1 << ' ' << x2 << ' ' << y2 << '\n';
+//        }
         GLfloat f1x = sample_x4_y4[0]*(x2 - x)*(y2 - y);
         GLfloat f2x = sample_x2_y2[0]*(x - x1)*(y2 - y);
         GLfloat f3x = sample_x3_y3[0]*(x2 - x)*(y - y1);
@@ -777,20 +778,17 @@ void Visualization::draw_streamlines(Simulation const &simulation, const int DIM
         xy_new[1] = (1 / ((x2 - x1)*(y2 - y1)))*(f1y + f2y + f3y + f4y);
 
         normalize2(xy_new);
-        if (step == 0) {
-        cout << "(" << sample_x1_y1[0]<< "|" <<  sample_x1_y1[1]<< ")\n";
-        cout<< "(" << sample_x2_y2[0]<< "|" <<  sample_x2_y2[1] << ")\n";
-        cout << "(" << sample_x3_y3[0] << "|" <<  sample_x3_y3[1]<< ")\n";
-        cout << "(" << sample_x4_y4[0]<< "|" <<  sample_x4_y4[1]<< ") \n" ;  
-        cout << "(" << xy_new[0]<< "|" <<  xy_new[1]<< ") \n\n" ;  
-        
-        
-        }
+//        if (step == 0) {
+//            cout << "(" << sample_x1_y1[0] << "|" << sample_x1_y1[1] << ")\n";
+//            cout << "(" << sample_x2_y2[0] << "|" << sample_x2_y2[1] << ")\n";
+//            cout << "(" << sample_x3_y3[0] << "|" << sample_x3_y3[1] << ")\n";
+//            cout << "(" << sample_x4_y4[0] << "|" << sample_x4_y4[1] << ") \n";
+//            cout << "(" << xy_new[0] << "|" << xy_new[1] << ") \n\n";
+//        }
         x = x + xy_new[0] * dt;
         y = y + xy_new[1] * dt;
-        
-        
-        glVertex2f(x, y);        
+
+        glVertex2f(x, y);
 
         delete[] v;
         delete[] xy_new;
