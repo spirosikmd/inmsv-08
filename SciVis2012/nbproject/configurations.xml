@@ -12,6 +12,8 @@
       <itemPath>source/Application.h</itemPath>
       <itemPath>source/Colormap.cpp</itemPath>
       <itemPath>source/Colormap.h</itemPath>
+      <itemPath>source/DataBuffer.cpp</itemPath>
+      <itemPath>source/DataBuffer.h</itemPath>
       <itemPath>source/Grid.cpp</itemPath>
       <itemPath>source/Grid.h</itemPath>
       <itemPath>source/Simulation.cc</itemPath>

@@ -3,7 +3,8 @@
 
 #include <rfftw.h>
 #include <map>
-#include "Colormap.h"              //the numerical simulation FFTW library
+#include "Colormap.h"
+#include "DataBuffer.h"              //the numerical simulation FFTW library
 #include <map>
 
 class Simulation;
@@ -48,6 +49,7 @@ public:
         COLORIZE,
         DRAW_HEIGHTPLOT,
         DRAW_NORMALS,
+        DRAW_STREAMTUBES,
         OptionsCount // (automatically assigned)
     };
 
@@ -154,6 +156,7 @@ private:
     int sample_x, sample_y;
 
     float getHeight(float vy, float maxheight);
+    void draw_streamtubes(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_heightplot(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_smoke(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_isoline(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, float);
@@ -162,6 +165,8 @@ private:
     float pick_scalar_field_value(Simulation const &simulation, size_t idx);
     float pick_scalar_field_value(DatasetType ds, Simulation const &simulation, size_t idx);
     void pick_vector_field_value(Simulation const &simulation, size_t idx, float values[], int i = 0, int j = 0, float wn = 0.0, float hn = 0.0, int DIM = 0);
+    float pick_timescalar_field_value(size_t idx, int t);
+    void pick_timevector_field_value(size_t idx, float values[], int t);
     void draw_glyphs(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
     void draw_hedgehogs(GLfloat x_start, GLfloat y_start, float value, float values[]);
     void draw_simple_arrow(GLfloat magn, GLfloat x_start, GLfloat y_start, GLfloat angle, float value);

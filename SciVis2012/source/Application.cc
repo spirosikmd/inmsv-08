@@ -8,6 +8,7 @@ using namespace std;
 
 Simulation Application::simulation; // the smoke simulation
 Visualization Application::visualization; // visualization of the simulation
+DataBuffer Application::timeslices(10, 40);
 
 //size of the graphics window, in pixels
 int Application::winWidth;
@@ -28,6 +29,7 @@ float Application::densityRHO2Isoline;
 int Application::numberIsolines;
 int Application::angle;
 int Application::translate_x;
+int Application::translate_y;
 int Application::translate_z;
 Visualization::DatasetType Application::scalarDataset;
 float Application::scalarMax;
@@ -45,6 +47,7 @@ Visualization::Mode Application::scalarMode;
 void Application::update() {
     glutSetWindow(main_window);
     simulation.do_one_simulation_step();
+    timeslices.addTimeslice(simulation.rho, simulation.vx, simulation.vy, simulation.fx, simulation.fy);
     glutPostRedisplay();
 }
 
@@ -115,11 +118,11 @@ void Application::display() {
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, (GLsizei) winWidth, (GLsizei) winHeight);
-    
+
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     gluPerspective(45.0, (GLfloat) winWidth / winHeight,
-            1.0, 2000.0);
+            1.0, 10000.0);
     glEnable(GL_LIGHTING); // so the renderer considers light
     glEnable(GL_LIGHT0); // turn LIGHT0 on
     glEnable(GL_DEPTH_TEST); // so the renderer considers depth
@@ -130,8 +133,8 @@ void Application::display() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glPushMatrix();
-    gluLookAt(0.0, 1000.0, 1000.0,
-            0.0, 0.0, 0.0,
+    gluLookAt(0.0, 3000.0, 3000.0,
+            0.0+translate_x, 0.0+translate_y, 0.0+translate_z,
             0.0, 1.0, 0.0);
 
     GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
@@ -150,17 +153,17 @@ void Application::display() {
 
 
 
-    glTranslatef(translate_x, 0, translate_z);
-    glPushMatrix();
+    
     glRotatef(angle, 1, 0, 0);
+    glPushMatrix();
+    
 
     //glutSolidTeapot(50);
     glPushMatrix();
     glScalef(-2, 2, 2);
     glRotatef(180, 0, 1, 0);
     glTranslatef(-winWidth / 2, 0, -winHeight / 2);
-    
-  visualization.visualize3D(simulation, winWidth, winHeight);
+    visualization.visualize3D(simulation, winWidth, winHeight);
     glPopMatrix();
     glPopMatrix();
     glDisable(GL_COLOR_MATERIAL);
@@ -172,11 +175,11 @@ void Application::display() {
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0.0, (GLdouble) winWidth, 0.0, (GLdouble) winHeight, -10, 10);
-   glMatrixMode(GL_MODELVIEW);
-   glLoadIdentity();
-   visualization.visualize(simulation, winWidth, winHeight);
+    glMatrixMode(GL_MODELVIEW);
+    glLoadIdentity();
+    visualization.visualize(simulation, winWidth, winHeight);
     renderColormap();
-    
+
     glFlush();
     glutSwapBuffers();
     GLenum error = glGetError();
@@ -230,7 +233,7 @@ void Application::reshape(int w, int h) {
     winHeight = h;
 
 
-    
+
 
 
 
@@ -241,7 +244,7 @@ void Application::reshape(int w, int h) {
 }
 
 void Application::special(int key, int x, int y) {
-    int magnitude = 15;
+    int magnitude = 25;
     switch (key) {
         case GLUT_KEY_UP:
             translate_z += magnitude;
@@ -262,6 +265,7 @@ void Application::special(int key, int x, int y) {
 //keyboard: Handle key presses
 
 void Application::keyboard(unsigned char key, int x, int y) {
+    int magnitude = 25;
     switch (key) {
         case 't':
         {
@@ -332,10 +336,16 @@ void Application::keyboard(unsigned char key, int x, int y) {
         }
             break;
         case 'u':
-            angle = (angle + 1) % 180;
+            angle = (angle + 1) % 360;
             break;
         case 'j':
-            angle = (angle - 1) % 180;
+            angle = (angle - 1) % 360;
+            break;
+        case 'i':
+            translate_y += magnitude;
+            break;
+        case 'k':
+            translate_y -= magnitude;
             break;
         default:
         {
@@ -593,6 +603,8 @@ void Application::initUI() {
     isoline_box->set_alignment(GLUI_ALIGN_RIGHT);
     GLUI_Checkbox *height_box = new GLUI_Checkbox(visualization_options, "Draw Heightplot ", &visualization.options[Visualization::DRAW_HEIGHTPLOT]);
     height_box->set_alignment(GLUI_ALIGN_RIGHT);
+    GLUI_Checkbox *streamtubes_box = new GLUI_Checkbox(visualization_options, "Draw Streamtubes ", &visualization.options[Visualization::DRAW_STREAMTUBES]);
+    streamtubes_box->set_alignment(GLUI_ALIGN_RIGHT);
     //    GLUI_Checkbox *gradient_box = new GLUI_Checkbox(visualization_options, "Gradient", &visualization.options[Visualization::GRADIENT]);
     //    gradient_box->set_alignment(GLUI_ALIGN_RIGHT);
     GLUI_Listbox *glyphTypeList = new GLUI_Listbox(visualization_options, "Glyph ", (int*) &glyphType, GLYPH_TYPE_LIST, buttonHandler);

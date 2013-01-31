@@ -35,6 +35,7 @@ OBJECTDIR=${CND_BUILDDIR}/${CND_CONF}/${CND_PLATFORM}
 
 # Object Files
 OBJECTFILES= \
+	${OBJECTDIR}/source/DataBuffer.o \
 	${OBJECTDIR}/source/Grid.o \
 	${OBJECTDIR}/source/Application.o \
 	${OBJECTDIR}/source/Utilities.o \
@@ -68,6 +69,11 @@ LDLIBSOPTIONS=-Llibraries/fftw-2.1.5/lib -lglut -lrfftw -lfftw -lGLU -lGL -lglui
 ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/smoke: ${OBJECTFILES}
 	${MKDIR} -p ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}
 	${LINK.cc} -o ${CND_DISTDIR}/${CND_CONF}/${CND_PLATFORM}/smoke ${OBJECTFILES} ${LDLIBSOPTIONS} 
+
+${OBJECTDIR}/source/DataBuffer.o: source/DataBuffer.cpp 
+	${MKDIR} -p ${OBJECTDIR}/source
+	${RM} $@.d
+	$(COMPILE.cc) -g -Werror -Ilibraries/fftw-2.1.5/include -MMD -MP -MF $@.d -o ${OBJECTDIR}/source/DataBuffer.o source/DataBuffer.cpp
 
 ${OBJECTDIR}/source/Grid.o: source/Grid.cpp 
 	${MKDIR} -p ${OBJECTDIR}/source

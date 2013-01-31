@@ -51,11 +51,12 @@ public:
     static void visualize();
     static void quit();
     static void buttonHandler(int id);
-
+    static DataBuffer timeslices;
 private:
 
     static Simulation simulation; // the smoke simulation
     static Visualization visualization; // visualization of the simulation
+
 
     static int winWidth, winHeight; //size of the graphics window, in pixels
 
@@ -86,9 +87,9 @@ private:
     static float densityRHO2Isoline;
     static int numberIsolines;
     static int angle;
-    static int translate_x, translate_z;
+    static int translate_x, translate_z, translate_y;
     static Visualization::Mode scalarMode;
-    
+
     static void renderColormap();
 
 };

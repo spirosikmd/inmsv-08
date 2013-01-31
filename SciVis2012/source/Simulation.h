@@ -9,6 +9,7 @@ class Parameters;
 
 class Simulation {
     friend class Visualization;
+    friend class Application;
 
 public:
 

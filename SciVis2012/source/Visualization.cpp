@@ -236,6 +236,10 @@ void Visualization::visualize3D(Simulation const &simulation, int winWidth, int 
     if (options[DRAW_HEIGHTPLOT]) {
         draw_heightplot(simulation, DIM, wn, hn);
     }
+    if (options[DRAW_STREAMTUBES]) {
+        draw_streamtubes(simulation, DIM, wn, hn);
+    }
+
 }
 
 void Visualization::visualize(Simulation const &simulation, int winWidth, int winHeight) {
@@ -475,6 +479,74 @@ void normalize3(float *R) {
     R[0] = R[0] / m;
     R[1] = R[1] / m;
     R[2] = R[2] / m;
+}
+
+void Visualization::draw_streamtubes(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
+
+    double px, py, pz;
+
+    int capacity = Application::timeslices.getCapacity();
+
+float *v = new float[2];
+    float zn = 800 / capacity;
+    for (int time = 0; time < capacity; time++) {
+
+        for (int idx = 0; idx < DIM * DIM; idx++) {
+            float x = idx % DIM;
+            float y = idx / DIM;
+            
+            float vx = pick_timescalar_field_value(idx,time);
+            pick_timevector_field_value(idx, v, time);
+            px = wn + (fftw_real) x * wn;
+            py = hn + (fftw_real) y * hn;
+            pz = zn + time *zn;
+            glPushMatrix();
+            glTranslatef(px, py, pz);
+            
+            
+            if (idx==1) {
+                cout << "Time "<< time << ":: " << vx << " " << v[0] << " " << v[1] << "\n";
+            }
+            
+            glBegin(GL_LINES);
+            setColor(vx, SIMPLE);
+            glVertex3f(0, 0, 0);
+            glVertex3f(v[0], v[1], 20);
+            glEnd();
+            glPopMatrix();
+        }
+    }
+    float x_max = DIM * wn + wn;
+    float y_max = DIM * hn + hn;
+    float z_max = capacity * zn + zn;
+
+    glBegin(GL_LINE_LOOP);
+    glColor3f(1, 1, 1);
+    glVertex3f(wn, hn, zn);
+    glVertex3f(x_max-wn, hn, zn);
+    glVertex3f(x_max-wn, y_max-hn, zn);
+    glVertex3f(wn, y_max-hn, zn);
+    glEnd();
+    glBegin(GL_LINE_LOOP);
+    glColor3f(1, 1, 1);
+    glVertex3f(wn, hn, z_max-zn);
+    glVertex3f(x_max-wn, hn, z_max-zn);
+    glVertex3f(x_max-wn, y_max-hn, z_max-zn);
+    glVertex3f(wn, y_max-hn, z_max-zn);
+    glEnd();
+    glBegin(GL_LINES);
+    glColor3f(1, 1, 1);
+    glVertex3f(wn, hn, zn);
+    glVertex3f(wn, hn, z_max-zn);
+    glVertex3f(wn, y_max-hn, zn);
+    glVertex3f(wn, y_max-hn, z_max-zn);
+    glVertex3f(x_max-wn, hn, zn);
+    glVertex3f(x_max-wn, hn, z_max-zn);
+    glVertex3f(x_max-wn, y_max-hn, zn);
+    glVertex3f(x_max-wn, y_max-hn, z_max-zn);
+    glEnd();
+
+    
 }
 
 void Visualization::draw_heightplot(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
@@ -745,8 +817,8 @@ void Visualization::draw_streamlines(Simulation const &simulation, const int DIM
         float *sample_x3_y3 = new float[2];
         float *sample_x4_y4 = new float[2];
 
-        int x_point = floor(x / wn)-1;
-        int y_point = floor(y / hn)-1;
+        int x_point = floor(x / wn) - 1;
+        int y_point = floor(y / hn) - 1;
 
         int c = (y_point * (DIM - 1)) + x_point;
 
@@ -761,11 +833,11 @@ void Visualization::draw_streamlines(Simulation const &simulation, const int DIM
         GLfloat x1, y1, x2, y2;
         x1 = wn + (fftw_real) (x_point) * wn;
         y1 = hn + (fftw_real) (y_point) * hn;
-        x2 = wn + (fftw_real) (x_point +1) * wn;
-        y2 = hn + (fftw_real) (y_point +1) * hn;
-//        if (step == 0) {
-//            cout << x1 << ' ' << y1 << ' ' << x2 << ' ' << y2 << '\n';
-//        }
+        x2 = wn + (fftw_real) (x_point + 1) * wn;
+        y2 = hn + (fftw_real) (y_point + 1) * hn;
+        //        if (step == 0) {
+        //            cout << x1 << ' ' << y1 << ' ' << x2 << ' ' << y2 << '\n';
+        //        }
         GLfloat f1x = sample_x4_y4[0]*(x2 - x)*(y2 - y);
         GLfloat f2x = sample_x2_y2[0]*(x - x1)*(y2 - y);
         GLfloat f3x = sample_x3_y3[0]*(x2 - x)*(y - y1);
@@ -778,13 +850,13 @@ void Visualization::draw_streamlines(Simulation const &simulation, const int DIM
         xy_new[1] = (1 / ((x2 - x1)*(y2 - y1)))*(f1y + f2y + f3y + f4y);
 
         normalize2(xy_new);
-//        if (step == 0) {
-//            cout << "(" << sample_x1_y1[0] << "|" << sample_x1_y1[1] << ")\n";
-//            cout << "(" << sample_x2_y2[0] << "|" << sample_x2_y2[1] << ")\n";
-//            cout << "(" << sample_x3_y3[0] << "|" << sample_x3_y3[1] << ")\n";
-//            cout << "(" << sample_x4_y4[0] << "|" << sample_x4_y4[1] << ") \n";
-//            cout << "(" << xy_new[0] << "|" << xy_new[1] << ") \n\n";
-//        }
+        //        if (step == 0) {
+        //            cout << "(" << sample_x1_y1[0] << "|" << sample_x1_y1[1] << ")\n";
+        //            cout << "(" << sample_x2_y2[0] << "|" << sample_x2_y2[1] << ")\n";
+        //            cout << "(" << sample_x3_y3[0] << "|" << sample_x3_y3[1] << ")\n";
+        //            cout << "(" << sample_x4_y4[0] << "|" << sample_x4_y4[1] << ") \n";
+        //            cout << "(" << xy_new[0] << "|" << xy_new[1] << ") \n\n";
+        //        }
         x = x + xy_new[0] * dt;
         y = y + xy_new[1] * dt;
 
@@ -1097,6 +1169,38 @@ void Visualization::pick_vector_field_value(Simulation const &simulation, size_t
         default:
             break;
     }
+}
+void Visualization::pick_timevector_field_value(size_t idx, float values[], int t) {
+    switch (vectorDataset) {
+        case FORCE:
+            values[0] = Application::timeslices.getValue(t, DataBuffer::FX, idx);
+            values[1] = Application::timeslices.getValue(t, DataBuffer::FY, idx);
+            break;
+        case VELOCITY:
+            values[0] = Application::timeslices.getValue(t, DataBuffer::VX, idx);
+            values[1] = Application::timeslices.getValue(t, DataBuffer::VY, idx);
+
+        default:
+            break;
+    }
+}
+
+float Visualization::pick_timescalar_field_value(size_t idx, int t) {
+    float value = 0.0;
+    switch (scalarDataset) {
+        case VELOCITY_MAGN:
+            value = magnitude(Application::timeslices.getValue(t, DataBuffer::VX, idx), Application::timeslices.getValue(t, DataBuffer::VY, idx));
+            break;
+        case FORCE_MAGN:
+            value = magnitude(Application::timeslices.getValue(t, DataBuffer::FX, idx), Application::timeslices.getValue(t, DataBuffer::FY, idx));
+            break;
+        case DENSITY:
+            value = Application::timeslices.getValue(t, DataBuffer::RHO, idx);
+
+        default:
+            break;
+    }
+    return value;
 }
 
 GLfloat Visualization::pick_scaled_field(float v) {
