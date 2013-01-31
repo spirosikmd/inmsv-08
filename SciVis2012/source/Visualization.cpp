@@ -30,6 +30,7 @@ Visualization::Visualization() {
     datasets.insert(make_pair(DENSITY, Dataset(0, 1, CLAMPING)));
     datasets.insert(make_pair(VELOCITY_MAGN, Dataset(0.01, 0.08, CLAMPING)));
     datasets.insert(make_pair(FORCE_MAGN, Dataset(0, 0.15, CLAMPING)));
+    datasets.insert(make_pair(VELOCITY_DIV, Dataset(0, 0.08, CLAMPING)));
     datasets.insert(make_pair(FORCE, Dataset(0, 1, CLAMPING)));
     datasets.insert(make_pair(VELOCITY, Dataset(0, 1, CLAMPING)));
 }
@@ -487,27 +488,27 @@ void Visualization::draw_streamtubes(Simulation const &simulation, const int DIM
 
     int capacity = Application::timeslices.getCapacity();
 
-float *v = new float[2];
+    float *v = new float[2];
     float zn = 800 / capacity;
     for (int time = 0; time < capacity; time++) {
 
         for (int idx = 0; idx < DIM * DIM; idx++) {
             float x = idx % DIM;
             float y = idx / DIM;
-            
-            float vx = pick_timescalar_field_value(idx,time);
+
+            float vx = pick_timescalar_field_value(idx, time);
             pick_timevector_field_value(idx, v, time);
             px = wn + (fftw_real) x * wn;
             py = hn + (fftw_real) y * hn;
             pz = zn + time *zn;
             glPushMatrix();
             glTranslatef(px, py, pz);
-            
-            
-            if (idx==1) {
-                cout << "Time "<< time << ":: " << vx << " " << v[0] << " " << v[1] << "\n";
+
+
+            if (idx == 1) {
+                cout << "Time " << time << ":: " << vx << " " << v[0] << " " << v[1] << "\n";
             }
-            
+
             glBegin(GL_LINES);
             setColor(vx, SIMPLE);
             glVertex3f(0, 0, 0);
@@ -523,30 +524,30 @@ float *v = new float[2];
     glBegin(GL_LINE_LOOP);
     glColor3f(1, 1, 1);
     glVertex3f(wn, hn, zn);
-    glVertex3f(x_max-wn, hn, zn);
-    glVertex3f(x_max-wn, y_max-hn, zn);
-    glVertex3f(wn, y_max-hn, zn);
+    glVertex3f(x_max - wn, hn, zn);
+    glVertex3f(x_max - wn, y_max - hn, zn);
+    glVertex3f(wn, y_max - hn, zn);
     glEnd();
     glBegin(GL_LINE_LOOP);
     glColor3f(1, 1, 1);
-    glVertex3f(wn, hn, z_max-zn);
-    glVertex3f(x_max-wn, hn, z_max-zn);
-    glVertex3f(x_max-wn, y_max-hn, z_max-zn);
-    glVertex3f(wn, y_max-hn, z_max-zn);
+    glVertex3f(wn, hn, z_max - zn);
+    glVertex3f(x_max - wn, hn, z_max - zn);
+    glVertex3f(x_max - wn, y_max - hn, z_max - zn);
+    glVertex3f(wn, y_max - hn, z_max - zn);
     glEnd();
     glBegin(GL_LINES);
     glColor3f(1, 1, 1);
     glVertex3f(wn, hn, zn);
-    glVertex3f(wn, hn, z_max-zn);
-    glVertex3f(wn, y_max-hn, zn);
-    glVertex3f(wn, y_max-hn, z_max-zn);
-    glVertex3f(x_max-wn, hn, zn);
-    glVertex3f(x_max-wn, hn, z_max-zn);
-    glVertex3f(x_max-wn, y_max-hn, zn);
-    glVertex3f(x_max-wn, y_max-hn, z_max-zn);
+    glVertex3f(wn, hn, z_max - zn);
+    glVertex3f(wn, y_max - hn, zn);
+    glVertex3f(wn, y_max - hn, z_max - zn);
+    glVertex3f(x_max - wn, hn, zn);
+    glVertex3f(x_max - wn, hn, z_max - zn);
+    glVertex3f(x_max - wn, y_max - hn, zn);
+    glVertex3f(x_max - wn, y_max - hn, z_max - zn);
     glEnd();
 
-    
+
 }
 
 void Visualization::draw_heightplot(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
@@ -1141,6 +1142,9 @@ float Visualization::pick_scalar_field_value(Simulation const &simulation, size_
         case FORCE_MAGN:
             value = magnitude(simulation.fx[idx], simulation.fy[idx]);
             break;
+        case VELOCITY_DIV:
+            value = divergence(simulation, idx);
+            break;
         case DENSITY:
             value = simulation.rho[idx];
 
@@ -1153,10 +1157,10 @@ float Visualization::pick_scalar_field_value(Simulation const &simulation, size_
 void Visualization::pick_vector_field_value(Simulation const &simulation, size_t idx, float values[], int i, int j, float wn, float hn, int DIM) {
     switch (vectorDataset) {
         case DENSITY_GRADIENT:
-            gradient(simulation, i, j, wn, hn, DIM, values);
+            //            divergence(simulation, i, j, wn, hn, DIM, values);
             break;
         case VELOCITY_MAGN_GRADIENT:
-            gradient(simulation, i, j, wn, hn, DIM, values);
+            //            divergence(simulation, i, j, wn, hn, DIM, values);
             break;
         case FORCE:
             values[0] = simulation.fx[idx];
@@ -1170,6 +1174,7 @@ void Visualization::pick_vector_field_value(Simulation const &simulation, size_t
             break;
     }
 }
+
 void Visualization::pick_timevector_field_value(size_t idx, float values[], int t) {
     switch (vectorDataset) {
         case FORCE:
@@ -1224,20 +1229,25 @@ GLfloat Visualization::pick_scaled_field(float v) {
     return value;
 }
 
-void Visualization::gradient(Simulation const &simulation, int i, int j, float wn, float hn, int DIM, float grad[]) {
+float Visualization::divergence(Simulation const &simulation, int idx) {
+    int DIM = Simulation::DIM;
+    int x = idx % DIM;
+    int y = idx / DIM;
+    int right = modIndex(x + 1, y, DIM);
+    int left = modIndex(x - 1, y, DIM);
+    int top = modIndex(x, y - 1, DIM);
+    int bottom = modIndex(x, y + 1, DIM);
 
-    float x = wn + (fftw_real) i * wn;
-    float y = hn + (fftw_real) j * hn;
+    float dx = simulation.vx[right] - simulation.vx[left];
+    float dy = simulation.vy[top] - simulation.vy[bottom];
 
-    int x_point = ceil(x / wn);
-    int y_point = ceil(y / hn);
-    //    int topright = ((y_point - 1) * DIM) + (x_point - 1);
-    int bottomright = ((y_point - 2) * DIM) + (x_point - 1);
-    int topleft = ((y_point - 1) * DIM) + (x_point - 2);
-    int bottomleft = ((y_point - 2) * DIM) + (x_point - 2);
+    return dx + dy;
+}
 
-    grad[0] = pick_scalar_field_value(simulation, bottomright) - pick_scalar_field_value(simulation, bottomleft);
-    grad[1] = pick_scalar_field_value(simulation, topleft) - pick_scalar_field_value(simulation, bottomleft);
+int Visualization::modIndex(int x, int y, int DIM) {
+    int xmod = x % DIM;
+    int ymod = y % DIM;
+    return ymod * DIM + xmod;
 }
 
 void Visualization::setScalarMin(float min) {
