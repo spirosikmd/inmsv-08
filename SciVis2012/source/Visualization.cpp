@@ -578,25 +578,21 @@ void Visualization::draw_streamtube(vector<vector<float > > points) {
         normalize3(local);
 
 
-        GLfloat R[16] = {local[0], local[1], local[2], 0,
-            up[0], up[1], up[2], 0,
-            target[0], target[1], target[2], 0,
-            points[sp][0], points[sp][1], points[sp][2], 1};
-
-        //        Lx  Ux  Tx  0
-        //        Ly  Uy  Ty  0
-        //        Lz  Uz  Tz  0
-        //        0   0   0  1
         glEnable(GL_TEXTURE_1D);
         glPushMatrix();
-
+        GLfloat R[16] = {
+            local[0]     , local[1]     , local[2]     , 0,
+            up[0]        , up[1]        , up[2]        , 0,
+            target[0]    , target[1]    , target[2]    , 0,
+            points[sp][0], points[sp][1], points[sp][2], 1};
         glMultMatrixf(R);
 
 
-        int radius = scaleScalar(points[sp][3], 10, 20);
-        int radiusNext = scaleScalar(points[sp + 1][3], 10, 20);
+        int r = scaleScalar(points[sp][3], 10, 20);
+        int rn = scaleScalar(points[sp + 1][3], 10, 20);
+        
         if (!options[DRAW_THICKTUBES]) {
-            radiusNext = radius = 15;
+            rn = r = 15;
         }
 
         int n = numSegments;
@@ -608,28 +604,27 @@ void Visualization::draw_streamtube(vector<vector<float > > points) {
             float degInRad = i * (M_PI / 180);
             float degInRad2 = (i + 1)*(M_PI / 180);
             float normal[3] = {};
-            float vz[3] = {(cos(degInRad) * radius) - (cos(degInRad) * radiusNext), (sin(degInRad) * radius)-(sin(degInRad) * radiusNext), 10};
+            float vz[3] = {(cos(degInRad) * r) - (cos(degInRad) * rn), (sin(degInRad) * r)-(sin(degInRad) * rn), 10};
             normalize3(vz);
-            float vx[3] = {(cos(degInRad) * radius) - (cos(degInRad2) * radius), (sin(degInRad) * radius)-(sin(degInRad2) * radius), 0};
+            float vx[3] = {(cos(degInRad) * r) - (cos(degInRad2) * r), (sin(degInRad) * r)-(sin(degInRad2) * r), 0};
             normalize3(vx);
             crossproduct(vz, vx, normal);
 
             setColor(points[sp][3], TEXTURE);
             glNormal3f(normal[0], normal[1], normal[2]);
-            glVertex3f(cos(degInRad) * radius, sin(degInRad) * radius, 0);
+            glVertex3f(cos(degInRad) * r, sin(degInRad) * r, 0);
 
             setColor(points[sp + 1][3], TEXTURE);
             glNormal3f(normal[0], normal[1], normal[2]);
-            glVertex3f(cos(degInRad) * radiusNext, sin(degInRad) * radiusNext, 15);
-
+            glVertex3f(cos(degInRad) * rn, sin(degInRad) * rn, 15);
 
             setColor(points[sp][3], TEXTURE);
             glNormal3f(normal[0], normal[1], normal[2]);
-            glVertex3f(cos(degInRad2) * radius, sin(degInRad2) * radius, 0);
+            glVertex3f(cos(degInRad2) * r, sin(degInRad2) * r, 0);
 
             setColor(points[sp + 1][3], TEXTURE);
             glNormal3f(normal[0], normal[1], normal[2]);
-            glVertex3f(cos(degInRad2) * radiusNext, sin(degInRad2) * radiusNext, 15);
+            glVertex3f(cos(degInRad2) * rn, sin(degInRad2) * rn, 15);
         }
         glEnd();
         glPopMatrix();
