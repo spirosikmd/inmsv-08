@@ -18,6 +18,7 @@ private:
         NUMBER_OF_COLORS_LIST,
         HUE_SPINNER,
         SATURATION_SPINNER,
+        TUBE_SPINNER,
         SCALAR_DATASET_LIST,
         SCALAR_MODE_LIST,
         SCALAR_MAX_SPINNER,
@@ -30,6 +31,7 @@ private:
         NUMBER_ISOLINES_SPINNER,
         HEIGHTPLOT_DATASET_LIST,
         DIM_SPINNER,
+        SEGMENT_SPINNER,
         SAMPLE_X_SPINNER,
         SAMPLE_Y_SPINNER
     };
@@ -84,13 +86,14 @@ private:
     static float hueValue;
     static float saturationValue;
     static int dim;
+    static int numberOfSegments;
     static int sample_x, sample_y;
     static float densityIsoline;
     static float densityRHO1Isoline;
     static float densityRHO2Isoline;
     static int numberIsolines;
     static int angle;
-    static int translate_x, translate_z, translate_y,distance;
+    static int translate_x, translate_z, translate_y, distance;
     static Visualization::Mode scalarMode;
 
     static void renderColormap();

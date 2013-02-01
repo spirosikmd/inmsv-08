@@ -41,6 +41,7 @@ Visualization::DatasetType Application::vectorDataset;
 Visualization::DatasetType Application::heightplotDataset;
 Visualization::GlyphType Application::glyphType;
 int Application::dim;
+int Application::numberOfSegments;
 int Application::sample_x;
 int Application::sample_y;
 
@@ -68,12 +69,12 @@ void Application::displayMenu() {
 void Application::initialize(int *argc, char** argv) {
     glutInit(argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
-    glutInitWindowSize(450, 800);
+    glutInitWindowSize(450, 650);
 
-    menu_window = glutCreateWindow("Other window");
-    ;
+    menu_window = glutCreateWindow("Options");
     glutDisplayFunc(displayMenu);
     glutInitWindowSize(1000, 800);
+    
     main_window = glutCreateWindow("Real-time smoke simulation and visualization");
 
     // pass static functions as callback to GLUT
@@ -99,7 +100,7 @@ void Application::initialize(int *argc, char** argv) {
     scalarMode = visualization.getScalarMode();
 
     densityIsoline = visualization.getDensityIsoline();
-
+    numberOfSegments = visualization.getNumSegmentsStreamtubes();
     dim = simulation.get_DIM();
 
     sample_x = visualization.getSampleX();
@@ -140,12 +141,18 @@ void Application::display() {
     glLoadIdentity();
     gluPerspective(45.0, (GLfloat) winWidth / winHeight,
             1.0, 10000.0);
+    
     glEnable(GL_LIGHTING); // so the renderer considers light
     glEnable(GL_LIGHT0); // turn LIGHT0 on
     glEnable(GL_DEPTH_TEST); // so the renderer considers depth
     glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
-    glEnable(GL_NORMALIZE);
-    glShadeModel(GL_SMOOTH);
+    //glEnable(GL_NORMALIZE);
+
+    if (visualization.options[Visualization::SMOOTH_SHADING]) {
+        glShadeModel(GL_SMOOTH);
+    } else {
+        glShadeModel(GL_FLAT);
+    }
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
@@ -157,7 +164,40 @@ void Application::display() {
     GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
     GLfloat cyan[] = {0.0, 1.0, 1.0, 1.0};
     GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
-    GLfloat direction[] = {0.0, 1000.0, 1000.0, 0.0};
+    GLfloat direction[] = {0.0, 1000.0, 0, 0.0};
+
+
+
+    glPushMatrix();
+    glTranslatef(0.0 + translate_x, 0.0 + translate_y, 0.0 + translate_z);
+    glRotatef(angle, 1, 0, 0);
+    if (visualization.options[Visualization::DRAW_FIXPOINT]) {
+        glPushMatrix();
+        glutSolidSphere(10, 10, 10);
+        glTranslatef(-600, 1000, 500);
+        glutSolidSphere(10, 10, 10);
+        glTranslatef(0, 0, -1000);
+        glutSolidSphere(10, 10, 10);
+        glTranslatef(1200, 0, 0);
+        glutSolidSphere(10, 10, 10);
+        glTranslatef(0, 0, 1000);
+        glutSolidSphere(10, 10, 10);
+        glPopMatrix();
+    }
+    glBegin(GL_QUAD_STRIP);
+    glColor3f(.8, .8, .8);
+    glNormal3f(0, -1, 0);
+    glVertex3f(-10000, -1000, -10000);
+
+    glNormal3f(0, -1, 0);
+    glVertex3f(-10000, -1000, 10000);
+
+    glNormal3f(0, -1, 0);
+    glVertex3f(10000, -1000, -10000);
+
+    glNormal3f(0, -1, 0);
+    glVertex3f(10000, -1000, 10000);
+    glEnd();
 
     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, cyan);
     glMaterialfv(GL_FRONT, GL_SPECULAR, white);
@@ -167,19 +207,9 @@ void Application::display() {
     glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
     glLightfv(GL_LIGHT0, GL_SPECULAR, white);
     glLightfv(GL_LIGHT0, GL_POSITION, direction);
-
-    if (visualization.options[Visualization::DRAW_FIXPOINT]) {
-        glPushMatrix();
-        glTranslatef(0.0 + translate_x, 0.0 + translate_y, 0.0 + translate_z);
-        glutSolidSphere(10, 10, 10);
-        glPopMatrix();
-    }
-
-    glRotatef(angle, 1, 0, 0);
-    glPushMatrix();
+    
 
 
-    //glutSolidTeapot(50);
     glPushMatrix();
     glScalef(-1, 1, 1);
     glRotatef(180, 0, 1, 0);
@@ -191,8 +221,8 @@ void Application::display() {
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHT0);
     glDisable(GL_LIGHTING); // so the renderer considers light
-    glPopMatrix();
 
+    glPopMatrix();
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0.0, (GLdouble) winWidth, 0.0, (GLdouble) winHeight, -10, 10);
@@ -477,6 +507,9 @@ void Application::buttonHandler(int id) {
         case HEIGHTPLOT_DATASET_LIST:
             visualization.setHeightplotDataset(heightplotDataset);
             break;
+        case SEGMENT_SPINNER:
+            visualization.setNumSegmentsStreamtubes(numberOfSegments);
+            break;
         default:
             break;
     }
@@ -593,7 +626,9 @@ void Application::initUI() {
     GLUI_Checkbox *thickTubes = new GLUI_Checkbox(streamtube_options, "Thick Tubes", &visualization.options[Visualization::DRAW_THICKTUBES]);
     thickTubes->set_alignment(GLUI_ALIGN_LEFT);
 
-
+    GLUI_Spinner *segment_spinner = new GLUI_Spinner(streamtube_options, "Surface Segments ", &numberOfSegments, SEGMENT_SPINNER, buttonHandler);
+    segment_spinner->set_alignment(GLUI_ALIGN_RIGHT);
+    segment_spinner->set_int_limits(3, 20, GLUI_LIMIT_CLAMP);
 
     glui->add_column(false);
     // visualization technique
@@ -611,10 +646,12 @@ void Application::initUI() {
     streamtubes_box->set_alignment(GLUI_ALIGN_LEFT);
     GLUI_Checkbox *orient = new GLUI_Checkbox(visualization_options, "Orientation Point", &visualization.options[Visualization::DRAW_FIXPOINT]);
     orient->set_alignment(GLUI_ALIGN_LEFT);
-    
+    GLUI_Checkbox *shading_box = new GLUI_Checkbox(visualization_options, "Smooth Shading", &visualization.options[Visualization::SMOOTH_SHADING]);
+    orient->set_alignment(GLUI_ALIGN_LEFT);
+
     GLUI_Listbox *glyphTypeList = new GLUI_Listbox(visualization_options, "Glyph ", (int*) &glyphType, GLYPH_TYPE_LIST, buttonHandler);
     glyphTypeList->set_alignment(GLUI_ALIGN_LEFT);
-    
+
     glyphTypeList->add_item(Visualization::HEDGEHOGS, "Hedgehogs");
     glyphTypeList->add_item(Visualization::SIMPLE_ARROWS, "Simple Arrows");
     glyphTypeList->add_item(Visualization::CONES_3D, "3D Cones");

@@ -19,13 +19,15 @@ Visualization::Visualization() {
     scalarDataset = DENSITY;
     vectorDataset = VELOCITY;
     heightplotDataset = DENSITY;
+    numSegments = 5;
     options[UseDirectionColoring] = false; // not used for now
     options[DRAW_SMOKE] = false;
     options[DRAW_GLYPHS] = false;
     options[DRAW_ISOLINES] = false;
+    options[SMOOTH_SHADING] = false;
     options[DRAW_HEIGHTPLOT] = true;
     options[DrawVectorField] = false; // not used for now
-    options[GRADIENT] = false;
+
 
     datasets.insert(make_pair(DENSITY, Dataset(0, 1, CLAMPING)));
     datasets.insert(make_pair(VELOCITY_MAGN, Dataset(0.01, 0.08, CLAMPING)));
@@ -595,14 +597,14 @@ void Visualization::draw_streamtube(vector<vector<float > > points) {
 
         glMultMatrixf(R);
 
-        
+
         int radius = scaleScalar(points[sp][3], 10, 20);
         int radiusNext = scaleScalar(points[sp + 1][3], 10, 20);
         if (!options[DRAW_THICKTUBES]) {
             radiusNext = radius = 15;
         }
-        
-        int n = 10;
+
+        int n = numSegments;
 
 
         colormap->loadColormapTexture();
@@ -804,16 +806,20 @@ void Visualization::draw_heightplot(Simulation const &simulation, const int DIM,
         float V1[] = {p1[0] - p3[0], p1[1] - p3[1], z1 - z3};
         float U2[] = {p1[0] - p2[0], p1[1] - p2[1], z1 - z2};
         float V2[] = {p3[0] - p1[0], p3[1] - p1[1], z3 - z1};
-        crossproduct(U1, V1, N1);
-        crossproduct(U2, V2, N2);
+        normalize3(U1);
+        normalize3(V1);
+        normalize3(U2);
+        normalize3(V2);
+        crossproduct(V1, U1, N1);
+        crossproduct(V2, U2, N2);
         normalize3(N1);
         normalize3(N2);
-        surfaceNormals[cellIndex][0][0] = N1[0]* -1;
-        surfaceNormals[cellIndex][0][1] = N1[1]* -1;
-        surfaceNormals[cellIndex][0][2] = N1[2] * -1;
-        surfaceNormals[cellIndex][1][0] = N2[0]* -1;
-        surfaceNormals[cellIndex][1][1] = N2[1]* -1;
-        surfaceNormals[cellIndex][1][2] = N2[2] * -1;
+        surfaceNormals[cellIndex][0][0] = N1[0]* 1;
+        surfaceNormals[cellIndex][0][1] = N1[1]* 1;
+        surfaceNormals[cellIndex][0][2] = N1[2] *1;
+        surfaceNormals[cellIndex][1][0] = N2[0]*1;
+        surfaceNormals[cellIndex][1][1] = N2[1]* 1;
+        surfaceNormals[cellIndex][1][2] = N2[2] *1;
     }
 
     int numberOfVertices = DIM * DIM;
@@ -878,9 +884,13 @@ void Visualization::draw_heightplot(Simulation const &simulation, const int DIM,
             z = z + surfaceNormals[lbc][0][2];
             N = N + 1;
         }
-        vertexNormals[vertexIndex][0] = x / N;
-        vertexNormals[vertexIndex][1] = y / N;
-        vertexNormals[vertexIndex][2] = z / N;
+        x = x / N;
+        y = y / N;
+        z = z / N;
+        float m = sqrt(pow(x,2)+pow(y,2)+pow(z,2));
+        vertexNormals[vertexIndex][0] = x / m;
+        vertexNormals[vertexIndex][1] = y / m;
+        vertexNormals[vertexIndex][2] = z / m;
     }
 
 
@@ -1045,9 +1055,8 @@ void Visualization::draw_streamlines(Simulation const &simulation, const int DIM
         y1 = hn + (fftw_real) (y_point) * hn;
         x2 = wn + (fftw_real) (x_point + 1) * wn;
         y2 = hn + (fftw_real) (y_point + 1) * hn;
-        //        if (step == 0) {
-        //            cout << x1 << ' ' << y1 << ' ' << x2 << ' ' << y2 << '\n';
-        //        }
+
+
         GLfloat f1x = sample_x4_y4[0]*(x2 - x)*(y2 - y);
         GLfloat f2x = sample_x2_y2[0]*(x - x1)*(y2 - y);
         GLfloat f3x = sample_x3_y3[0]*(x2 - x)*(y - y1);
@@ -1059,14 +1068,6 @@ void Visualization::draw_streamlines(Simulation const &simulation, const int DIM
         GLfloat f4y = sample_x1_y1[1]*(x - x1)*(y - y1);
         xy_new[1] = (1 / ((x2 - x1)*(y2 - y1)))*(f1y + f2y + f3y + f4y);
 
-        //normalize2(xy_new);
-        if (step == 0) {
-            cout << "(" << sample_x1_y1[0] << "|" << sample_x1_y1[1] << ")\n";
-            cout << "(" << sample_x2_y2[0] << "|" << sample_x2_y2[1] << ")\n";
-            cout << "(" << sample_x3_y3[0] << "|" << sample_x3_y3[1] << ")\n";
-            cout << "(" << sample_x4_y4[0] << "|" << sample_x4_y4[1] << ") \n";
-            cout << "(" << xy_new[0] << "|" << xy_new[1] << ") \n\n";
-        }
         x = x + xy_new[0] * dt;
         y = y + xy_new[1] * dt;
 
@@ -1483,6 +1484,14 @@ void Visualization::setDensityRHO1Isoline(float di) {
 
 void Visualization::setDensityRHO2Isoline(float di) {
     densityRHO2Isoline = di;
+}
+
+int Visualization::getNumSegmentsStreamtubes() {
+    return numSegments;
+}
+
+void Visualization::setNumSegmentsStreamtubes(int n) {
+    numSegments = n;
 }
 
 void Visualization::setNumIsolines(int n) {

@@ -50,6 +50,7 @@ public:
         COLORIZE,
         DRAW_HEIGHTPLOT,
         DRAW_NORMALS,
+        SMOOTH_SHADING,
         DRAW_STREAMTUBES,
         DRAW_3DFIELD,
         DRAW_FIXPOINT,
@@ -139,6 +140,8 @@ public:
     void setDensityRHO1Isoline(float);
     void setDensityRHO2Isoline(float);
     void setNumIsolines(int);
+    void setNumSegmentsStreamtubes(int);
+    int getNumSegmentsStreamtubes();
     void setGlyphType(GlyphType);
 
 private:
@@ -155,6 +158,7 @@ private:
     float densityRHO1Isoline;
     float densityRHO2Isoline;
     int numIsolines;
+    int numSegments;
     DatasetType scalarDataset;
     DatasetType vectorDataset;
     DatasetType heightplotDataset;
