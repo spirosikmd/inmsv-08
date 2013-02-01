@@ -8,6 +8,13 @@
 #include <map>
 #include <vector>
 
+ struct Point {
+        int x;
+        int y;
+        int z;
+    };
+    
+
 class Simulation;
 
 class Visualization {
@@ -99,6 +106,7 @@ public:
         }
     };
 
+   
     void visualize(Simulation const &simulation, int winWidth, int winHeight);
     void visualize3D(Simulation const &simulation, int winWidth, int winHeight);
     void toggle(Option option);
@@ -115,7 +123,7 @@ public:
     Colormap* loadColormap(ColorMode);
 
     void setColor(float vy, ColorType t);
-    float scaleScalar(float vy, float smin , float smax);
+    float scaleScalar(float vy, float smin, float smax);
     void direction_to_color(float x, float y);
     void magnitude_to_color(float x, float y);
     void setScalarDataset(DatasetType sdm);
@@ -143,8 +151,10 @@ public:
     void setNumSegmentsStreamtubes(int);
     int getNumSegmentsStreamtubes();
     void setGlyphType(GlyphType);
-
+    void addSeedpoint(int seed_x, int seed_y, int seed_z);
+    std::vector<Point> getSeedpoints();
 private:
+
 
     void initializeColormaps();
     std::map<ColorMode, Colormap*> colormaps;
@@ -159,6 +169,7 @@ private:
     float densityRHO2Isoline;
     int numIsolines;
     int numSegments;
+    std::vector<Point> seedpoints;
     DatasetType scalarDataset;
     DatasetType vectorDataset;
     DatasetType heightplotDataset;

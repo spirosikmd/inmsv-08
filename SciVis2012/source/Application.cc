@@ -3,7 +3,8 @@
 #include <GLUT/glut.h>
 #include <GLUI/glui.h>
 #include <map>
-
+#include <sstream>
+#include <string>
 using namespace std;
 
 Simulation Application::simulation; // the smoke simulation
@@ -32,11 +33,14 @@ int Application::angle;
 int Application::translate_x;
 int Application::translate_y;
 int Application::translate_z;
+int Application::seed_x = 500;
+int Application::seed_y = 500;
+int Application::seed_z = 0;
 int Application::distance;
 Visualization::DatasetType Application::scalarDataset;
 float Application::scalarMax;
 float Application::scalarMin;
-
+GLUI_Panel* Application::streamtube_options;
 Visualization::DatasetType Application::vectorDataset;
 Visualization::DatasetType Application::heightplotDataset;
 Visualization::GlyphType Application::glyphType;
@@ -74,12 +78,13 @@ void Application::initialize(int *argc, char** argv) {
     menu_window = glutCreateWindow("Options");
     glutDisplayFunc(displayMenu);
     glutInitWindowSize(1000, 800);
-    
+
     main_window = glutCreateWindow("Real-time smoke simulation and visualization");
 
     // pass static functions as callback to GLUT
     glutDisplayFunc(display);
     glutMotionFunc(drag);
+    glutMouseFunc(click);
     glutSpecialFunc(special);
     glutKeyboardFunc(keyboard);
 
@@ -141,7 +146,7 @@ void Application::display() {
     glLoadIdentity();
     gluPerspective(45.0, (GLfloat) winWidth / winHeight,
             1.0, 10000.0);
-    
+
     glEnable(GL_LIGHTING); // so the renderer considers light
     glEnable(GL_LIGHT0); // turn LIGHT0 on
     glEnable(GL_DEPTH_TEST); // so the renderer considers depth
@@ -207,7 +212,7 @@ void Application::display() {
     glLightfv(GL_LIGHT0, GL_DIFFUSE, white);
     glLightfv(GL_LIGHT0, GL_SPECULAR, white);
     glLightfv(GL_LIGHT0, GL_POSITION, direction);
-    
+
 
 
     glPushMatrix();
@@ -510,7 +515,11 @@ void Application::buttonHandler(int id) {
         case SEGMENT_SPINNER:
             visualization.setNumSegmentsStreamtubes(numberOfSegments);
             break;
-        default:
+        case ADD_SEEDPOINT_BUTTON:
+            visualization.addSeedpoint(seed_x, seed_y, seed_z);
+            stringstream pointtext(stringstream::in | stringstream::out);
+            pointtext << seed_x << ", " << seed_y << ", " << seed_z;
+            glui->add_statictext_to_panel(streamtube_options, pointtext.str().c_str());
             break;
     }
     glui->sync_live();
@@ -586,6 +595,15 @@ void Application::initUI() {
     vectorDatasetsGroup->add_item(Visualization::DENSITY_GRADIENT, "Density Gradient");
     vectorDatasetsGroup->add_item(Visualization::VELOCITY_MAGN_GRADIENT, "Velocity |V| Gradient");
     vectorDatasetsGroup->set_alignment(GLUI_ALIGN_RIGHT);
+
+    GLUI_Listbox *glyphTypeList = new GLUI_Listbox(datasetOptions, "Glyph ", (int*) &glyphType, GLYPH_TYPE_LIST, buttonHandler);
+    glyphTypeList->set_alignment(GLUI_ALIGN_LEFT);
+    glyphTypeList->add_item(Visualization::HEDGEHOGS, "Hedgehogs");
+    glyphTypeList->add_item(Visualization::SIMPLE_ARROWS, "Simple Arrows");
+    glyphTypeList->add_item(Visualization::CONES_3D, "3D Cones");
+    glyphTypeList->add_item(Visualization::ARROWS_3D, "3D Arrows");
+    glui->add_statictext_to_panel(datasetOptions, "                                              ");
+
     glui->add_statictext_to_panel(datasetOptions, "                                              ");
 
     // contouring
@@ -619,16 +637,18 @@ void Application::initUI() {
     glui->add_statictext_to_panel(heightplot_options, "                                              ");
 
 
-    GLUI_Panel *streamtube_options = new GLUI_Panel(glui, "Streamtubes");
-    streamtube_options->set_alignment(GLUI_ALIGN_LEFT);
-    GLUI_Checkbox *field3dbox = new GLUI_Checkbox(streamtube_options, "Show 3D Field", &visualization.options[Visualization::DRAW_3DFIELD]);
-    field3dbox->set_alignment(GLUI_ALIGN_LEFT);
-    GLUI_Checkbox *thickTubes = new GLUI_Checkbox(streamtube_options, "Thick Tubes", &visualization.options[Visualization::DRAW_THICKTUBES]);
-    thickTubes->set_alignment(GLUI_ALIGN_LEFT);
 
-    GLUI_Spinner *segment_spinner = new GLUI_Spinner(streamtube_options, "Surface Segments ", &numberOfSegments, SEGMENT_SPINNER, buttonHandler);
-    segment_spinner->set_alignment(GLUI_ALIGN_RIGHT);
-    segment_spinner->set_int_limits(3, 20, GLUI_LIMIT_CLAMP);
+
+    GLUI_Spinner *dim_spinner = new GLUI_Spinner(glui, "DIM ", &dim, DIM_SPINNER, buttonHandler);
+    dim_spinner->set_alignment(GLUI_ALIGN_RIGHT);
+    dim_spinner->set_int_limits(5, 80, GLUI_LIMIT_CLAMP);
+
+    GLUI_Spinner *sample_x_spinner = new GLUI_Spinner(glui, "X Sample ", &sample_x, SAMPLE_X_SPINNER, buttonHandler);
+    sample_x_spinner->set_alignment(GLUI_ALIGN_RIGHT);
+    sample_x_spinner->set_int_limits(10, 100, GLUI_LIMIT_CLAMP);
+    GLUI_Spinner *sample_y_spinner = new GLUI_Spinner(glui, "Y Sample ", &sample_y, SAMPLE_Y_SPINNER, buttonHandler);
+    sample_y_spinner->set_alignment(GLUI_ALIGN_RIGHT);
+    sample_y_spinner->set_int_limits(10, 100, GLUI_LIMIT_CLAMP);
 
     glui->add_column(false);
     // visualization technique
@@ -648,31 +668,46 @@ void Application::initUI() {
     orient->set_alignment(GLUI_ALIGN_LEFT);
     GLUI_Checkbox *shading_box = new GLUI_Checkbox(visualization_options, "Smooth Shading", &visualization.options[Visualization::SMOOTH_SHADING]);
     orient->set_alignment(GLUI_ALIGN_LEFT);
-
-    GLUI_Listbox *glyphTypeList = new GLUI_Listbox(visualization_options, "Glyph ", (int*) &glyphType, GLYPH_TYPE_LIST, buttonHandler);
-    glyphTypeList->set_alignment(GLUI_ALIGN_LEFT);
-
-    glyphTypeList->add_item(Visualization::HEDGEHOGS, "Hedgehogs");
-    glyphTypeList->add_item(Visualization::SIMPLE_ARROWS, "Simple Arrows");
-    glyphTypeList->add_item(Visualization::CONES_3D, "3D Cones");
-    glyphTypeList->add_item(Visualization::ARROWS_3D, "3D Arrows");
     glui->add_statictext_to_panel(visualization_options, "                                              ");
 
-    GLUI_Spinner *dim_spinner = new GLUI_Spinner(glui, "DIM ", &dim, DIM_SPINNER, buttonHandler);
-    dim_spinner->set_alignment(GLUI_ALIGN_RIGHT);
-    dim_spinner->set_int_limits(5, 80, GLUI_LIMIT_CLAMP);
 
-    GLUI_Spinner *sample_x_spinner = new GLUI_Spinner(glui, "X Sample ", &sample_x, SAMPLE_X_SPINNER, buttonHandler);
-    sample_x_spinner->set_alignment(GLUI_ALIGN_RIGHT);
-    sample_x_spinner->set_int_limits(10, 100, GLUI_LIMIT_CLAMP);
-    GLUI_Spinner *sample_y_spinner = new GLUI_Spinner(glui, "Y Sample ", &sample_y, SAMPLE_Y_SPINNER, buttonHandler);
-    sample_y_spinner->set_alignment(GLUI_ALIGN_RIGHT);
-    sample_y_spinner->set_int_limits(10, 100, GLUI_LIMIT_CLAMP);
+
+    streamtube_options = new GLUI_Panel(glui, "Streamtubes");
+    streamtube_options->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *field3dbox = new GLUI_Checkbox(streamtube_options, "Show 3D Field", &visualization.options[Visualization::DRAW_3DFIELD]);
+    field3dbox->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *thickTubes = new GLUI_Checkbox(streamtube_options, "Thick Tubes", &visualization.options[Visualization::DRAW_THICKTUBES]);
+    thickTubes->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Spinner *segment_spinner = new GLUI_Spinner(streamtube_options, "Surface Segments ", &numberOfSegments, SEGMENT_SPINNER, buttonHandler);
+    segment_spinner->set_alignment(GLUI_ALIGN_RIGHT);
+    segment_spinner->set_int_limits(3, 20, GLUI_LIMIT_CLAMP);
+    glui->add_separator_to_panel(streamtube_options);
+    GLUI_Spinner *seedx_spinner = new GLUI_Spinner(streamtube_options, "x", &seed_x, SEED_X, buttonHandler);
+    seedx_spinner->set_alignment(GLUI_ALIGN_CENTER);
+    GLUI_Spinner *seedy_spinner = new GLUI_Spinner(streamtube_options, "y", &seed_y, SEED_Y, buttonHandler);
+    seedy_spinner->set_alignment(GLUI_ALIGN_CENTER);
+    GLUI_Spinner *seedz_spinner = new GLUI_Spinner(streamtube_options, "y", &seed_z, SEED_Z, buttonHandler);
+    seedz_spinner->set_alignment(GLUI_ALIGN_CENTER);
+    GLUI_Button *add_seedpointbutton = new GLUI_Button(streamtube_options, "Add Seedpoint", ADD_SEEDPOINT_BUTTON, buttonHandler);
+    add_seedpointbutton->set_alignment(GLUI_ALIGN_CENTER);
+    glui->add_separator_to_panel(streamtube_options);
+
+
+
+    glui->add_statictext_to_panel(streamtube_options, "                                              ");
+
 
     // quit
     GLUI_Button *quit = new GLUI_Button(glui, "Quit", QUIT_BUTTON, buttonHandler);
     quit->set_alignment(GLUI_ALIGN_CENTER);
 }
+
+ void Application::click(int button,int state,int x, int y) {
+     seed_x = x;
+     seed_y = y;
+     glui->sync_live();
+     
+ }
 
 void Application::quit() {
     cout << "Quit.\n";

@@ -33,7 +33,11 @@ private:
         DIM_SPINNER,
         SEGMENT_SPINNER,
         SAMPLE_X_SPINNER,
-        SAMPLE_Y_SPINNER
+        SAMPLE_Y_SPINNER,
+        SEED_X,
+        SEED_Y,
+        SEED_Z,
+        ADD_SEEDPOINT_BUTTON
     };
 
 public:
@@ -55,6 +59,7 @@ public:
     static void buttonHandler(int id);
     static void updateMenu();
     static void displayMenu();
+    static void click(int,int,int,int);
     static DataBuffer timeslices;
 private:
 
@@ -83,6 +88,8 @@ private:
 
     static Visualization::GlyphType glyphType;
 
+    
+    static GLUI_Panel *streamtube_options;
     static float hueValue;
     static float saturationValue;
     static int dim;
@@ -96,6 +103,8 @@ private:
     static int translate_x, translate_z, translate_y, distance;
     static Visualization::Mode scalarMode;
 
+    static int seed_x,seed_y,seed_z;
+    
     static void renderColormap();
 
 };

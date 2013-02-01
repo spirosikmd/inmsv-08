@@ -20,12 +20,12 @@ Visualization::Visualization() {
     vectorDataset = VELOCITY;
     heightplotDataset = DENSITY;
     numSegments = 5;
-    options[UseDirectionColoring] = false; // not used for now
+    options[UseDirectionColoring] = true; // not used for now
     options[DRAW_SMOKE] = false;
     options[DRAW_GLYPHS] = false;
     options[DRAW_ISOLINES] = false;
-    options[SMOOTH_SHADING] = false;
-    options[DRAW_HEIGHTPLOT] = true;
+    options[SMOOTH_SHADING] = true;
+    options[DRAW_HEIGHTPLOT] = false;
     options[DrawVectorField] = false; // not used for now
 
 
@@ -546,20 +546,21 @@ void Visualization::draw_timedependent_vector_field(Simulation const &simulation
 
     float dt = 10;
     int maxLength = 1000;
-    float x = 500;
-    float y = 500;
-    float z = zn;
-
-    draw_streamtube(calculateStreamtubePoints(x + 100, y, z, dt, maxLength, DIM, wn, hn, zn));
-    draw_streamtube(calculateStreamtubePoints(x, y, z, dt, maxLength, DIM, wn, hn, zn));
-    draw_streamtube(calculateStreamtubePoints(x + 100, y - 100, z, dt, maxLength, DIM, wn, hn, zn));
+    
+    for (size_t i = 0; i < seedpoints.size(); i++) {
+        draw_streamtube(calculateStreamtubePoints(seedpoints[i].x, seedpoints[i].y, seedpoints[i].z, dt, maxLength, DIM, wn, hn, zn));
+    }
 }
 
 void Visualization::draw_streamtube(vector<vector<float > > points) {
+
+    if (points.size() < 2) {
+        return;
+    }
+
     for (size_t sp = 0; sp < points.size() - 1; sp++) {
         float target[3] = {points[sp + 1][0] - points[sp][0], points[sp + 1][1] - points[sp][1], points[sp + 1][2] - points[sp][2]};
         normalize3(target);
-
         float previous[3] = {0, 0, 1};
         if (sp != 0) {
             previous[0] = points[sp][0] - points[sp - 1][0];
@@ -599,7 +600,6 @@ void Visualization::draw_streamtube(vector<vector<float > > points) {
 
         int n = numSegments;
 
-
         colormap->loadColormapTexture();
 
         glBegin(GL_QUAD_STRIP);
@@ -637,6 +637,7 @@ void Visualization::draw_streamtube(vector<vector<float > > points) {
 }
 
 vector<vector<float > > Visualization::calculateStreamtubePoints(float x, float y, float z, float dt, int maxLength, int DIM, float wn, float hn, float zn) {
+
     int capacity = Application::timeslices.getCapacity();
     vector<vector<float > > points;
 
@@ -645,7 +646,7 @@ vector<vector<float > > Visualization::calculateStreamtubePoints(float x, float 
     for (int step = 0; step < maxLength; step++) {
         int x_point = floor(x / wn) - 1;
         int y_point = floor(y / hn) - 1;
-        int z_point = floor(z / zn) - 1;
+        int z_point = floor(z / zn);
 
         if (x_point < 0 || x_point >= DIM - 1 || y_point < 0 || y_point >= DIM - 1 || z_point < 0 || z_point >= capacity - 1) {
             return points;
@@ -759,7 +760,7 @@ void Visualization::draw_heightplot(Simulation const &simulation, const int DIM,
     int i, j, idx;
     double px, py, pz;
 
-    float maxHeight = 75;
+    float maxHeight = 100;
     //calculate normals
     int v0, v1, v2, v3;
     int *v = new int[4];
@@ -796,15 +797,17 @@ void Visualization::draw_heightplot(Simulation const &simulation, const int DIM,
         getPoint(v3, p3, DIM, wn, hn);
 
         float U1[] = {p3[0] - p0[0], p3[1] - p0[1], z3 - z0};
-        float V1[] = {p1[0] - p3[0], p1[1] - p3[1], z1 - z3};
-        float U2[] = {p1[0] - p2[0], p1[1] - p2[1], z1 - z2};
-        float V2[] = {p3[0] - p1[0], p3[1] - p1[1], z3 - z1};
+        float V1[] = {p0[0] - p1[0], p0[1] - p1[1], z0 - z1};
+
+
+        float U2[] = {p2[0] - p1[0], p2[1] - p1[1], z2 - z1};
+        float V2[] = {p1[0] - p3[0], p1[1] - p3[1], z1 - z3};
         normalize3(U1);
         normalize3(V1);
         normalize3(U2);
         normalize3(V2);
-        crossproduct(V1, U1, N1);
-        crossproduct(V2, U2, N2);
+        crossproduct(U1, V1, N1);
+        crossproduct(U2, V2, N2);
         normalize3(N1);
         normalize3(N2);
         surfaceNormals[cellIndex][0][0] = N1[0]* 1;
@@ -1527,44 +1530,15 @@ void Visualization::setNumSegmentsStreamtubes(int n) {
 
 void Visualization::setNumIsolines(int n) {
     numIsolines = n;
-}//                
-//        GLfloat X[16] = {0}; 
-//        GLfloat Y[16] = {0}; 
-//        GLfloat Z[16] = {0}; 
-//        GLfloat R[16] = {0}; 
-//        
-//        glGetFloatv (GL_MODELVIEW_MATRIX, R);
-//                
-//        X[0] = 1;
-//        X[5] = cos(tx);
-//        X[9] = -sin(tx);
-//        X[6] = sin(tx);
-//        X[10] = cos(tx);
-//        X[15] = 1;
-//        
-//        Y[0] = cos(ty);
-//        Y[8] = sin(ty);
-//        Y[5] = 1;
-//        Y[2] = -sin(ty);
-//        Y[10] = cos(ty);
-//        Y[15] = 1;
-//        
-//        Z[0] = cos(tz);
-//        Z[4] = -sin(tz);
-//        Z[1] = sin(tz);
-//        Z[5] = cos(ty);
-//        Z[10] = 1;
-//        Z[15] = 1;
-//        
-//        glMultMatrixf(Z);
-//        glMultMatrixf(Y);
-//        glMultMatrixf(X);
-//        //glMultMatrixf(R);
-//        
-//        GLfloat matrix[16]; 
-//        glGetFloatv (GL_MODELVIEW_MATRIX, matrix);
-//        
-//        cout << "one \n";
-//        for (int i = 0; i<4;i++) {
-//            cout << matrix[i] << " " << matrix[i+4] << " " <<matrix[i+8] << " " <<matrix[i+12] << "\n";
-//        }
+}
+
+vector<Point> Visualization::getSeedpoints() {
+    return seedpoints;
+}
+void Visualization::addSeedpoint(int seed_x, int seed_y, int seed_z) {
+    Point sp;
+    sp.x = seed_x;
+    sp.y = seed_y;
+    sp.z = seed_z;
+    seedpoints.push_back(sp);
+}
