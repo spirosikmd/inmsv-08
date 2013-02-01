@@ -576,6 +576,7 @@ void Application::initUI() {
     scalarDatasetsGroup->add_item(Visualization::VELOCITY_MAGN, "Velocity |v|");
     scalarDatasetsGroup->add_item(Visualization::FORCE_MAGN, "Force |f|");
     scalarDatasetsGroup->add_item(Visualization::VELOCITY_DIV, "Div Velocity");
+    scalarDatasetsGroup->add_item(Visualization::FORCE_DIV, "Div Force");
 
     GLUI_Listbox *application_mode_list = new GLUI_Listbox(datasetOptions, "Mode ", (int*) &scalarMode, SCALAR_MODE_LIST, buttonHandler);
     application_mode_list->add_item(Visualization::SCALING, "Scale");

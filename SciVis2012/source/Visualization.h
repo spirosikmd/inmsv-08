@@ -74,6 +74,7 @@ public:
         DENSITY_GRADIENT,
         VELOCITY_MAGN_GRADIENT,
         VELOCITY_DIV,
+        FORCE_DIV,
         NONE
     };
 
@@ -199,7 +200,7 @@ private:
     void draw_glyphs_on_sampled_grid(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real wn_sample, const fftw_real hn_sample);
     void draw_streamlines(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     GLfloat pick_scaled_field(float v);
-    float divergence(Simulation const &simulation, int idx);
+    float divergence(Simulation const &simulation, int idx, int t);
     int modIndex(int x, int y, int DIM);
 };
 

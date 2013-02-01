@@ -32,7 +32,8 @@ Visualization::Visualization() {
     datasets.insert(make_pair(DENSITY, Dataset(0, 1, CLAMPING)));
     datasets.insert(make_pair(VELOCITY_MAGN, Dataset(0.01, 0.08, CLAMPING)));
     datasets.insert(make_pair(FORCE_MAGN, Dataset(0, 0.15, CLAMPING)));
-    datasets.insert(make_pair(VELOCITY_DIV, Dataset(0, 0.08, CLAMPING)));
+    datasets.insert(make_pair(VELOCITY_DIV, Dataset(0, 0.03, CLAMPING)));
+    datasets.insert(make_pair(FORCE_DIV, Dataset(0, 0.15, CLAMPING)));
     datasets.insert(make_pair(FORCE, Dataset(0, 1, CLAMPING)));
     datasets.insert(make_pair(VELOCITY, Dataset(0, 1, CLAMPING)));
 }
@@ -326,7 +327,7 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
 
     if (options[DRAW_GLYPHS]) {
         draw_glyphs(simulation, DIM, wn, hn, wn_sample, hn_sample);
-//        draw_streamlines(simulation, DIM, wn, hn);
+        //        draw_streamlines(simulation, DIM, wn, hn);
     }
 
 
@@ -546,7 +547,7 @@ void Visualization::draw_timedependent_vector_field(Simulation const &simulation
 
     float dt = 10;
     int maxLength = 1000;
-    
+
     for (size_t i = 0; i < seedpoints.size(); i++) {
         draw_streamtube(calculateStreamtubePoints(seedpoints[i].x, seedpoints[i].y, seedpoints[i].z, dt, maxLength, DIM, wn, hn, zn));
     }
@@ -1351,7 +1352,10 @@ float Visualization::pick_scalar_field_value(Simulation const &simulation, size_
             value = magnitude(simulation.fx[idx], simulation.fy[idx]);
             break;
         case VELOCITY_DIV:
-            value = divergence(simulation, idx);
+            value = divergence(simulation, idx, 0);
+            break;
+        case FORCE_DIV:
+            value = divergence(simulation, idx, 1);
             break;
         case DENSITY:
             value = simulation.rho[idx];
@@ -1438,7 +1442,7 @@ GLfloat Visualization::pick_scaled_field(float v) {
     return value;
 }
 
-float Visualization::divergence(Simulation const &simulation, int idx) {
+float Visualization::divergence(Simulation const &simulation, int idx, int t) {
     int DIM = Simulation::DIM;
     int x = idx % DIM;
     int y = idx / DIM;
@@ -1447,8 +1451,16 @@ float Visualization::divergence(Simulation const &simulation, int idx) {
     int top = modIndex(x, y - 1, DIM);
     int bottom = modIndex(x, y + 1, DIM);
 
-    float dx = simulation.vx[right] - simulation.vx[left];
-    float dy = simulation.vy[top] - simulation.vy[bottom];
+    float dx = 0.0;
+    float dy = 0.0;
+
+    if (t == 0) { // to use the velocity vector dataset
+        dx = simulation.vx[right] - simulation.vx[left];
+        dy = simulation.vy[top] - simulation.vy[bottom];
+    } else { // to use the force vector dataset
+        dx = simulation.fx[right] - simulation.fx[left];
+        dy = simulation.fy[top] - simulation.fy[bottom];
+    }
 
     return dx + dy;
 }
@@ -1535,6 +1547,7 @@ void Visualization::setNumIsolines(int n) {
 vector<Point> Visualization::getSeedpoints() {
     return seedpoints;
 }
+
 void Visualization::addSeedpoint(int seed_x, int seed_y, int seed_z) {
     Point sp;
     sp.x = seed_x;
