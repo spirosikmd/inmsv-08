@@ -1,5 +1,6 @@
 %!TEX root = ../SciVis.tex
 \subsection{Skeleton compilation}
+\label{sec:skeletonCompilation}
 
 use the standard version
 recompiled the lib for x64 os x 
@@ -7,6 +8,7 @@ changing to framework
 different headerfiles
 
 \subsection{Color mapping}
+\label{sec:colorMapping}
 Color mapping is one of the most straight-forwards ways to visualize scalar values. This visualization technique maps each value to a specific color by using a scalar-to-color function (cf. Figure~\ref{fig:rainbowColormap}). 
 
 We implemented this function as a lookup-table because we think that is is easier to define custom colormaps than compared to a transfer function. A disadvantage is that the lookup-table probably is more complex because it requires additional methods to manage the table.
@@ -139,6 +141,7 @@ One of the most important aspects of visualization is the invert mapping of colo
 \clearpage
 
 \subsection{Glyphs}
+\label{sec:glyphs}
 
 The vector glyph technique associates vector glyphs with sample points of a vector dataset. Glyphs are able of conveying, by their appearance, properties of the represented vector, such as direction, orientation, and magnitude. However, when using vector glyphs the task of image-to-data mapping is getting harder, especially when it is needed to interpolate between orientations and directions. The Smoke application contains two vector datasets ---velocity and force. Four different kind of glyphs are used ---hedgehogs, simple arrows, 3D cones, and 3D arrows.
 
