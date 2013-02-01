@@ -6,8 +6,10 @@ Therefore we need to construct a 3D dataset out of our 2D dataset by using time 
 We designed this data cube as a circular buffer. We decided to store all data that becomes available in every simulation step (i.e. rho,vx,vy,fx,fy). This gives us a greater flexibility since we are able to calculate all kinds of conversion on the fly (e.g. $|v|$).  
 Deque and vector have been used to define the circular buffer as \verb| deque<vector<vector<fftw_floats> > > >|.  A deque  allows to easily push and pop data at both ends, which makes the implementation easier. 
 We used the available STL data structures because they are reliable and effiecent.
-The RHO value of sample point $sp$  at timestep $t$ can be accessed via  \verb|buffer[t][RHO][sp]|. The data structure has been wrapped in a class to allow uniform access and provide general purpose methods. 
+The RHO value of a sample point $sp$  at timestep $t$ can be accessed via  \verb|buffer[t][RHO][sp]|. The data structure has been wrapped in a class to allow uniform access and provide general purpose methods. 
 
+
+If we visualize this dataset by using a simple hedgehog glyph technique as described previously 
  \begin{figure}[htbp]
  \centering
  \begin{minipage}[t]{0.48\textwidth}
