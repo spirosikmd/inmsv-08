@@ -36,11 +36,10 @@ We implemented a simple keyboard-based mechanism to modify the perspective with 
 The height plot is able to visualize two scalar datasets at once. The first dataset is encoded in the height and the second one in the color of the surface. The datasets can be selected in the user interface and it is also possible to specify whether the values should be clamped within a predefined range or scaled according to the local maximum and minimum. 
 We use the same mechanism to map scalar-values to color that has been described in the color mapping step. Basically, all options that are available to influence the colormap visualization in 2D are also possible in 3D. Reducing the number of colors will make it easier for the user to compare the height of different peaks and valleys. However, this will reduce the accuracy of the inverse mapping step as the user is not able to see all values but only certain ranges (cf. Figure~\ref{fig:figures_heightplot_densitydensitybanding}).
 
-
 As illustrated in Figure~~\ref{fig:heighplot_densityVelocity},it is important to choose the colormap carefully as the colormap creates an artificial shaded topology that does not correlate with the actual height plot and thus might be confusing or unintuitive.
 
 \begin{figure}[htbp]
-    \centering \includegraphics[height=3in]{figures/heightplot/densitydensitybanding.png}
+    \centering \includegraphics[height=2.75in]{figures/heightplot/densitydensitybanding.png}
     \caption{Reducing the number of colors makes it easy to compare the height of different peaks but it comes at the cost of a less accurat inverse mapping.}
     \label{fig:figures_heightplot_densitydensitybanding}
 \end{figure}
