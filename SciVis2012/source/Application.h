@@ -51,6 +51,8 @@ public:
     static void visualize();
     static void quit();
     static void buttonHandler(int id);
+    static void updateMenu();
+    static void displayMenu();
     static DataBuffer timeslices;
 private:
 
@@ -62,6 +64,7 @@ private:
 
     static GLUI *glui; // user interface
     static int main_window;
+    static int menu_window;
 
     static Visualization::ColorMode selectedColormap;
 

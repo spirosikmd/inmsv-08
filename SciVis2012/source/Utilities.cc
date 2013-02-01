@@ -1,6 +1,10 @@
 #include <cmath>
 #include <sstream>
 #include "Utilities.h"
+#include <iostream>
+
+
+using namespace std;
 
 std::string float2str(float f) {
     std::stringstream ss(std::stringstream::in | std::stringstream::out);
@@ -106,6 +110,28 @@ GLfloat magnitude3(float v[3]) {
 
 float dotproduct3(float u[3],float v[3]) {
     return u[0]*v[0]+u[1]*v[1]+u[2]*v[2];
+}
+
+void normalize2(float *R) {
+    float m = sqrt(pow(R[0], 2) + pow(R[1], 2));
+    R[0] = R[0] / m;
+    R[1] = R[1] / m;
+}
+
+void normalize3(float *R) {
+    float m = sqrt(pow(R[0], 2) + pow(R[1], 2) + pow(R[2], 2));
+    R[0] = R[0] / m;
+    R[1] = R[1] / m;
+    R[2] = R[2] / m;
+}
+
+void crossproduct(float *U, float *V, float *R) {
+    R[0] = (U[1] * V[2])-(V[1] * U[2]);
+    R[1] = -(U[0] * V[2])+(V[0] * U[2]);
+    R[2] = (U[0] * V[1])-(U[1] * V[0]);
+}
+void printPoint(float *xyz_new) {
+    cout << "(" << xyz_new[0] << "|" << xyz_new[1] << "|" << xyz_new[2] << ")\n";
 }
 
 

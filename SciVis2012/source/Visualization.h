@@ -51,6 +51,8 @@ public:
         DRAW_HEIGHTPLOT,
         DRAW_NORMALS,
         DRAW_STREAMTUBES,
+        DRAW_3DFIELD,
+        DRAW_THICKTUBES,
         OptionsCount // (automatically assigned)
     };
 
@@ -159,7 +161,7 @@ private:
     int sample_x, sample_y;
 
     float getHeight(float vy, float maxheight);
-    void draw_timedependent_vector_field(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+    void draw_timedependent_vector_field(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real zn);
     void draw_streamtube(std::vector<std::vector<float > > points);
     std::vector<std::vector<float > > calculateStreamtubePoints(float x, float y, float z, float dt, int maxLength, int DIM, float wn, float hn, float zn);
     void draw_heightplot(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);

@@ -198,7 +198,7 @@ void Visualization::setColor(float vy, ColorType t) {
 
 }
 
-float Visualization::scaleScalar(float vy, float smin , float smax) {
+float Visualization::scaleScalar(float vy, float smin, float smax) {
 
     Dataset dataset = datasets[scalarDataset];
     float colorIndex = 0, min, max;
@@ -216,7 +216,7 @@ float Visualization::scaleScalar(float vy, float smin , float smax) {
     }
 
     return scale(vy, min, max, smin, smax);
-            
+
 }
 
 Colormap* Visualization::getColormap() {
@@ -235,9 +235,7 @@ void Visualization::visualize3D(Simulation const &simulation, int winWidth, int 
     const int DIM = Simulation::DIM;
     fftw_real wn = (fftw_real) winWidth / (fftw_real) (DIM + 1); // Computational Grid cell width
     fftw_real hn = (fftw_real) winHeight / (fftw_real) (DIM + 1); // Computational Grid cell heigh
-
-    //    fftw_real wn_sample = (fftw_real) winWidth / (fftw_real) (sample_x + 1); // Sample Grid cell width 
-    //    fftw_real hn_sample = (fftw_real) winHeight / (fftw_real) (sample_y + 1); // Sample Grid cell heigh
+    fftw_real zn = winHeight / Application::timeslices.getCapacity();
 
     datasets[scalarDataset].scaleMax = -INFINITY;
     datasets[scalarDataset].scaleMin = INFINITY;
@@ -255,12 +253,46 @@ void Visualization::visualize3D(Simulation const &simulation, int winWidth, int 
         if (value < datasets[heightplotDataset].scaleMin) datasets[heightplotDataset].scaleMin = value;
     }
 
+    if (options[DRAW_HEIGHTPLOT] || options[DRAW_STREAMTUBES]) {
+        float x_max = DIM * wn + wn;
+        float y_max = DIM * hn + hn;
+        float z_max = Application::timeslices.getCapacity() * zn;
+
+        glBegin(GL_LINE_LOOP);
+        glColor3f(1, 1, 1);
+
+        glVertex3f(wn, hn, 0);
+        glVertex3f(x_max - wn, hn, 0);
+        glVertex3f(x_max - wn, y_max - hn, 0);
+        glVertex3f(wn, y_max - hn, 0);
+        glEnd();
+        glBegin(GL_LINE_LOOP);
+        glColor3f(1, 1, 1);
+        glVertex3f(wn, hn, z_max);
+        glVertex3f(x_max - wn, hn, z_max);
+        glVertex3f(x_max - wn, y_max - hn, z_max);
+        glVertex3f(wn, y_max - hn, z_max);
+        glEnd();
+        glBegin(GL_LINES);
+        glColor3f(1, 1, 1);
+        glVertex3f(wn, hn, 0);
+        glVertex3f(wn, hn, z_max);
+        glVertex3f(wn, y_max - hn, 0);
+        glVertex3f(wn, y_max - hn, z_max);
+        glVertex3f(x_max - wn, hn, 0);
+        glVertex3f(x_max - wn, hn, z_max);
+        glVertex3f(x_max - wn, y_max - hn, 0);
+        glVertex3f(x_max - wn, y_max - hn, z_max);
+        glEnd();
+    }
+
     if (options[DRAW_HEIGHTPLOT]) {
         draw_heightplot(simulation, DIM, wn, hn);
     }
     if (options[DRAW_STREAMTUBES]) {
-        draw_timedependent_vector_field(simulation, DIM, wn, hn);
+        draw_timedependent_vector_field(simulation, DIM, wn, hn, zn);
     }
+
 
 }
 
@@ -268,6 +300,7 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     const int DIM = Simulation::DIM;
     fftw_real wn = (fftw_real) winWidth / (fftw_real) (DIM + 1); // Computational Grid cell width
     fftw_real hn = (fftw_real) winHeight / (fftw_real) (DIM + 1); // Computational Grid cell heigh
+
 
     fftw_real wn_sample = (fftw_real) winWidth / (fftw_real) (sample_x + 1); // Sample Grid cell width 
     fftw_real hn_sample = (fftw_real) winHeight / (fftw_real) (sample_y + 1); // Sample Grid cell heigh
@@ -484,37 +517,14 @@ void Visualization::draw_isoline(Simulation const &simulation, const int DIM, co
     }
 }
 
-void crossproduct(float *U, float *V, float *R) {
-    R[0] = (U[1] * V[2])-(V[1] * U[2]);
-    R[1] = -(U[0] * V[2])+(V[0] * U[2]);
-    R[2] = (U[0] * V[1])-(U[1] * V[0]);
-}
-
-void normalize2(float *R) {
-    float m = sqrt(pow(R[0], 2) + pow(R[1], 2));
-    R[0] = R[0] / m;
-    R[1] = R[1] / m;
-}
-
-void normalize3(float *R) {
-    float m = sqrt(pow(R[0], 2) + pow(R[1], 2) + pow(R[2], 2));
-    R[0] = R[0] / m;
-    R[1] = R[1] / m;
-    R[2] = R[2] / m;
-}
-
-void printPoint(float *xyz_new) {
-    cout << "(" << xyz_new[0] << "|" << xyz_new[1] << "|" << xyz_new[2] << ")\n";
-}
-
-void Visualization::draw_timedependent_vector_field(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
+void Visualization::draw_timedependent_vector_field(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real zn) {
 
     double px, py, pz;
 
     int capacity = Application::timeslices.getCapacity();
 
     float *v = new float[2];
-    float zn = 800 / capacity;
+
     for (int time = 0; time < capacity; time++) {
 
         for (int idx = 0; idx < DIM * DIM; idx++) {
@@ -525,49 +535,19 @@ void Visualization::draw_timedependent_vector_field(Simulation const &simulation
             pick_timevector_field_value(idx, v, time);
             px = wn + (fftw_real) x * wn;
             py = hn + (fftw_real) y * hn;
-
-
             pz = time *zn;
-            //            glPushMatrix();
-            //            glTranslatef(px, py, pz);
-            //            glBegin(GL_LINES);
-            //            setColor(vx, SIMPLE);
-            //            glVertex3f(0, 0, 0);
-            //            glVertex3f(v[0]*1000, v[1]*1000, 20);
-            //            glEnd();
-            //            glPopMatrix();
+            if (options[DRAW_3DFIELD]) {
+                glPushMatrix();
+                glTranslatef(px, py, pz);
+                glBegin(GL_LINES);
+                setColor(vx, SIMPLE);
+                glVertex3f(0, 0, 0);
+                glVertex3f(v[0]*1000, v[1]*1000, 20);
+                glEnd();
+                glPopMatrix();
+            }
         }
     }
-    float x_max = DIM * wn + wn;
-    float y_max = DIM * hn + hn;
-    float z_max = capacity * zn;
-
-    glBegin(GL_LINE_LOOP);
-    glColor3f(1, 1, 1);
-
-    glVertex3f(wn, hn, 0);
-    glVertex3f(x_max - wn, hn, 0);
-    glVertex3f(x_max - wn, y_max - hn, 0);
-    glVertex3f(wn, y_max - hn, 0);
-    glEnd();
-    glBegin(GL_LINE_LOOP);
-    glColor3f(1, 1, 1);
-    glVertex3f(wn, hn, z_max);
-    glVertex3f(x_max - wn, hn, z_max);
-    glVertex3f(x_max - wn, y_max - hn, z_max);
-    glVertex3f(wn, y_max - hn, z_max);
-    glEnd();
-    glBegin(GL_LINES);
-    glColor3f(1, 1, 1);
-    glVertex3f(wn, hn, 0);
-    glVertex3f(wn, hn, z_max);
-    glVertex3f(wn, y_max - hn, 0);
-    glVertex3f(wn, y_max - hn, z_max);
-    glVertex3f(x_max - wn, hn, 0);
-    glVertex3f(x_max - wn, hn, z_max);
-    glVertex3f(x_max - wn, y_max - hn, 0);
-    glVertex3f(x_max - wn, y_max - hn, z_max);
-    glEnd();
 
     float dt = 10;
     int maxLength = 1000;
@@ -614,14 +594,19 @@ void Visualization::draw_streamtube(vector<vector<float > > points) {
         glPushMatrix();
 
         glMultMatrixf(R);
+
         
-        int radius = scaleScalar(points[sp][3],10,20);
-        int radiusNext = scaleScalar(points[sp+1][3],10,20);
+        int radius = scaleScalar(points[sp][3], 10, 20);
+        int radiusNext = scaleScalar(points[sp + 1][3], 10, 20);
+        if (!options[DRAW_THICKTUBES]) {
+            radiusNext = radius = 15;
+        }
+        
         int n = 10;
-        
+
 
         colormap->loadColormapTexture();
-        
+
         glBegin(GL_QUAD_STRIP);
         for (int i = 0; i <= 360; i = i + (360 / n)) {
             float degInRad = i * (M_PI / 180);
@@ -632,21 +617,21 @@ void Visualization::draw_streamtube(vector<vector<float > > points) {
             float vx[3] = {(cos(degInRad) * radius) - (cos(degInRad2) * radius), (sin(degInRad) * radius)-(sin(degInRad2) * radius), 0};
             normalize3(vx);
             crossproduct(vz, vx, normal);
-            
+
             setColor(points[sp][3], TEXTURE);
             glNormal3f(normal[0], normal[1], normal[2]);
             glVertex3f(cos(degInRad) * radius, sin(degInRad) * radius, 0);
-            
-            setColor(points[sp+1][3], TEXTURE);
+
+            setColor(points[sp + 1][3], TEXTURE);
             glNormal3f(normal[0], normal[1], normal[2]);
             glVertex3f(cos(degInRad) * radiusNext, sin(degInRad) * radiusNext, 15);
-            
-            
+
+
             setColor(points[sp][3], TEXTURE);
             glNormal3f(normal[0], normal[1], normal[2]);
             glVertex3f(cos(degInRad2) * radius, sin(degInRad2) * radius, 0);
-            
-            setColor(points[sp+1][3], TEXTURE);
+
+            setColor(points[sp + 1][3], TEXTURE);
             glNormal3f(normal[0], normal[1], normal[2]);
             glVertex3f(cos(degInRad2) * radiusNext, sin(degInRad2) * radiusNext, 15);
         }
