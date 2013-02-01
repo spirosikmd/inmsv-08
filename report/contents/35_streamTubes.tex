@@ -1,29 +1,13 @@
 %!TEX root = ../SciVis.tex
+Besides the height plot we also implemented stream tubes, which are also drawn in three-dimensions. Stream tubes trace particles through a vector field as cylindrical tube. In contrast, to  height plots, stream tubes visualize a three-dimensional dataset. 
 
- Stream tubes are similar to streamlines, they display the paths of particles in a typically three-dimensional vector field as cylindrical tubes whose cross-section size can vary to encode additional parameters.
- 
- To use this technique, we must first have a three-dimensional vector field,
- time-dependent simulation, if we consider time as the third (z) dimension. 
- 
- should give you a three-dimensional 'data cube'. 
- 
- holds raw simulation value, thus allows us to compute the scalar or vector field on the fly -> greater felxibility
- 
- every simulation step -> add timeslice
- 
- buffer[time][type][idx] , with idx being the index of the sample point implemented as 
-\verb| deque<vector<vector<fftw_floats> > > >|
-a deque  because it allows to easily push and pop data at both end. 
-allows us to create a circular buffer without much effort
-   
-  
-  
-  
- 
- 
- 
- 
- 
+Therefore we need to construct a 3D dataset out of our 2D dataset by using time as the third axis. Basically, we store the last $n$ timeslices of our 2D dataset to create a data cube. 
+
+We designed this data cube as a circular buffer. We decided to store all data that becomes available in every simulation step (i.e. rho,vx,vy,fx,fy). This gives us a greater flexibility since we are able to calculate all kinds of conversion on the fly (e.g. $|v|$).  
+Deque and vector have been used to define the circular buffer as \verb| deque<vector<vector<fftw_floats> > > >|.  A deque  allows to easily push and pop data at both ends, which makes the implementation easier. 
+We used the available STL data structures because they are reliable and effiecent.
+The RHO value of sample point $sp$  at timestep $t$ can be accessed via  \verb|buffer[t][RHO][sp]|. The data structure has been wrapped in a class to allow uniform access and provide general purpose methods. 
+
  \begin{figure}[htbp]
  \centering
  \begin{minipage}[t]{0.48\textwidth}
