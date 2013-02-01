@@ -9,7 +9,7 @@
 % 
 %Hints: Start from the divergence definition. Compute the partial derivatives in this definition directly from the discrete data available on the simulation’s grid. For this, see Chapter 3 – Section 3.7.
 
-In this step the implementation and analysis of the divergence operator will be introduced. Divergence is a vector field operator and as such it is applied either to the velocity vector dataset or the force vector dataset. The user can select from which vector dataset the divergence will be computed ---\emph{Div Velocity} or \emph{Div Force}--- from the \emph{Scalar} listbox which can be found in the \emph{Dataset} panel. The divergence operator is computed with the following code depicted in Listing~\ref{lst:divergence}.
+In this step the implementation and analysis of the divergence operator will be introduced. Divergence is a vector field operator and as such it is applied either to the velocity vector dataset or the force vector dataset. The user can select from which vector dataset the divergence will be computed ---\emph{Div Velocity} or \emph{Div Force}--- from the \emph{Scalar} listbox which can be found in the \emph{Dataset} panel. The divergence operator is computed with the code depicted in Listing~\ref{lst:divergence}.
 
 \begin{lstlisting}[language=C,label=lst:divergence,caption={Divergence of the velocity vector dataset.}]
 float Visualization::divergence(Simulation const &simulation, int idx) {
@@ -31,7 +31,7 @@ float Visualization::divergence(Simulation const &simulation, int idx) {
 }
  \end{lstlisting}
 
-Figure~\ref{fig:divergenceVelocity} depicts the divergence of the \emph{Velocity} vector dataset regularly sampled at 80x80 and coloured with a heatmap colormap. The range that the values are clamped is selected to be -0.01 to 0.03. This because divergence can have negative values. The black colors on Figure~\ref{fig:divergenceVelocity} denotes sink points, negative values, while the yellow and white colors denote sources, positive values. At these source points it is where the force is applied. At these points the smoke starts spreading and this is the reason that the divergence has positive values.
+Figure~\ref{fig:divergenceVelocity} depicts the divergence of the \emph{Velocity} vector dataset regularly sampled at 80x80 and coloured with a heatmap colormap. The range that the values are clamped is selected to be -0.01 to 0.03. This because divergence can have negative values. The black colors on Figure~\ref{fig:divergenceVelocity} denotes sink points (negative values) while the yellow and white colors denote sources (positive values). At these source points it is where the force is applied. At these points the smoke starts spreading and this is the reason that the divergence has positive values.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -41,12 +41,17 @@ Figure~\ref{fig:divergenceVelocity} depicts the divergence of the \emph{Velocity
 \end{center}
 \end{figure}
 
-Figure~\ref{fig:divergenceForce} illustrates ...
+Figure~\ref{fig:divergenceMagnitudeForce} illustrates the divergence and the magnitude scalar fields of the \emph{Force} vector dataset. Three force lines are drawn. The range of clamping for the divergence is -0.05 to 0.05 for the reason that divergence can have negative values. These two visualisations are quite common. This is not something that we did not expect, as the force affects only the neighbour data points from the points that it is applied. The rest data points remain zero. And that is true for both visualisations. However, there are also some differences. The centre points on the visualisation of magnitude (cf.~Figure~\ref{fig:divergenceMagnitudeForce}(b)) have the highest value and the rest scalar values around these points are decreasing. In the case of the visualisation of divergence (cf.~Figure~\ref{fig:divergenceMagnitudeForce}(a)), the force lines are composed of two parts. One high value part and one low value part. This is shown clear on the top force line in Figure~\ref{fig:divergenceMagnitudeForce}(a).
 
 \begin{figure}[htbp]
 \begin{center}
- \includegraphics[height=3.5in]{figures/divergence/divergenceForce.png}
-\caption{Force vector divergence on 80x80 regularly sampled grid coloured with a heatmap colormap.}
-\label{fig:divergenceForce}
+\begin{minipage}[t]{0.48\textwidth}
+\includegraphics[height=2.5in]{figures/divergence/divergenceForce.png}
+\end{minipage}
+\begin{minipage}[t]{0.48\textwidth}
+\includegraphics[height=2.5in]{figures/divergence/magnitudeForce.png}
+\end{minipage}
+\caption{Force vector on 80x80 regularly sampled grid coloured with a heatmap colormap. (a) Divergence. (b) Magnitude.}
+\label{fig:divergenceMagnitudeForce}
 \end{center}
 \end{figure}

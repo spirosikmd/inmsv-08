@@ -157,7 +157,7 @@ The simplest glyph icon used is the hedgehogs. Figure~\ref{fig:hedgehogs} shows 
 Scaling factor is an option that needs careful consideration when visualising glyphs. As can be seen from Figure~\ref{fig:hedgehogs} it is very easy to follow the direction of the vector dataset using a linear scaling factor of 1000. Although the hedgehogs are drawn on top of each other, where the magnitude of the vector field gets its highest values, the direction of the vector field is still clearly visible. However, as it is depicted in Figure~\ref{fig:hedgehogsSamplesScaling}(b), when increasing the number of samples and retaining the scaling factor at 1000 cluttering becomes an issue. In Figure~\ref{fig:hedgehogsSamplesScaling}(a), the visualisation shows the same dataset regularly sampled on 40x40 and with a scaling factor of 200. In this case cluttering effects have been eliminated, but we are not able anymore to use the glyph length as a visual cue for the vector field magnitude.
 
 \begin{figure}[htbp]
-\centering
+\begin{center}
 \begin{minipage}[t]{0.48\textwidth}
 \includegraphics[height=2.7in]{figures/glyph/hedgehogsLSSSF.png}
 \end{minipage}
@@ -166,6 +166,7 @@ Scaling factor is an option that needs careful consideration when visualising gl
 \end{minipage}
 \caption{Hedgehog visualisation of smoke simulation using rainbow colouring. (a) Regularly sampled on 40x40 and 200 scaling factor. (b) Regularly sampled on 100x100 and scaling factor 1000.}
 \label{fig:hedgehogsSamplesScaling}
+\end{center}
 \end{figure}
 
 Another possibility to avoid cluttering is to subsample the grid. For subsampling the grid, the user can select different values for the number of samples in the X dimension and the number of samples in the Y dimension. This can be done from the \emph{X Sample} and \emph{Y Sample} spinners respectively. When the grid is subsampled, the method of \emph{bilinear interpolation} is used in order to compute the dataset values out of the neighbour points.
@@ -183,7 +184,7 @@ Figure~\ref{fig:hedgehogsSubsampled} shows the same dataset as in Figure~\ref{fi
 One disadvantage of hedgehogs is that they are not able to show orientation. The next three kinds of glyph icons have properties that are able to also convey the orientation of a vector dataset. However, when selecting glyph icons that need much more screen space than hedgehogs to be drawn, someone needs to think much more carefully about the design of these glyphs. Figure~\ref{fig:simpleArrowsCluttering}(a) depicts the sample dataset as in Figure~\ref{fig:hedgehogs}, this time with 2D arrows and texture color-mapping. Cluttering becomes much more apparent in case of using 2D arrows as glyphs, as it is also depicted in Figure~\ref{fig:simpleArrowsCluttering}(b). The scaling factor is 2 times larger and the length is scaled linearly with the vector magnitude.
 
 \begin{figure}[htbp]
-\centering
+\begin{center}
 \begin{minipage}[t]{0.48\textwidth}
 \includegraphics[height=2.7in]{figures/glyph/simpleArrows.png}
 \end{minipage}
@@ -192,12 +193,13 @@ One disadvantage of hedgehogs is that they are not able to show orientation. The
 \end{minipage}
 \caption{Simple arrows visualisation of smoke simulation using rainbow colouring. Regularly sampled to 60x60. (a) Normal scaling factor. (b) 2 times larger scaling factor.}
 \label{fig:simpleArrowsCluttering}
+\end{center}
 \end{figure}
 
 Another option would be to clamp the length of the arrows according to the size of the grid cells. The maximum values would be the maximum cell size and the minimum clamp values would be for instance 1/3 of the cell size. By trying out this technique we decided that in order to clamp the values to the grid cell size we would need to subsample the dataset so the cell size would increase and so the length of the arrows. In this way the length would indeed be a useful cue. However we decided that by visualising the field with more glyphs we can get a better insight into the visualised phenomenon. Figure~\ref{fig:d3conesArrows} illustrates the rest two kind of 3D glyphs visualising the dataset from Figure~\ref{fig:hedgehogs}. We should note that in order for the shading effect to work properly when visualising 3D glyphs, we set proper lighting source. The 3D glyphs exhibit the same issues as simple arrows upon visualisation, such as cluttering.
 
 \begin{figure}[htbp]
-\centering
+\begin{center}
 \begin{minipage}[t]{0.48\textwidth}
 \includegraphics[height=2.7in]{figures/glyph/d3cones.png}
 \end{minipage}
@@ -206,6 +208,7 @@ Another option would be to clamp the length of the arrows according to the size 
 \end{minipage}
 \caption{3D Cones and Arrows visualisation of smoke simulation using rainbow colouring. Regularly sampled to 60x60.}
 \label{fig:d3conesArrows}
+\end{center}
 \end{figure}
 
 %The dataset class, separation of concerns, map that stores vector and scalar dataset, max and min for colormap
