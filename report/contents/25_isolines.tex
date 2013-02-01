@@ -2,7 +2,42 @@
 
 The isolines can be visualised by selecting the option \emph{Isolines} from the \emph{Options} panel and they can be parameterised from the \emph{Contouring} panel. There are two kinds of isoline visualisations. First, the user can visualise isolines which corresponds to one particular scalar value which can be set and it is the \emph{Density rho}. In order to colorise the isolines the \emph{Colorise} option must be selected. The isoline visualisation has been implemented using the \emph{marching squares} method. We can directly compute the isolines of the density scalar dataset as its continuity is $C^1$. 
 
-% implementation
+Listing~\ref{lst:drawIsovalue} shows the code for drawing an isoline having the isovalue. First we need to construct the topological cell states. This is accomplished by comparing the values on the four vertices of every cell with the isovalue. Then the \emph{marching squares} algorithm is implemented. We find the cell vertices and then we get the state and the values. Then we decide if we need to draw a line  or not according to the topological state of every cell.
+
+\begin{lstlisting}[language=C++,label=lst:drawIsovalue,caption={Draw isoline given an isovalue.}]
+void Visualization::draw_isoline(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, float isovalue) {
+
+    int numberOfCells = (DIM - 1) * (DIM - 1);
+    // only works if density is current dataset
+    int *cellStates = new int[numberOfCells];
+
+    for (int cellIndex = 0; cellIndex < numberOfCells; cellIndex++) {
+        int *v = new int[4];
+        getCell(cellIndex, v, DIM);
+
+        for (int cellVertex = 0; cellVertex < 4; cellVertex++) {
+            int idx = v[cellVertex];
+            float v = pick_scalar_field_value(simulation, idx);
+            if (v <= isovalue) {
+                cellStates[cellIndex] |= 1 << cellVertex;
+                //inside
+            }
+        }
+    }
+    // marching squares      
+    // variables defintion;
+
+    for (int cellIndex = 0; cellIndex < numberOfCells; cellIndex++) {
+    
+        getCell(cellIndex, v, DIM);
+        int cellState = cellStates[cellIndex];
+
+        // find the cell vertices and get the values;
+
+        // draw line according to cell state; OpenGL code;
+    }
+}
+\end{lstlisting}
 
 Figure~\ref{fig:isoline} depicts the isoline visualisation which corresponds to the scalar density value $rho = 0.5$. Figure~\ref{fig:isoline}(a) shows only the colorised isoline, while in Figure~\ref{fig:isoline}(b) we decided to visualise the isoline together with the smoke field but not to colorise the isoline. This provides a clearer overview of the total range of scalar values and to which scalar value do the isolines correspond.
 
