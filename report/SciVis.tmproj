@@ -3,7 +3,7 @@
 <plist version="1.0">
 <dict>
 	<key>currentDocument</key>
-	<string>contents/20_implementation.tex</string>
+	<string>contents/30_heightPlots.tex</string>
 	<key>documents</key>
 	<array>
 		<dict>
@@ -23,34 +23,6 @@
 	<integer>200</integer>
 	<key>metaData</key>
 	<dict>
-		<key>SciVis.tex</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>16</integer>
-				<key>line</key>
-				<integer>23</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
-		</dict>
-		<key>contents/00_abstract.tex</key>
-		<dict>
-			<key>caret</key>
-			<dict>
-				<key>column</key>
-				<integer>26</integer>
-				<key>line</key>
-				<integer>0</integer>
-			</dict>
-			<key>firstVisibleColumn</key>
-			<integer>0</integer>
-			<key>firstVisibleLine</key>
-			<integer>0</integer>
-		</dict>
 		<key>contents/10_introduction.tex</key>
 		<dict>
 			<key>caret</key>
@@ -70,16 +42,32 @@
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>21</integer>
+				<integer>0</integer>
 				<key>line</key>
-				<integer>147</integer>
+				<integer>0</integer>
 			</dict>
+			<key>columnSelection</key>
+			<false/>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
 			<key>firstVisibleLine</key>
-			<integer>44</integer>
+			<integer>0</integer>
+			<key>selectFrom</key>
+			<dict>
+				<key>column</key>
+				<integer>26</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
+			<key>selectTo</key>
+			<dict>
+				<key>column</key>
+				<integer>0</integer>
+				<key>line</key>
+				<integer>0</integer>
+			</dict>
 		</dict>
-		<key>contents/outline.tex</key>
+		<key>contents/25_isolines.tex</key>
 		<dict>
 			<key>caret</key>
 			<dict>
@@ -93,14 +81,28 @@
 			<key>firstVisibleLine</key>
 			<integer>0</integer>
 		</dict>
-		<key>contents/references.bib</key>
+		<key>contents/30_heightPlots.tex</key>
 		<dict>
 			<key>caret</key>
 			<dict>
 				<key>column</key>
-				<integer>0</integer>
+				<integer>26</integer>
 				<key>line</key>
-				<integer>9</integer>
+				<integer>0</integer>
+			</dict>
+			<key>firstVisibleColumn</key>
+			<integer>0</integer>
+			<key>firstVisibleLine</key>
+			<integer>0</integer>
+		</dict>
+		<key>contents/35_streamTubes.tex</key>
+		<dict>
+			<key>caret</key>
+			<dict>
+				<key>column</key>
+				<integer>26</integer>
+				<key>line</key>
+				<integer>0</integer>
 			</dict>
 			<key>firstVisibleColumn</key>
 			<integer>0</integer>
@@ -110,16 +112,14 @@
 	</dict>
 	<key>openDocuments</key>
 	<array>
-		<string>contents/outline.tex</string>
-		<string>SciVis.tex</string>
-		<string>contents/00_abstract.tex</string>
 		<string>contents/20_implementation.tex</string>
-		<string>contents/references.bib</string>
-		<string>contents/10_introduction.tex</string>
+		<string>contents/25_isolines.tex</string>
+		<string>contents/30_heightPlots.tex</string>
+		<string>contents/35_streamTubes.tex</string>
 	</array>
 	<key>showFileHierarchyDrawer</key>
 	<true/>
 	<key>windowFrame</key>
-	<string>{{1365, 4}, {683, 1126}}</string>
+	<string>{{324, 4}, {683, 874}}</string>
 </dict>
 </plist>
