@@ -326,7 +326,7 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
 
     if (options[DRAW_GLYPHS]) {
         draw_glyphs(simulation, DIM, wn, hn, wn_sample, hn_sample);
-        draw_streamlines(simulation, DIM, wn, hn);
+//        draw_streamlines(simulation, DIM, wn, hn);
     }
 
 
@@ -1269,9 +1269,9 @@ void Visualization::draw_simple_arrow(GLfloat magn, GLfloat x_start, GLfloat y_s
 
     glEnable(GL_TEXTURE_1D);
     colormap->loadColormapTexture();
-    GLfloat scale_x = magn * 1.5;
-    GLfloat scale_y_quad = magn * 0.2;
-    GLfloat scale_y_triangle = magn * 0.3;
+    GLfloat scale_x = magn * 2.5;
+    GLfloat scale_y_quad = magn * 0.5;
+    GLfloat scale_y_triangle = magn * 0.6;
     glPushMatrix();
     glTranslatef(x_start, y_start, 0.0);
     glRotatef(angle, 0.0, 0.0, 1.0f);

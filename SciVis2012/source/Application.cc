@@ -641,7 +641,7 @@ void Application::initUI() {
 
     GLUI_Spinner *dim_spinner = new GLUI_Spinner(glui, "DIM ", &dim, DIM_SPINNER, buttonHandler);
     dim_spinner->set_alignment(GLUI_ALIGN_RIGHT);
-    dim_spinner->set_int_limits(5, 80, GLUI_LIMIT_CLAMP);
+    dim_spinner->set_int_limits(10, 100, GLUI_LIMIT_CLAMP);
 
     GLUI_Spinner *sample_x_spinner = new GLUI_Spinner(glui, "X Sample ", &sample_x, SAMPLE_X_SPINNER, buttonHandler);
     sample_x_spinner->set_alignment(GLUI_ALIGN_RIGHT);
