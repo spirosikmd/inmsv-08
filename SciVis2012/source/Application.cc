@@ -501,6 +501,9 @@ void Application::buttonHandler(int id) {
             visualization.setDensityIsoline(densityIsoline);
             break;
         case DENSITY_RHO1_ISOLINE_SPINNER:
+            if (densityRHO1Isoline >= densityRHO2Isoline) {
+                densityRHO1Isoline = densityRHO2Isoline;
+            }
             visualization.setDensityRHO1Isoline(densityRHO1Isoline);
             break;
         case DENSITY_RHO2_ISOLINE_SPINNER:

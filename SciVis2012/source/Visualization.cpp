@@ -319,8 +319,9 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
 
         float range = fabs(densityRHO2Isoline - densityRHO1Isoline);
         float isolineStep = range / numIsolines;
+        
         for (int i = 0; i < numIsolines; i++) {
-            draw_isoline(simulation, DIM, wn, hn, isolineStep * (i + 1));
+            draw_isoline(simulation, DIM, wn, hn, densityRHO1Isoline + (isolineStep * (i + 1)));
         }
     }
 

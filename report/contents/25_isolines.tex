@@ -19,18 +19,20 @@ Figure~\ref{fig:isoline} depicts the isoline visualisation which corresponds to 
 \end{center}
 \end{figure}
 
-The next kind of isoline visualisation lets the user select a range of density scalar values, \emph{Density rh01} and \emph{Density rho2} respectively, and the number of isolines $N$ to render equally distributed in this range. The number can be set by the control \emph{N Isolines}. Figure~\ref{fig:isolines} shows $N + 1 = 8$ isolines, where $N$ is the number selected by the user, in this case 7, and one more for visualising the isoline with density scalar value $rh0 = 0.5$. The range of the density scalar values is $rho1 = 1.2, rho2 = 0.2$. Listing~\ref{lst:calculateIsolinesScalars} shows the way that the scalar values between the desired range are calculated.
+The next kind of isoline visualisation lets the user select a range of density scalar values, \emph{Density rh01} and \emph{Density rho2} respectively, and the number of isolines $N$ to render equally distributed in this range. The number can be set by the control \emph{N Isolines}. Figure~\ref{fig:isolines} shows $N + 1 = 8$ isolines, where $N$ is the number selected by the user, in this case 7, and one more for visualising the isoline with density scalar value $rh0 = 0.5$. The range of the density scalar values is $rho1 = 0.1, rho2 = 1.2$. Listing~\ref{lst:calculateIsolinesScalars} shows the way that the scalar values between the desired range are calculated.
 
 \begin{lstlisting}[language=C++,label=lst:calculateIsolinesScalars,caption={Calculate scalar between range values and draw isolines.}]
 float range = fabs(densityRHO2Isoline - densityRHO1Isoline);
 float isolineStep = range / numIsolines;
 
 for (int i = 0; i < numIsolines; i++) {
-	draw_isoline(simulation, DIM, wn, hn, isolineStep * (i + 1));
+	draw_isoline(simulation, DIM, wn, hn, densityRHO1Isoline+ (isolineStep * (i + 1)));
 }
 \end{lstlisting}
  
-Figure~\ref{fig:isolines}(a) shows the visualisation of coloured isolines. Figure~\ref{fig:isolines}(b) shows the visualisation of non-colored isolines along with the smoke visualisation. The coloring in both images is done using a rainbow colormap and we have a regularly sampled grid on 80x80. By looking at the images there are some things to be noted. For example, by looking at the top left corner of both images we can identify a spot where many isolines are drawn is a quite tight screen space. This might be undesired taking into consideration the fact that the visualization is not quite clear at this point. This result was produced by selecting to visualize 8 isolines. We can imagine that by selecting to visualize more isolines it could result in cluttering issues.
+Figure~\ref{fig:isolines}(a) shows the visualisation of coloured isolines. Figure~\ref{fig:isolines}(b) shows the visualisation of non-colored isolines along with the smoke visualisation. The coloring in both images is done using a rainbow colormap and we have a regularly sampled grid on 80x80. By looking at the images there are some things to be noted. For example, by looking at the bottom left corner of both images we can identify a spot where many isolines are drawn in a quite tight screen space. This might be undesired taking into consideration the fact that the visualization is not quite clear at this point. This result was produced by selecting to visualize 8 isolines. We can imagine that by selecting to visualize more isolines it could result in cluttering issues.
+
+If we observe the colors of the isolines in Figure~\ref{fig:isolines}(a) we can realise that none of them has blue color. Of course this is true because we set the starting point of scalar range to $rho1$ and blue color is mapped to scalar value 0. Next thing that we observe is that the contours themselves are not equally spaced in the spatial domain. Areas where contours are close to each other, such as in the bottom left corner of both figures, indicate higher variations of the scalar data. Finally, we should note that the visualised isolines (contours) satisfy all the desired properties, such as no intersection between them, and that they are either closed curves or open curves.
 
 \begin{figure}[htbp]
 \begin{center}
@@ -40,9 +42,7 @@ Figure~\ref{fig:isolines}(a) shows the visualisation of coloured isolines. Figur
 \begin{minipage}[t]{0.48\textwidth}
 \includegraphics[height=2.5in]{figures/isolines/isolinesSmoke.png}
 \end{minipage}
-\caption{Isolines visualisation of density value range $rho = 0.5$. (a) Without smoke visualisation and colorised isolines. (b) With smoke visualisation and not colorised isolines.}
+\caption{Isolines visualisation between the range $rho1 = 0.1$ and $rho2 = 1.2$. (a) Without smoke visualisation and colorised isolines. (b) With smoke visualisation and not colorised isolines.}
 \label{fig:isolines}
 \end{center}
 \end{figure}
-
-Finally, we should note that the visualised isolines (contours) satisfy all the desired properties, such as no intersection, and that they are either closed curves or open curves.
