@@ -12,7 +12,7 @@
  every simulation step -> add timeslice
  
  buffer[time][type][idx] , with idx being the index of the sample point implemented as 
- deque<vector<vector<fftw_floats> > > >
+\verb| deque<vector<vector<fftw_floats> > > >|
 a deque  because it allows to easily push and pop data at both end. 
 allows us to create a circular buffer without much effort
    
