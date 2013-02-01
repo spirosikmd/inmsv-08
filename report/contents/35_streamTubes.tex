@@ -9,7 +9,8 @@ We used the available STL data structures because they are reliable and effiecen
 The RHO value of a sample point $sp$  at timestep $t$ can be accessed via  \verb|buffer[t][RHO][sp]|. The data structure has been wrapped in a class to allow uniform access and provide general purpose methods. 
 
 
-If we visualize this dataset by using a simple hedgehog glyph technique as described previously 
+If we visualize this dataset by using a simple hedgehog glyph technique as described previously, we can see the different time slices (cf. Figure~\ref{fig:datacube_bottom}) or how the colors is propagated to the later time slices  Figure~\ref{fig:datacube_front}). However, due to occlusion it is difficult to look inside the dataset  and see how individual vectors change over time. While this visualization focusses on displaying all data, stream tubes limit the amount of presented data. Also stream tubes ha advantages (less occlusion) and disadvantages (incomplete picture on the data).
+
  \begin{figure}[htbp]
  \centering
  \begin{minipage}[t]{0.48\textwidth}
@@ -19,35 +20,36 @@ If we visualize this dataset by using a simple hedgehog glyph technique as descr
  \end{minipage}\hspace{.04\textwidth}%
  \begin{minipage}[t]{0.48\textwidth}
  \includegraphics[height=3in]{figures/streamtubes/31datacube_front.png}
- \caption{Frontal view of the the time-dependent velocity vector field. Occlusion is a problem as the individual vectors/timeslices cannot be easily perceived.}
- \label{fig:}
+ \caption{Frontal view of the the time-dependent velocity vector field. Occlusion is a problem as the individual vectors/time slices cannot be easily perceived.}
+ \label{fig:datacube_front}
  \end{minipage}
  \end{figure}
  
  
- place (and remove) seed points in the 3D volume.
- control the (x,y,z) position of a seed point by means of sliders. 
- allow users to click in some point in the window. 
+ One problem of stream tubes is the selection of seed points (start point of the trace). In  this case, the user has the possibility to specify the seed points on his own either by selecting the value on the x,y,z slider or by clicking onto the screen. The user can specify as many seed points as he wants. 
  
- 
- accomodate three dimensions instead of two.
- 
- triliniear interpolation
-    
-    
-pushed on 2D-vector that contains the actual pixel values of the streampoints + the scalar value at that point
+The stream tube algorithm is a straightforward extension of the stream line algorithm. Instead of operating on a cell with four sample points, the algorithm operates on cubes with eight sample points. In order to find the direction for the next integration step, the vector is obtained by trilinearly  interpolating x,y,z. However, z is constant since it represent the time.
+The resulting point will be pushed on a vector of points, which will be used to draw the actual steam tube along the calculated values. 
+Similar to stream lines the quality and length of the traces can be influenced by increasing or decreasing the integration step and defining  stop criteria.
 
 
+\begin{figure}[htbp]
+\centering
+\begin{minipage}[t]{0.48\textwidth}
+        \includegraphics[height=3in]{figures/streamtubes/10tubes.png}
+\caption{Combination of streamtubes and colormapping. Both techniques show the velocity. The seedpoints are centered in middle of the dataset.}
+\label{fig:}
+\end{minipage}\hspace{.04\textwidth}%
+\begin{minipage}[t]{0.48\textwidth}
+    \includegraphics[height=3in]{figures/streamtubes/21banding_velodensity.png}
+    \caption{Visualization of the velocity as streamtubes and density as heat colormap with a reduced number of colors. The banding effect makes the integration steps visible.}
+    \label{fig:}
+\end{minipage}
+\end{figure}
 
-
+In order to construct the tubes geometry out of the calculated stream points, we use a 3D reference frame that contains a cross section. This reference frame will be placed along the streamline to create a closed tube. We used a circular cross-section that allows to define the number of segments (cf. Listing~\ref{lst:reffr} ad Figure~\ref{fig:trangTubes}). The cross-section also calculates the  (surface) normals (cf. Figure~\ref{fig:shadedtubes}) and allows to adjust the thickness of the tube based on a scalar value (cf. \ref{fig:thicktubes}). 
   
-  construct a stream tube geometry around it. 
-  asubsequent step is to use a circle sampled as a closed polyline with n points, user-controlled
-
-   For each sample point pi along a streamline, construct such a cross-section. The cross-section should be orthogonal to the current polyline segment pi, pi+1.
-
-  
-\begin{lstlisting}[language=C,caption={Cross-section in 3D reference frame}]
+\begin{lstlisting}[language=C,caption={Cross-section in 3D reference frame},label=lst:reffr]
 glBegin(GL_QUAD_STRIP);
   for (int i = 0; i <= 360; i = i + (360 / n)) {
     float theta = i * (M_PI / 180);
@@ -87,18 +89,11 @@ glBegin(GL_QUAD_STRIP);
 glEnd();
 \end{lstlisting}  
   
+ In order to sweep the cross-section along the stream tube we need to find a transformation matrix that performs the correct translation and rotation of the reference frame. By using the cross product and the previous stream point we can obtain three vectors. One vector is tangent to the direction of the next segment and the other one is perpendicular to the tangent vector and shows the local up-direction. The third vector shows the local x direction.  The vectors are illustrated in Figure~\ref{fig:orientationVec}.
  
- 
- how to exactly place the cross-section? 
- 
- a full reference frame in 3D, placed at each streamline point, which indicates the exact position and orientation of the cross-section. 
- 
- get direction, local and up vector
- rotation matrix
- gets 'swept' along it
+Having this information, the transformation matrix is constructed as shown in Listing~\ref{lst:translationMatrix}. The vector \verb|points[sp][]| is a simple spatial translation and puts the reference frame to the correct location.
 
-
- \begin{lstlisting}[language=C, caption={Rotation and translation matrix to move cross-section along the streamtube.}]
+ \begin{lstlisting}[language=C, caption={Rotation and translation matrix to move cross-section along the streamtube.},label={lst:translationMatrix}]
  GLfloat R[16] = {
      local[0]     , local[1]     , local[2]     , 0,
      up[0]        , up[1]        , up[2]        , 0,
@@ -108,45 +103,19 @@ glEnd();
  glMultMatrixf(R);
  \end{lstlisting}
  
- shading and coloring of the stream tubes: use either flat or Gouraud shading, and either a constant color,
- 
- just use the colormapping functionalities from step 2. 
- the scalar field can be selected in the user interface
- a color map which shows one of the scalar fields along the streamline, such as velocity vector magnitude |v| or density rho.
-
-
-(diameter) of the streamtubes. 
-linearly scaled to show one of the scalar field values in the simulation, such as velocity vector magnitude |v| or density rho. 
-all fields
-affected by the radius of the next seed points
-
-
-
-\begin{figure}[htbp]
-\centering
-\begin{minipage}[t]{0.48\textwidth}
-        \includegraphics[height=3in]{figures/streamtubes/10tubes.png}
-\caption{Combination of streamtubes and colormapping. Both techniques show the velocity. The seedpoints are centered in middle of the dataset.}
-\label{fig:}
-\end{minipage}\hspace{.04\textwidth}%
-\begin{minipage}[t]{0.48\textwidth}
-    \includegraphics[height=3in]{figures/streamtubes/21banding_velodensity.png}
-    \caption{Visualization of the velocity as streamtubes and density as heat colormap with a reduced number of colors. The banding effect makes the integration steps visible.}
-    \label{fig:}
-\end{minipage}
-\end{figure}    
+The stream tube technique is also able to visualize a vector and scalar dataset at the same time by coloring the tube using a color map as described in the previous sections about color mapping and height plots.
 
 \begin{figure}[htbp]
 \centering
 \begin{minipage}[t]{0.48\textwidth}
         \includegraphics[height=3in]{figures/streamtubes/uvp.png}
 \caption{Scaled orientation vectors. The green vector is tangent to the streamline, while the red and blue are perpendicular to the streamline.}
-\label{fig:}
+\label{fig:orientationVec}
 \end{minipage}\hspace{.04\textwidth}%
 \begin{minipage}[t]{0.48\textwidth}
                \includegraphics[height=3in]{figures/streamtubes/11thickTubes.png} 
     \caption{The diameter of the tube is linearly scaled based on a scalar value.}
-    \label{fig:}
+    \label{fig:thicktubes}
 \end{minipage}
 \end{figure}
 
@@ -157,12 +126,12 @@ affected by the radius of the next seed points
 \begin{minipage}[t]{0.48\textwidth}
         \includegraphics[height=3in]{figures/streamtubes/40threeSegments.png}
 \caption{Triangular Tube geometry. The number of segments of the cross-sections can be adjusted dynamically.}
-\label{fig:}
+\label{fig:trangTubes}
 \end{minipage}\hspace{.04\textwidth}%
 \begin{minipage}[t]{0.48\textwidth}
         \includegraphics[height=3in]{figures/streamtubes/41flatshading.png}
     \caption{Flat shading accentuate the sharp-edges of the cross-section}
-    \label{fig:}
+    \label{fig:shadedtubes}
 \end{minipage}
 \end{figure}
 
