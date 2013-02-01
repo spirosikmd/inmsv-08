@@ -18,6 +18,7 @@ private:
         NUMBER_OF_COLORS_LIST,
         HUE_SPINNER,
         SATURATION_SPINNER,
+        TUBE_SPINNER,
         SCALAR_DATASET_LIST,
         SCALAR_MODE_LIST,
         SCALAR_MAX_SPINNER,
@@ -30,8 +31,13 @@ private:
         NUMBER_ISOLINES_SPINNER,
         HEIGHTPLOT_DATASET_LIST,
         DIM_SPINNER,
+        SEGMENT_SPINNER,
         SAMPLE_X_SPINNER,
-        SAMPLE_Y_SPINNER
+        SAMPLE_Y_SPINNER,
+        SEED_X,
+        SEED_Y,
+        SEED_Z,
+        ADD_SEEDPOINT_BUTTON
     };
 
 public:
@@ -51,6 +57,9 @@ public:
     static void visualize();
     static void quit();
     static void buttonHandler(int id);
+    static void updateMenu();
+    static void displayMenu();
+    static void click(int,int,int,int);
     static DataBuffer timeslices;
 private:
 
@@ -62,6 +71,7 @@ private:
 
     static GLUI *glui; // user interface
     static int main_window;
+    static int menu_window;
 
     static Visualization::ColorMode selectedColormap;
 
@@ -78,18 +88,23 @@ private:
 
     static Visualization::GlyphType glyphType;
 
+    
+    static GLUI_Panel *streamtube_options;
     static float hueValue;
     static float saturationValue;
     static int dim;
+    static int numberOfSegments;
     static int sample_x, sample_y;
     static float densityIsoline;
     static float densityRHO1Isoline;
     static float densityRHO2Isoline;
     static int numberIsolines;
     static int angle;
-    static int translate_x, translate_z, translate_y,distance;
+    static int translate_x, translate_z, translate_y, distance;
     static Visualization::Mode scalarMode;
 
+    static int seed_x,seed_y,seed_z;
+    
     static void renderColormap();
 
 };

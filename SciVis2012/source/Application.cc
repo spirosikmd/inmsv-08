@@ -3,7 +3,8 @@
 #include <GLUT/glut.h>
 #include <GLUI/glui.h>
 #include <map>
-
+#include <sstream>
+#include <string>
 using namespace std;
 
 Simulation Application::simulation; // the smoke simulation
@@ -16,6 +17,7 @@ int Application::winHeight;
 
 GLUI* Application::glui; // user interface
 int Application::main_window;
+int Application::menu_window;
 
 Visualization::ColorMode Application::selectedColormap;
 std::map<Visualization::ColorMode, Colormap*> Application::colormaps;
@@ -31,15 +33,19 @@ int Application::angle;
 int Application::translate_x;
 int Application::translate_y;
 int Application::translate_z;
+int Application::seed_x = 500;
+int Application::seed_y = 500;
+int Application::seed_z = 0;
 int Application::distance;
 Visualization::DatasetType Application::scalarDataset;
 float Application::scalarMax;
 float Application::scalarMin;
-
+GLUI_Panel* Application::streamtube_options;
 Visualization::DatasetType Application::vectorDataset;
 Visualization::DatasetType Application::heightplotDataset;
 Visualization::GlyphType Application::glyphType;
 int Application::dim;
+int Application::numberOfSegments;
 int Application::sample_x;
 int Application::sample_y;
 
@@ -52,9 +58,25 @@ void Application::update() {
     glutPostRedisplay();
 }
 
+void Application::updateMenu() {
+    glutSetWindow(menu_window);
+    glutPostRedisplay();
+}
+
+void Application::displayMenu() {
+    glClearColor(0, 0, 0, 0);
+    glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+    glFlush();
+    glutSwapBuffers();
+}
+
 void Application::initialize(int *argc, char** argv) {
     glutInit(argc, argv);
     glutInitDisplayMode(GLUT_RGB | GLUT_DOUBLE | GLUT_DEPTH);
+    glutInitWindowSize(450, 650);
+
+    menu_window = glutCreateWindow("Options");
+    glutDisplayFunc(displayMenu);
     glutInitWindowSize(1000, 800);
 
     main_window = glutCreateWindow("Real-time smoke simulation and visualization");
@@ -62,6 +84,7 @@ void Application::initialize(int *argc, char** argv) {
     // pass static functions as callback to GLUT
     glutDisplayFunc(display);
     glutMotionFunc(drag);
+    glutMouseFunc(click);
     glutSpecialFunc(special);
     glutKeyboardFunc(keyboard);
 
@@ -82,7 +105,7 @@ void Application::initialize(int *argc, char** argv) {
     scalarMode = visualization.getScalarMode();
 
     densityIsoline = visualization.getDensityIsoline();
-
+    numberOfSegments = visualization.getNumSegmentsStreamtubes();
     dim = simulation.get_DIM();
 
     sample_x = visualization.getSampleX();
@@ -115,7 +138,6 @@ void Application::outputUsage() {
 //display: Handle window redrawing events. Simply delegates to visualize().
 
 void Application::display() {
-
     glClearColor(0, 0, 0, 0);
     glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
     glViewport(0, 0, (GLsizei) winWidth, (GLsizei) winHeight);
@@ -124,24 +146,63 @@ void Application::display() {
     glLoadIdentity();
     gluPerspective(45.0, (GLfloat) winWidth / winHeight,
             1.0, 10000.0);
+
     glEnable(GL_LIGHTING); // so the renderer considers light
     glEnable(GL_LIGHT0); // turn LIGHT0 on
     glEnable(GL_DEPTH_TEST); // so the renderer considers depth
     glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
-    glEnable(GL_NORMALIZE);
-    glShadeModel(GL_SMOOTH);
+    //glEnable(GL_NORMALIZE);
+
+    if (visualization.options[Visualization::SMOOTH_SHADING]) {
+        glShadeModel(GL_SMOOTH);
+    } else {
+        glShadeModel(GL_FLAT);
+    }
 
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glPushMatrix();
-    gluLookAt(0.0, 3000.0-distance, 3000.0-distance,
-            0.0+translate_x, 0.0+translate_y, 0.0+translate_z,
+    gluLookAt(0.0, 1500.0 - distance, 1000.0 - distance,
+            0.0 + translate_x, 0.0 + translate_y, 0.0 + translate_z,
             0.0, 1.0, 0.0);
 
     GLfloat black[] = {0.0, 0.0, 0.0, 1.0};
     GLfloat cyan[] = {0.0, 1.0, 1.0, 1.0};
     GLfloat white[] = {1.0, 1.0, 1.0, 1.0};
-    GLfloat direction[] = {0.0, 1000.0, 1000.0, 0.0};
+    GLfloat direction[] = {0.0, 1000.0, 0, 0.0};
+
+
+
+    glPushMatrix();
+    glTranslatef(0.0 + translate_x, 0.0 + translate_y, 0.0 + translate_z);
+    glRotatef(angle, 1, 0, 0);
+    if (visualization.options[Visualization::DRAW_FIXPOINT]) {
+        glPushMatrix();
+        glutSolidSphere(10, 10, 10);
+        glTranslatef(-600, 1000, 500);
+        glutSolidSphere(10, 10, 10);
+        glTranslatef(0, 0, -1000);
+        glutSolidSphere(10, 10, 10);
+        glTranslatef(1200, 0, 0);
+        glutSolidSphere(10, 10, 10);
+        glTranslatef(0, 0, 1000);
+        glutSolidSphere(10, 10, 10);
+        glPopMatrix();
+    }
+    glBegin(GL_QUAD_STRIP);
+    glColor3f(.8, .8, .8);
+    glNormal3f(0, -1, 0);
+    glVertex3f(-10000, -1000, -10000);
+
+    glNormal3f(0, -1, 0);
+    glVertex3f(-10000, -1000, 10000);
+
+    glNormal3f(0, -1, 0);
+    glVertex3f(10000, -1000, -10000);
+
+    glNormal3f(0, -1, 0);
+    glVertex3f(10000, -1000, 10000);
+    glEnd();
 
     glMaterialfv(GL_FRONT, GL_AMBIENT_AND_DIFFUSE, cyan);
     glMaterialfv(GL_FRONT, GL_SPECULAR, white);
@@ -154,14 +215,8 @@ void Application::display() {
 
 
 
-    
-    glRotatef(angle, 1, 0, 0);
     glPushMatrix();
-    
-
-    //glutSolidTeapot(50);
-    glPushMatrix();
-    glScalef(-2, 2, 2);
+    glScalef(-1, 1, 1);
     glRotatef(180, 0, 1, 0);
     glTranslatef(-winWidth / 2, 0, -winHeight / 2);
     visualization.visualize3D(simulation, winWidth, winHeight);
@@ -171,8 +226,8 @@ void Application::display() {
     glDisable(GL_DEPTH_TEST);
     glDisable(GL_LIGHT0);
     glDisable(GL_LIGHTING); // so the renderer considers light
-    glPopMatrix();
 
+    glPopMatrix();
     glMatrixMode(GL_PROJECTION);
     glLoadIdentity();
     glOrtho(0.0, (GLdouble) winWidth, 0.0, (GLdouble) winHeight, -10, 10);
@@ -210,38 +265,8 @@ void Application::renderColormap() {
 //reshape: Handle window resizing (reshaping) events
 
 void Application::reshape(int w, int h) {
-    //
-    //    glViewport(0.0f, 0.0f, (GLfloat) w * (1.0 / 4.0), (GLfloat) h);
-    //    glMatrixMode(GL_PROJECTION);
-    //    glLoadIdentity();
-    //    glOrtho(0.0, (GLdouble) w, 0.0, (GLdouble) h, -10, 10);
-    //
-    //    //
-    //    glViewport((GLfloat) w * (1.0 / 4.0), 0.0f, (GLfloat) w, (GLfloat) h);
-    //    glMatrixMode(GL_PROJECTION);
-    //    glLoadIdentity();
-    //    glOrtho(0.0, (GLdouble) w, 0.0, (GLdouble) h, -10, 10);
-
-    //    if (w <= h) {
-    //        // width is smaller, so stretch out the height
-    //        glOrtho(-2.5, 2.5, -2.5 / aspect, 2.5 / aspect, -10.0, 10.0);
-    //    } else {
-    //        // height is smaller, so stretch out the width
-    //        glOrtho(-2.5 * aspect, 2.5 * aspect, -2.5, 2.5, -10.0, 10.0);
-    //    }
-
     winWidth = w;
     winHeight = h;
-
-
-
-
-
-
-    //    glViewport(0.0f, 0.0f, (GLfloat) winWidth, (GLfloat) winHeight);
-    //    glMatrixMode(GL_PROJECTION);
-    //    glLoadIdentity();
-    //    glOrtho(0.0, (GLdouble) winWidth, 0.0, (GLdouble) winHeight, -10, 10);
 }
 
 void Application::special(int key, int x, int y) {
@@ -343,7 +368,7 @@ void Application::keyboard(unsigned char key, int x, int y) {
         case 'k':
             translate_y -= magnitude;
             break;
-            case 'n':
+        case 'n':
             distance += 100;
             break;
         case 'm':
@@ -487,7 +512,14 @@ void Application::buttonHandler(int id) {
         case HEIGHTPLOT_DATASET_LIST:
             visualization.setHeightplotDataset(heightplotDataset);
             break;
-        default:
+        case SEGMENT_SPINNER:
+            visualization.setNumSegmentsStreamtubes(numberOfSegments);
+            break;
+        case ADD_SEEDPOINT_BUTTON:
+            visualization.addSeedpoint(seed_x, seed_y, seed_z);
+            stringstream pointtext(stringstream::in | stringstream::out);
+            pointtext << seed_x << ", " << seed_y << ", " << seed_z;
+            glui->add_statictext_to_panel(streamtube_options, pointtext.str().c_str());
             break;
     }
     glui->sync_live();
@@ -495,7 +527,7 @@ void Application::buttonHandler(int id) {
 
 void Application::initUI() {
     // main window
-    glui = GLUI_Master.create_glui_subwindow(main_window, GLUI_SUBWINDOW_RIGHT);
+    glui = GLUI_Master.create_glui_subwindow(menu_window, GLUI_SUBWINDOW_TOP);
     glui->set_main_gfx_window(main_window);
 
     // colormap
@@ -563,6 +595,15 @@ void Application::initUI() {
     vectorDatasetsGroup->add_item(Visualization::DENSITY_GRADIENT, "Density Gradient");
     vectorDatasetsGroup->add_item(Visualization::VELOCITY_MAGN_GRADIENT, "Velocity |V| Gradient");
     vectorDatasetsGroup->set_alignment(GLUI_ALIGN_RIGHT);
+
+    GLUI_Listbox *glyphTypeList = new GLUI_Listbox(datasetOptions, "Glyph ", (int*) &glyphType, GLYPH_TYPE_LIST, buttonHandler);
+    glyphTypeList->set_alignment(GLUI_ALIGN_LEFT);
+    glyphTypeList->add_item(Visualization::HEDGEHOGS, "Hedgehogs");
+    glyphTypeList->add_item(Visualization::SIMPLE_ARROWS, "Simple Arrows");
+    glyphTypeList->add_item(Visualization::CONES_3D, "3D Cones");
+    glyphTypeList->add_item(Visualization::ARROWS_3D, "3D Arrows");
+    glui->add_statictext_to_panel(datasetOptions, "                                              ");
+
     glui->add_statictext_to_panel(datasetOptions, "                                              ");
 
     // contouring
@@ -595,28 +636,8 @@ void Application::initUI() {
     normals_box->set_alignment(GLUI_ALIGN_RIGHT);
     glui->add_statictext_to_panel(heightplot_options, "                                              ");
 
-    // visualization technique
-    GLUI_Panel *visualization_options = new GLUI_Panel(glui, "Options");
-    visualization_options->set_alignment(GLUI_ALIGN_LEFT);
-    GLUI_Checkbox *glyphs_box = new GLUI_Checkbox(visualization_options, "Glyphs", &visualization.options[Visualization::DRAW_GLYPHS]);
-    glyphs_box->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Checkbox *smoke_box = new GLUI_Checkbox(visualization_options, "Smoke", &visualization.options[Visualization::DRAW_SMOKE]);
-    smoke_box->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Checkbox *isoline_box = new GLUI_Checkbox(visualization_options, "Draw Isolines ", &visualization.options[Visualization::DRAW_ISOLINES]);
-    isoline_box->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Checkbox *height_box = new GLUI_Checkbox(visualization_options, "Draw Heightplot ", &visualization.options[Visualization::DRAW_HEIGHTPLOT]);
-    height_box->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Checkbox *streamtubes_box = new GLUI_Checkbox(visualization_options, "Draw Streamtubes ", &visualization.options[Visualization::DRAW_STREAMTUBES]);
-    streamtubes_box->set_alignment(GLUI_ALIGN_RIGHT);
-    //    GLUI_Checkbox *gradient_box = new GLUI_Checkbox(visualization_options, "Gradient", &visualization.options[Visualization::GRADIENT]);
-    //    gradient_box->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Listbox *glyphTypeList = new GLUI_Listbox(visualization_options, "Glyph ", (int*) &glyphType, GLYPH_TYPE_LIST, buttonHandler);
-    glyphTypeList->set_alignment(GLUI_ALIGN_RIGHT);
-    glyphTypeList->add_item(Visualization::HEDGEHOGS, "Hedgehogs");
-    glyphTypeList->add_item(Visualization::SIMPLE_ARROWS, "Simple Arrows");
-    glyphTypeList->add_item(Visualization::CONES_3D, "3D Cones");
-    glyphTypeList->add_item(Visualization::ARROWS_3D, "3D Arrows");
-    glui->add_statictext_to_panel(visualization_options, "                                              ");
+
+
 
     GLUI_Spinner *dim_spinner = new GLUI_Spinner(glui, "DIM ", &dim, DIM_SPINNER, buttonHandler);
     dim_spinner->set_alignment(GLUI_ALIGN_RIGHT);
@@ -629,10 +650,64 @@ void Application::initUI() {
     sample_y_spinner->set_alignment(GLUI_ALIGN_RIGHT);
     sample_y_spinner->set_int_limits(10, 100, GLUI_LIMIT_CLAMP);
 
+    glui->add_column(false);
+    // visualization technique
+    GLUI_Panel *visualization_options = new GLUI_Panel(glui, "Options");
+    visualization_options->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *glyphs_box = new GLUI_Checkbox(visualization_options, "Glyphs", &visualization.options[Visualization::DRAW_GLYPHS]);
+    glyphs_box->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *smoke_box = new GLUI_Checkbox(visualization_options, "Smoke", &visualization.options[Visualization::DRAW_SMOKE]);
+    smoke_box->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *isoline_box = new GLUI_Checkbox(visualization_options, "Isolines ", &visualization.options[Visualization::DRAW_ISOLINES]);
+    isoline_box->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *height_box = new GLUI_Checkbox(visualization_options, "Heightplot ", &visualization.options[Visualization::DRAW_HEIGHTPLOT]);
+    height_box->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *streamtubes_box = new GLUI_Checkbox(visualization_options, "Streamtubes ", &visualization.options[Visualization::DRAW_STREAMTUBES]);
+    streamtubes_box->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *orient = new GLUI_Checkbox(visualization_options, "Orientation Point", &visualization.options[Visualization::DRAW_FIXPOINT]);
+    orient->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *shading_box = new GLUI_Checkbox(visualization_options, "Smooth Shading", &visualization.options[Visualization::SMOOTH_SHADING]);
+    orient->set_alignment(GLUI_ALIGN_LEFT);
+    glui->add_statictext_to_panel(visualization_options, "                                              ");
+
+
+
+    streamtube_options = new GLUI_Panel(glui, "Streamtubes");
+    streamtube_options->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *field3dbox = new GLUI_Checkbox(streamtube_options, "Show 3D Field", &visualization.options[Visualization::DRAW_3DFIELD]);
+    field3dbox->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *thickTubes = new GLUI_Checkbox(streamtube_options, "Thick Tubes", &visualization.options[Visualization::DRAW_THICKTUBES]);
+    thickTubes->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Spinner *segment_spinner = new GLUI_Spinner(streamtube_options, "Surface Segments ", &numberOfSegments, SEGMENT_SPINNER, buttonHandler);
+    segment_spinner->set_alignment(GLUI_ALIGN_RIGHT);
+    segment_spinner->set_int_limits(3, 20, GLUI_LIMIT_CLAMP);
+    glui->add_separator_to_panel(streamtube_options);
+    GLUI_Spinner *seedx_spinner = new GLUI_Spinner(streamtube_options, "x", &seed_x, SEED_X, buttonHandler);
+    seedx_spinner->set_alignment(GLUI_ALIGN_CENTER);
+    GLUI_Spinner *seedy_spinner = new GLUI_Spinner(streamtube_options, "y", &seed_y, SEED_Y, buttonHandler);
+    seedy_spinner->set_alignment(GLUI_ALIGN_CENTER);
+    GLUI_Spinner *seedz_spinner = new GLUI_Spinner(streamtube_options, "y", &seed_z, SEED_Z, buttonHandler);
+    seedz_spinner->set_alignment(GLUI_ALIGN_CENTER);
+    GLUI_Button *add_seedpointbutton = new GLUI_Button(streamtube_options, "Add Seedpoint", ADD_SEEDPOINT_BUTTON, buttonHandler);
+    add_seedpointbutton->set_alignment(GLUI_ALIGN_CENTER);
+    glui->add_separator_to_panel(streamtube_options);
+
+
+
+    glui->add_statictext_to_panel(streamtube_options, "                                              ");
+
+
     // quit
     GLUI_Button *quit = new GLUI_Button(glui, "Quit", QUIT_BUTTON, buttonHandler);
     quit->set_alignment(GLUI_ALIGN_CENTER);
 }
+
+ void Application::click(int button,int state,int x, int y) {
+     seed_x = x;
+     seed_y = y;
+     glui->sync_live();
+     
+ }
 
 void Application::quit() {
     cout << "Quit.\n";

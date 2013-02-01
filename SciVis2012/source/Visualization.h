@@ -8,6 +8,13 @@
 #include <map>
 #include <vector>
 
+ struct Point {
+        int x;
+        int y;
+        int z;
+    };
+    
+
 class Simulation;
 
 class Visualization {
@@ -50,7 +57,11 @@ public:
         COLORIZE,
         DRAW_HEIGHTPLOT,
         DRAW_NORMALS,
+        SMOOTH_SHADING,
         DRAW_STREAMTUBES,
+        DRAW_3DFIELD,
+        DRAW_FIXPOINT,
+        DRAW_THICKTUBES,
         OptionsCount // (automatically assigned)
     };
 
@@ -95,6 +106,7 @@ public:
         }
     };
 
+   
     void visualize(Simulation const &simulation, int winWidth, int winHeight);
     void visualize3D(Simulation const &simulation, int winWidth, int winHeight);
     void toggle(Option option);
@@ -111,6 +123,7 @@ public:
     Colormap* loadColormap(ColorMode);
 
     void setColor(float vy, ColorType t);
+    float scaleScalar(float vy, float smin, float smax);
     void direction_to_color(float x, float y);
     void magnitude_to_color(float x, float y);
     void setScalarDataset(DatasetType sdm);
@@ -135,9 +148,13 @@ public:
     void setDensityRHO1Isoline(float);
     void setDensityRHO2Isoline(float);
     void setNumIsolines(int);
+    void setNumSegmentsStreamtubes(int);
+    int getNumSegmentsStreamtubes();
     void setGlyphType(GlyphType);
-
+    void addSeedpoint(int seed_x, int seed_y, int seed_z);
+    std::vector<Point> getSeedpoints();
 private:
+
 
     void initializeColormaps();
     std::map<ColorMode, Colormap*> colormaps;
@@ -151,6 +168,8 @@ private:
     float densityRHO1Isoline;
     float densityRHO2Isoline;
     int numIsolines;
+    int numSegments;
+    std::vector<Point> seedpoints;
     DatasetType scalarDataset;
     DatasetType vectorDataset;
     DatasetType heightplotDataset;
@@ -158,7 +177,7 @@ private:
     int sample_x, sample_y;
 
     float getHeight(float vy, float maxheight);
-    void draw_timedependent_vector_field(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+    void draw_timedependent_vector_field(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real zn);
     void draw_streamtube(std::vector<std::vector<float > > points);
     std::vector<std::vector<float > > calculateStreamtubePoints(float x, float y, float z, float dt, int maxLength, int DIM, float wn, float hn, float zn);
     void draw_heightplot(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);

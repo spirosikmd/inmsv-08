@@ -19,13 +19,15 @@ Visualization::Visualization() {
     scalarDataset = DENSITY;
     vectorDataset = VELOCITY;
     heightplotDataset = DENSITY;
-    options[UseDirectionColoring] = false; // not used for now
+    numSegments = 5;
+    options[UseDirectionColoring] = true; // not used for now
     options[DRAW_SMOKE] = false;
     options[DRAW_GLYPHS] = false;
     options[DRAW_ISOLINES] = false;
-    options[DRAW_HEIGHTPLOT] = true;
+    options[SMOOTH_SHADING] = true;
+    options[DRAW_HEIGHTPLOT] = false;
     options[DrawVectorField] = false; // not used for now
-    options[GRADIENT] = false;
+
 
     datasets.insert(make_pair(DENSITY, Dataset(0, 1, CLAMPING)));
     datasets.insert(make_pair(VELOCITY_MAGN, Dataset(0.01, 0.08, CLAMPING)));
@@ -198,6 +200,27 @@ void Visualization::setColor(float vy, ColorType t) {
 
 }
 
+float Visualization::scaleScalar(float vy, float smin, float smax) {
+
+    Dataset dataset = datasets[scalarDataset];
+    float min, max;
+    switch (dataset.mode) {
+        case CLAMPING:
+            if (vy > dataset.max) vy = dataset.max;
+            if (vy < dataset.min) vy = dataset.min;
+            max = dataset.max;
+            min = dataset.min;
+            break;
+        case SCALING:
+            max = dataset.scaleMax;
+            min = dataset.scaleMin;
+            break;
+    }
+
+    return scale(vy, min, max, smin, smax);
+
+}
+
 Colormap* Visualization::getColormap() {
     return colormap;
 }
@@ -214,9 +237,7 @@ void Visualization::visualize3D(Simulation const &simulation, int winWidth, int 
     const int DIM = Simulation::DIM;
     fftw_real wn = (fftw_real) winWidth / (fftw_real) (DIM + 1); // Computational Grid cell width
     fftw_real hn = (fftw_real) winHeight / (fftw_real) (DIM + 1); // Computational Grid cell heigh
-
-    //    fftw_real wn_sample = (fftw_real) winWidth / (fftw_real) (sample_x + 1); // Sample Grid cell width 
-    //    fftw_real hn_sample = (fftw_real) winHeight / (fftw_real) (sample_y + 1); // Sample Grid cell heigh
+    fftw_real zn = winHeight / Application::timeslices.getCapacity();
 
     datasets[scalarDataset].scaleMax = -INFINITY;
     datasets[scalarDataset].scaleMin = INFINITY;
@@ -234,12 +255,46 @@ void Visualization::visualize3D(Simulation const &simulation, int winWidth, int 
         if (value < datasets[heightplotDataset].scaleMin) datasets[heightplotDataset].scaleMin = value;
     }
 
+    if (options[DRAW_HEIGHTPLOT] || options[DRAW_STREAMTUBES]) {
+        float x_max = DIM * wn + wn;
+        float y_max = DIM * hn + hn;
+        float z_max = Application::timeslices.getCapacity() * zn;
+
+        glBegin(GL_LINE_LOOP);
+        glColor3f(1, 1, 1);
+
+        glVertex3f(wn, hn, 0);
+        glVertex3f(x_max - wn, hn, 0);
+        glVertex3f(x_max - wn, y_max - hn, 0);
+        glVertex3f(wn, y_max - hn, 0);
+        glEnd();
+        glBegin(GL_LINE_LOOP);
+        glColor3f(1, 1, 1);
+        glVertex3f(wn, hn, z_max);
+        glVertex3f(x_max - wn, hn, z_max);
+        glVertex3f(x_max - wn, y_max - hn, z_max);
+        glVertex3f(wn, y_max - hn, z_max);
+        glEnd();
+        glBegin(GL_LINES);
+        glColor3f(1, 1, 1);
+        glVertex3f(wn, hn, 0);
+        glVertex3f(wn, hn, z_max);
+        glVertex3f(wn, y_max - hn, 0);
+        glVertex3f(wn, y_max - hn, z_max);
+        glVertex3f(x_max - wn, hn, 0);
+        glVertex3f(x_max - wn, hn, z_max);
+        glVertex3f(x_max - wn, y_max - hn, 0);
+        glVertex3f(x_max - wn, y_max - hn, z_max);
+        glEnd();
+    }
+
     if (options[DRAW_HEIGHTPLOT]) {
         draw_heightplot(simulation, DIM, wn, hn);
     }
     if (options[DRAW_STREAMTUBES]) {
-        draw_timedependent_vector_field(simulation, DIM, wn, hn);
+        draw_timedependent_vector_field(simulation, DIM, wn, hn, zn);
     }
+
 
 }
 
@@ -247,6 +302,7 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
     const int DIM = Simulation::DIM;
     fftw_real wn = (fftw_real) winWidth / (fftw_real) (DIM + 1); // Computational Grid cell width
     fftw_real hn = (fftw_real) winHeight / (fftw_real) (DIM + 1); // Computational Grid cell heigh
+
 
     fftw_real wn_sample = (fftw_real) winWidth / (fftw_real) (sample_x + 1); // Sample Grid cell width 
     fftw_real hn_sample = (fftw_real) winHeight / (fftw_real) (sample_y + 1); // Sample Grid cell heigh
@@ -267,19 +323,12 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
         }
     }
 
-    //        glEnable(GL_LIGHTING); // so the renderer considers light
-    //        glEnable(GL_LIGHT0); // turn LIGHT0 on
-    //        glEnable(GL_DEPTH_TEST); // so the renderer considers depth
-    //        glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
-    //        glShadeModel(GL_SMOOTH);
+
     if (options[DRAW_GLYPHS]) {
         draw_glyphs(simulation, DIM, wn, hn, wn_sample, hn_sample);
         draw_streamlines(simulation, DIM, wn, hn);
     }
-    //        glDisable(GL_COLOR_MATERIAL);
-    //        glDisable(GL_DEPTH_TEST);
-    //        glDisable(GL_LIGHT0);
-    //        glDisable(GL_LIGHTING); // so the renderer considers light
+
 
 }
 
@@ -463,37 +512,14 @@ void Visualization::draw_isoline(Simulation const &simulation, const int DIM, co
     }
 }
 
-void crossproduct(float *U, float *V, float *R) {
-    R[0] = (U[1] * V[2])-(V[1] * U[2]);
-    R[1] = -(U[0] * V[2])+(V[0] * U[2]);
-    R[2] = (U[0] * V[1])-(U[1] * V[0]);
-}
-
-void normalize2(float *R) {
-    float m = sqrt(pow(R[0], 2) + pow(R[1], 2));
-    R[0] = R[0] / m;
-    R[1] = R[1] / m;
-}
-
-void normalize3(float *R) {
-    float m = sqrt(pow(R[0], 2) + pow(R[1], 2) + pow(R[2], 2));
-    R[0] = R[0] / m;
-    R[1] = R[1] / m;
-    R[2] = R[2] / m;
-}
-
-void printPoint(float *xyz_new) {
-    cout << "(" << xyz_new[0] << "|" << xyz_new[1] << "|" << xyz_new[2] << ")\n";
-}
-
-void Visualization::draw_timedependent_vector_field(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
+void Visualization::draw_timedependent_vector_field(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn, const fftw_real zn) {
 
     double px, py, pz;
 
     int capacity = Application::timeslices.getCapacity();
 
     float *v = new float[2];
-    float zn = 800 / capacity;
+
     for (int time = 0; time < capacity; time++) {
 
         for (int idx = 0; idx < DIM * DIM; idx++) {
@@ -504,69 +530,37 @@ void Visualization::draw_timedependent_vector_field(Simulation const &simulation
             pick_timevector_field_value(idx, v, time);
             px = wn + (fftw_real) x * wn;
             py = hn + (fftw_real) y * hn;
-
-
             pz = time *zn;
-            //            glPushMatrix();
-            //            glTranslatef(px, py, pz);
-            //            glBegin(GL_LINES);
-            //            setColor(vx, SIMPLE);
-            //            glVertex3f(0, 0, 0);
-            //            glVertex3f(v[0]*1000, v[1]*1000, 20);
-            //            glEnd();
-            //            glPopMatrix();
+            if (options[DRAW_3DFIELD]) {
+                glPushMatrix();
+                glTranslatef(px, py, pz);
+                glBegin(GL_LINES);
+                setColor(vx, SIMPLE);
+                glVertex3f(0, 0, 0);
+                glVertex3f(v[0]*1000, v[1]*1000, 20);
+                glEnd();
+                glPopMatrix();
+            }
         }
     }
-    float x_max = DIM * wn + wn;
-    float y_max = DIM * hn + hn;
-    float z_max = capacity * zn;
-
-    glBegin(GL_LINE_LOOP);
-    glColor3f(1, 1, 1);
-
-    glVertex3f(wn, hn, 0);
-    glVertex3f(x_max - wn, hn, 0);
-    glVertex3f(x_max - wn, y_max - hn, 0);
-    glVertex3f(wn, y_max - hn, 0);
-    glEnd();
-    glBegin(GL_LINE_LOOP);
-    glColor3f(1, 1, 1);
-    glVertex3f(wn, hn, z_max);
-    glVertex3f(x_max - wn, hn, z_max);
-    glVertex3f(x_max - wn, y_max - hn, z_max);
-    glVertex3f(wn, y_max - hn, z_max);
-    glEnd();
-    glBegin(GL_LINES);
-    glColor3f(1, 1, 1);
-    glVertex3f(wn, hn, 0);
-    glVertex3f(wn, hn, z_max);
-    glVertex3f(wn, y_max - hn, 0);
-    glVertex3f(wn, y_max - hn, z_max);
-    glVertex3f(x_max - wn, hn, 0);
-    glVertex3f(x_max - wn, hn, z_max);
-    glVertex3f(x_max - wn, y_max - hn, 0);
-    glVertex3f(x_max - wn, y_max - hn, z_max);
-    glEnd();
 
     float dt = 10;
     int maxLength = 1000;
-    float x = 500;
-    float y = 500;
-    float z = zn;
-
-    draw_streamtube(calculateStreamtubePoints(x + 100, y, z, dt, maxLength, DIM, wn, hn, zn));
-    draw_streamtube(calculateStreamtubePoints(x, y, z, dt, maxLength, DIM, wn, hn, zn));
-    draw_streamtube(calculateStreamtubePoints(x + 100, y - 100, z, dt, maxLength, DIM, wn, hn, zn));
+    
+    for (size_t i = 0; i < seedpoints.size(); i++) {
+        draw_streamtube(calculateStreamtubePoints(seedpoints[i].x, seedpoints[i].y, seedpoints[i].z, dt, maxLength, DIM, wn, hn, zn));
+    }
 }
 
 void Visualization::draw_streamtube(vector<vector<float > > points) {
-    for (int sp = 0; sp < points.size() - 1; sp++) {
 
+    if (points.size() < 2) {
+        return;
+    }
 
-        //glTranslatef(points[sp][0], points[sp][1], points[sp][2]);
+    for (size_t sp = 0; sp < points.size() - 1; sp++) {
         float target[3] = {points[sp + 1][0] - points[sp][0], points[sp + 1][1] - points[sp][1], points[sp + 1][2] - points[sp][2]};
         normalize3(target);
-
         float previous[3] = {0, 0, 1};
         if (sp != 0) {
             previous[0] = points[sp][0] - points[sp - 1][0];
@@ -575,8 +569,7 @@ void Visualization::draw_streamtube(vector<vector<float > > points) {
         }
         normalize3(previous);
 
-        float up[3];
-        crossproduct(previous, target, up);
+        float up[3] = {0, 1, 0};
         normalize3(up);
 
         float local[3];
@@ -584,65 +577,76 @@ void Visualization::draw_streamtube(vector<vector<float > > points) {
         normalize3(local);
 
 
-        GLfloat R[16] = {0}; 
-        
-        glGetFloatv (GL_MODELVIEW_MATRIX, R);
-                
-        R[0] = local[0];
-        R[1] = local[1];
-        R[2] = local[2];
-        R[4] = up[0];
-        R[5] = up[1];
-        R[6] = up[2];
-        R[8] = target[0];
-        R[9] = target[1];
-        R[10] = target[2];
-        R[15] = 1;
-        
-//        Lx  Ux  Tx  0
-//        Ly  Uy  Ty  0
-//        Lz  Uz  Tz  0
-//        0   0   0  1
-        
+        GLfloat R[16] = {local[0], local[1], local[2], 0,
+            up[0], up[1], up[2], 0,
+            target[0], target[1], target[2], 0,
+            points[sp][0], points[sp][1], points[sp][2], 1};
+
+        //        Lx  Ux  Tx  0
+        //        Ly  Uy  Ty  0
+        //        Lz  Uz  Tz  0
+        //        0   0   0  1
+        glEnable(GL_TEXTURE_1D);
         glPushMatrix();
-        glColor3f(0, 1, 0);
+
         glMultMatrixf(R);
-        //glTranslatef(points[sp][0], points[sp][1], points[sp][2]);
-        //glScalef(1, 1, 3);
-        glutSolidCube(40);
-        glPopMatrix();
 
 
-        glBegin(GL_LINES);
-        glColor3f(0, 1, 0);
-        glVertex3f(points[sp][0], points[sp][1], points[sp][2]);
-        glVertex3f(points[sp][0] + target[0]*10, points[sp][1] + target[1]*10, points[sp][2] + target[2]*10);
-        glColor3f(1, 0, 0);
-        glVertex3f(points[sp][0], points[sp][1], points[sp][2]);
-        glVertex3f(points[sp][0] + up[0]*10, points[sp][1] + up[1]*10, points[sp][2] + up[2]*10);
-        glColor3f(0, 0, 1);
-        glVertex3f(points[sp][0], points[sp][1], points[sp][2]);
-        glVertex3f(points[sp][0] + local[0]*10, points[sp][1] + local[1]*10, points[sp][2] + local[2]*10);
+        int radius = scaleScalar(points[sp][3], 10, 20);
+        int radiusNext = scaleScalar(points[sp + 1][3], 10, 20);
+        if (!options[DRAW_THICKTUBES]) {
+            radiusNext = radius = 15;
+        }
+
+        int n = numSegments;
+
+        colormap->loadColormapTexture();
+
+        glBegin(GL_QUAD_STRIP);
+        for (int i = 0; i <= 360; i = i + (360 / n)) {
+            float degInRad = i * (M_PI / 180);
+            float degInRad2 = (i + 1)*(M_PI / 180);
+            float normal[3] = {};
+            float vz[3] = {(cos(degInRad) * radius) - (cos(degInRad) * radiusNext), (sin(degInRad) * radius)-(sin(degInRad) * radiusNext), 10};
+            normalize3(vz);
+            float vx[3] = {(cos(degInRad) * radius) - (cos(degInRad2) * radius), (sin(degInRad) * radius)-(sin(degInRad2) * radius), 0};
+            normalize3(vx);
+            crossproduct(vz, vx, normal);
+
+            setColor(points[sp][3], TEXTURE);
+            glNormal3f(normal[0], normal[1], normal[2]);
+            glVertex3f(cos(degInRad) * radius, sin(degInRad) * radius, 0);
+
+            setColor(points[sp + 1][3], TEXTURE);
+            glNormal3f(normal[0], normal[1], normal[2]);
+            glVertex3f(cos(degInRad) * radiusNext, sin(degInRad) * radiusNext, 15);
+
+
+            setColor(points[sp][3], TEXTURE);
+            glNormal3f(normal[0], normal[1], normal[2]);
+            glVertex3f(cos(degInRad2) * radius, sin(degInRad2) * radius, 0);
+
+            setColor(points[sp + 1][3], TEXTURE);
+            glNormal3f(normal[0], normal[1], normal[2]);
+            glVertex3f(cos(degInRad2) * radiusNext, sin(degInRad2) * radiusNext, 15);
+        }
         glEnd();
-
+        glPopMatrix();
+        glDisable(GL_TEXTURE_1D);
     }
 }
 
 vector<vector<float > > Visualization::calculateStreamtubePoints(float x, float y, float z, float dt, int maxLength, int DIM, float wn, float hn, float zn) {
+
     int capacity = Application::timeslices.getCapacity();
     vector<vector<float > > points;
 
-    vector<float> p;
-    p.resize(3);
-    p[0] = x;
-    p[1] = y;
-    p[2] = z;
-    points.push_back(p);
+
 
     for (int step = 0; step < maxLength; step++) {
         int x_point = floor(x / wn) - 1;
         int y_point = floor(y / hn) - 1;
-        int z_point = floor(z / zn) - 1;
+        int z_point = floor(z / zn);
 
         if (x_point < 0 || x_point >= DIM - 1 || y_point < 0 || y_point >= DIM - 1 || z_point < 0 || z_point >= capacity - 1) {
             return points;
@@ -670,6 +674,15 @@ vector<vector<float > > Visualization::calculateStreamtubePoints(float x, float 
         pick_timevector_field_value(v[3], v011, z_point + 1);
         pick_timevector_field_value(v[2], v111, z_point + 1);
         pick_timevector_field_value(v[1], v101, z_point + 1);
+
+        float sv000 = pick_timescalar_field_value(v[0], z_point);
+        float sv010 = pick_timescalar_field_value(v[3], z_point);
+        float sv110 = pick_timescalar_field_value(v[2], z_point);
+        float sv100 = pick_timescalar_field_value(v[1], z_point);
+        float sv001 = pick_timescalar_field_value(v[0], z_point + 1);
+        float sv011 = pick_timescalar_field_value(v[3], z_point + 1);
+        float sv111 = pick_timescalar_field_value(v[2], z_point + 1);
+        float sv101 = pick_timescalar_field_value(v[1], z_point + 1);
 
         // trilinear interpolation
         float x0, y0, z0, x1, y1, z1;
@@ -703,19 +716,30 @@ vector<vector<float > > Visualization::calculateStreamtubePoints(float x, float 
         interpolated[1] = c0 * (1 - zd) + c1*zd;
         interpolated[2] = 1;
 
+        c00 = sv000 * (1 - xd) + sv100 * xd;
+        c10 = sv010 * (1 - xd) + sv110 * xd;
+        c01 = sv001 * (1 - xd) + sv101 * xd;
+        c11 = sv011 * (1 - xd) + sv111 * xd;
+        c0 = c00 * (1 - yd) + c10*yd;
+        c1 = c01 * (1 - yd) + c11*yd;
+        float scalarValue = c0 * (1 - zd) + c1*zd;
+
+
         normalize2(interpolated);
         normalize3(interpolated);
+
+        vector<float> stp;
+        stp.resize(4);
+        stp[0] = x;
+        stp[1] = y;
+        stp[2] = z;
+        stp[3] = scalarValue;
+        points.push_back(stp);
 
         x = x + interpolated[0] * dt;
         y = y + interpolated[1] * dt;
         z = z + interpolated[2] * dt;
 
-        vector<float> stp;
-        stp.resize(3);
-        stp[0] = x;
-        stp[1] = y;
-        stp[2] = z;
-        points.push_back(stp);
 
         delete[] v;
         delete[] interpolated;
@@ -736,7 +760,7 @@ void Visualization::draw_heightplot(Simulation const &simulation, const int DIM,
     int i, j, idx;
     double px, py, pz;
 
-    float maxHeight = 75;
+    float maxHeight = 100;
     //calculate normals
     int v0, v1, v2, v3;
     int *v = new int[4];
@@ -773,19 +797,25 @@ void Visualization::draw_heightplot(Simulation const &simulation, const int DIM,
         getPoint(v3, p3, DIM, wn, hn);
 
         float U1[] = {p3[0] - p0[0], p3[1] - p0[1], z3 - z0};
-        float V1[] = {p1[0] - p3[0], p1[1] - p3[1], z1 - z3};
-        float U2[] = {p1[0] - p2[0], p1[1] - p2[1], z1 - z2};
-        float V2[] = {p3[0] - p1[0], p3[1] - p1[1], z3 - z1};
+        float V1[] = {p0[0] - p1[0], p0[1] - p1[1], z0 - z1};
+
+
+        float U2[] = {p2[0] - p1[0], p2[1] - p1[1], z2 - z1};
+        float V2[] = {p1[0] - p3[0], p1[1] - p3[1], z1 - z3};
+        normalize3(U1);
+        normalize3(V1);
+        normalize3(U2);
+        normalize3(V2);
         crossproduct(U1, V1, N1);
         crossproduct(U2, V2, N2);
         normalize3(N1);
         normalize3(N2);
-        surfaceNormals[cellIndex][0][0] = N1[0]* -1;
-        surfaceNormals[cellIndex][0][1] = N1[1]* -1;
-        surfaceNormals[cellIndex][0][2] = N1[2] * -1;
-        surfaceNormals[cellIndex][1][0] = N2[0]* -1;
-        surfaceNormals[cellIndex][1][1] = N2[1]* -1;
-        surfaceNormals[cellIndex][1][2] = N2[2] * -1;
+        surfaceNormals[cellIndex][0][0] = N1[0]* 1;
+        surfaceNormals[cellIndex][0][1] = N1[1]* 1;
+        surfaceNormals[cellIndex][0][2] = N1[2] *1;
+        surfaceNormals[cellIndex][1][0] = N2[0]*1;
+        surfaceNormals[cellIndex][1][1] = N2[1]* 1;
+        surfaceNormals[cellIndex][1][2] = N2[2] *1;
     }
 
     int numberOfVertices = DIM * DIM;
@@ -850,9 +880,13 @@ void Visualization::draw_heightplot(Simulation const &simulation, const int DIM,
             z = z + surfaceNormals[lbc][0][2];
             N = N + 1;
         }
-        vertexNormals[vertexIndex][0] = x / N;
-        vertexNormals[vertexIndex][1] = y / N;
-        vertexNormals[vertexIndex][2] = z / N;
+        x = x / N;
+        y = y / N;
+        z = z / N;
+        float m = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
+        vertexNormals[vertexIndex][0] = x / m;
+        vertexNormals[vertexIndex][1] = y / m;
+        vertexNormals[vertexIndex][2] = z / m;
     }
 
 
@@ -909,7 +943,7 @@ void Visualization::draw_heightplot(Simulation const &simulation, const int DIM,
             glBegin(GL_LINES);
             setColor(1, TEXTURE);
             glVertex3f(px, pz, py);
-            glVertex3f(px + vertexNormals[idx][0] * 10, pz + vertexNormals[idx][2]* 10, py + vertexNormals[idx][1]* 10);
+            glVertex3f(px + vertexNormals[idx][0] * 20, pz + vertexNormals[idx][2]* 20, py + vertexNormals[idx][1]* 20);
             glEnd();
         }
     }
@@ -1017,9 +1051,8 @@ void Visualization::draw_streamlines(Simulation const &simulation, const int DIM
         y1 = hn + (fftw_real) (y_point) * hn;
         x2 = wn + (fftw_real) (x_point + 1) * wn;
         y2 = hn + (fftw_real) (y_point + 1) * hn;
-        //        if (step == 0) {
-        //            cout << x1 << ' ' << y1 << ' ' << x2 << ' ' << y2 << '\n';
-        //        }
+
+
         GLfloat f1x = sample_x4_y4[0]*(x2 - x)*(y2 - y);
         GLfloat f2x = sample_x2_y2[0]*(x - x1)*(y2 - y);
         GLfloat f3x = sample_x3_y3[0]*(x2 - x)*(y - y1);
@@ -1031,14 +1064,6 @@ void Visualization::draw_streamlines(Simulation const &simulation, const int DIM
         GLfloat f4y = sample_x1_y1[1]*(x - x1)*(y - y1);
         xy_new[1] = (1 / ((x2 - x1)*(y2 - y1)))*(f1y + f2y + f3y + f4y);
 
-        //normalize2(xy_new);
-        if (step == 0) {
-            cout << "(" << sample_x1_y1[0] << "|" << sample_x1_y1[1] << ")\n";
-            cout << "(" << sample_x2_y2[0] << "|" << sample_x2_y2[1] << ")\n";
-            cout << "(" << sample_x3_y3[0] << "|" << sample_x3_y3[1] << ")\n";
-            cout << "(" << sample_x4_y4[0] << "|" << sample_x4_y4[1] << ") \n";
-            cout << "(" << xy_new[0] << "|" << xy_new[1] << ") \n\n";
-        }
         x = x + xy_new[0] * dt;
         y = y + xy_new[1] * dt;
 
@@ -1099,10 +1124,29 @@ void Visualization::draw_glyphs_on_comp_grid(Simulation const &simulation, const
                     draw_simple_arrow(magn, x_start, y_start, angle, value_for_color);
                     break;
                 case CONES_3D:
+                    glEnable(GL_LIGHTING); // so the renderer considers light
+                    glEnable(GL_LIGHT0); // turn LIGHT0 on
+                    glEnable(GL_DEPTH_TEST); // so the renderer considers depth
+                    glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
+                    glShadeModel(GL_SMOOTH);
+
                     draw_3d_cone(magn, x_start, y_start, angle, value_for_color);
+                    glDisable(GL_COLOR_MATERIAL);
+                    glDisable(GL_DEPTH_TEST);
+                    glDisable(GL_LIGHT0);
+                    glDisable(GL_LIGHTING); // so the renderer considers light
                     break;
                 case ARROWS_3D:
+                    glEnable(GL_LIGHTING); // so the renderer considers light
+                    glEnable(GL_LIGHT0); // turn LIGHT0 on
+                    glEnable(GL_DEPTH_TEST); // so the renderer considers depth
+                    glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
+                    glShadeModel(GL_SMOOTH);
                     draw_3d_arrow(magn, x_start, y_start, angle, value_for_color);
+                    glDisable(GL_COLOR_MATERIAL);
+                    glDisable(GL_DEPTH_TEST);
+                    glDisable(GL_LIGHT0);
+                    glDisable(GL_LIGHTING); // so the renderer considers lightow(magn, x_start, y_start, angle, value_for_color);
 
                     break;
             }
@@ -1179,11 +1223,30 @@ void Visualization::draw_glyphs_on_sampled_grid(Simulation const &simulation, co
                     draw_simple_arrow(magn, x_start, y_start, angle, value_for_color);
                     break;
                 case CONES_3D:
+                    glEnable(GL_LIGHTING); // so the renderer considers light
+                    glEnable(GL_LIGHT0); // turn LIGHT0 on
+                    glEnable(GL_DEPTH_TEST); // so the renderer considers depth
+                    glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
+                    glShadeModel(GL_SMOOTH);
+
                     draw_3d_cone(magn, x_start, y_start, angle, value_for_color);
+                    glDisable(GL_COLOR_MATERIAL);
+                    glDisable(GL_DEPTH_TEST);
+                    glDisable(GL_LIGHT0);
+                    glDisable(GL_LIGHTING);
                     break;
                 case ARROWS_3D:
-                    draw_3d_arrow(magn, x_start, y_start, angle, value_for_color);
+                    glEnable(GL_LIGHTING); // so the renderer considers light
+                    glEnable(GL_LIGHT0); // turn LIGHT0 on
+                    glEnable(GL_DEPTH_TEST); // so the renderer considers depth
+                    glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
+                    glShadeModel(GL_SMOOTH);
 
+                    draw_3d_arrow(magn, x_start, y_start, angle, value_for_color);
+                    glDisable(GL_COLOR_MATERIAL);
+                    glDisable(GL_DEPTH_TEST);
+                    glDisable(GL_LIGHT0);
+                    glDisable(GL_LIGHTING);
                     break;
             }
         }
@@ -1457,46 +1520,25 @@ void Visualization::setDensityRHO2Isoline(float di) {
     densityRHO2Isoline = di;
 }
 
+int Visualization::getNumSegmentsStreamtubes() {
+    return numSegments;
+}
+
+void Visualization::setNumSegmentsStreamtubes(int n) {
+    numSegments = n;
+}
+
 void Visualization::setNumIsolines(int n) {
     numIsolines = n;
-}//                
-//        GLfloat X[16] = {0}; 
-//        GLfloat Y[16] = {0}; 
-//        GLfloat Z[16] = {0}; 
-//        GLfloat R[16] = {0}; 
-//        
-//        glGetFloatv (GL_MODELVIEW_MATRIX, R);
-//                
-//        X[0] = 1;
-//        X[5] = cos(tx);
-//        X[9] = -sin(tx);
-//        X[6] = sin(tx);
-//        X[10] = cos(tx);
-//        X[15] = 1;
-//        
-//        Y[0] = cos(ty);
-//        Y[8] = sin(ty);
-//        Y[5] = 1;
-//        Y[2] = -sin(ty);
-//        Y[10] = cos(ty);
-//        Y[15] = 1;
-//        
-//        Z[0] = cos(tz);
-//        Z[4] = -sin(tz);
-//        Z[1] = sin(tz);
-//        Z[5] = cos(ty);
-//        Z[10] = 1;
-//        Z[15] = 1;
-//        
-//        glMultMatrixf(Z);
-//        glMultMatrixf(Y);
-//        glMultMatrixf(X);
-//        //glMultMatrixf(R);
-//        
-//        GLfloat matrix[16]; 
-//        glGetFloatv (GL_MODELVIEW_MATRIX, matrix);
-//        
-//        cout << "one \n";
-//        for (int i = 0; i<4;i++) {
-//            cout << matrix[i] << " " << matrix[i+4] << " " <<matrix[i+8] << " " <<matrix[i+12] << "\n";
-//        }
+}
+
+vector<Point> Visualization::getSeedpoints() {
+    return seedpoints;
+}
+void Visualization::addSeedpoint(int seed_x, int seed_y, int seed_z) {
+    Point sp;
+    sp.x = seed_x;
+    sp.y = seed_y;
+    sp.z = seed_z;
+    seedpoints.push_back(sp);
+}
