@@ -111,6 +111,7 @@ public:
     Colormap* loadColormap(ColorMode);
 
     void setColor(float vy, ColorType t);
+    float scaleScalar(float vy, float smin , float smax);
     void direction_to_color(float x, float y);
     void magnitude_to_color(float x, float y);
     void setScalarDataset(DatasetType sdm);

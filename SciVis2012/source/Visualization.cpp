@@ -198,6 +198,27 @@ void Visualization::setColor(float vy, ColorType t) {
 
 }
 
+float Visualization::scaleScalar(float vy, float smin , float smax) {
+
+    Dataset dataset = datasets[scalarDataset];
+    float colorIndex = 0, min, max;
+    switch (dataset.mode) {
+        case CLAMPING:
+            if (vy > dataset.max) vy = dataset.max;
+            if (vy < dataset.min) vy = dataset.min;
+            max = dataset.max;
+            min = dataset.min;
+            break;
+        case SCALING:
+            max = dataset.scaleMax;
+            min = dataset.scaleMin;
+            break;
+    }
+
+    return scale(vy, min, max, smin, smax);
+            
+}
+
 Colormap* Visualization::getColormap() {
     return colormap;
 }
@@ -561,9 +582,6 @@ void Visualization::draw_timedependent_vector_field(Simulation const &simulation
 
 void Visualization::draw_streamtube(vector<vector<float > > points) {
     for (int sp = 0; sp < points.size() - 1; sp++) {
-
-
-        //glTranslatef(points[sp][0], points[sp][1], points[sp][2]);
         float target[3] = {points[sp + 1][0] - points[sp][0], points[sp + 1][1] - points[sp][1], points[sp + 1][2] - points[sp][2]};
         normalize3(target);
 
@@ -575,8 +593,7 @@ void Visualization::draw_streamtube(vector<vector<float > > points) {
         }
         normalize3(previous);
 
-        float up[3];
-        crossproduct(previous, target, up);
+        float up[3] = {0, 1, 0};
         normalize3(up);
 
         float local[3];
@@ -584,47 +601,58 @@ void Visualization::draw_streamtube(vector<vector<float > > points) {
         normalize3(local);
 
 
-        GLfloat R[16] = {0}; 
-        
-        glGetFloatv (GL_MODELVIEW_MATRIX, R);
-                
-        R[0] = local[0];
-        R[1] = local[1];
-        R[2] = local[2];
-        R[4] = up[0];
-        R[5] = up[1];
-        R[6] = up[2];
-        R[8] = target[0];
-        R[9] = target[1];
-        R[10] = target[2];
-        R[15] = 1;
-        
-//        Lx  Ux  Tx  0
-//        Ly  Uy  Ty  0
-//        Lz  Uz  Tz  0
-//        0   0   0  1
-        
+        GLfloat R[16] = {local[0], local[1], local[2], 0,
+            up[0], up[1], up[2], 0,
+            target[0], target[1], target[2], 0,
+            points[sp][0], points[sp][1], points[sp][2], 1};
+
+        //        Lx  Ux  Tx  0
+        //        Ly  Uy  Ty  0
+        //        Lz  Uz  Tz  0
+        //        0   0   0  1
+        glEnable(GL_TEXTURE_1D);
         glPushMatrix();
-        glColor3f(0, 1, 0);
+
         glMultMatrixf(R);
-        //glTranslatef(points[sp][0], points[sp][1], points[sp][2]);
-        //glScalef(1, 1, 3);
-        glutSolidCube(40);
-        glPopMatrix();
+        
+        int radius = scaleScalar(points[sp][3],10,20);
+        int radiusNext = scaleScalar(points[sp+1][3],10,20);
+        int n = 10;
+        
 
-
-        glBegin(GL_LINES);
-        glColor3f(0, 1, 0);
-        glVertex3f(points[sp][0], points[sp][1], points[sp][2]);
-        glVertex3f(points[sp][0] + target[0]*10, points[sp][1] + target[1]*10, points[sp][2] + target[2]*10);
-        glColor3f(1, 0, 0);
-        glVertex3f(points[sp][0], points[sp][1], points[sp][2]);
-        glVertex3f(points[sp][0] + up[0]*10, points[sp][1] + up[1]*10, points[sp][2] + up[2]*10);
-        glColor3f(0, 0, 1);
-        glVertex3f(points[sp][0], points[sp][1], points[sp][2]);
-        glVertex3f(points[sp][0] + local[0]*10, points[sp][1] + local[1]*10, points[sp][2] + local[2]*10);
+        colormap->loadColormapTexture();
+        
+        glBegin(GL_QUAD_STRIP);
+        for (int i = 0; i <= 360; i = i + (360 / n)) {
+            float degInRad = i * (M_PI / 180);
+            float degInRad2 = (i + 1)*(M_PI / 180);
+            float normal[3] = {};
+            float vz[3] = {(cos(degInRad) * radius) - (cos(degInRad) * radiusNext), (sin(degInRad) * radius)-(sin(degInRad) * radiusNext), 10};
+            normalize3(vz);
+            float vx[3] = {(cos(degInRad) * radius) - (cos(degInRad2) * radius), (sin(degInRad) * radius)-(sin(degInRad2) * radius), 0};
+            normalize3(vx);
+            crossproduct(vz, vx, normal);
+            
+            setColor(points[sp][3], TEXTURE);
+            glNormal3f(normal[0], normal[1], normal[2]);
+            glVertex3f(cos(degInRad) * radius, sin(degInRad) * radius, 0);
+            
+            setColor(points[sp+1][3], TEXTURE);
+            glNormal3f(normal[0], normal[1], normal[2]);
+            glVertex3f(cos(degInRad) * radiusNext, sin(degInRad) * radiusNext, 15);
+            
+            
+            setColor(points[sp][3], TEXTURE);
+            glNormal3f(normal[0], normal[1], normal[2]);
+            glVertex3f(cos(degInRad2) * radius, sin(degInRad2) * radius, 0);
+            
+            setColor(points[sp+1][3], TEXTURE);
+            glNormal3f(normal[0], normal[1], normal[2]);
+            glVertex3f(cos(degInRad2) * radiusNext, sin(degInRad2) * radiusNext, 15);
+        }
         glEnd();
-
+        glPopMatrix();
+        glDisable(GL_TEXTURE_1D);
     }
 }
 
@@ -632,12 +660,7 @@ vector<vector<float > > Visualization::calculateStreamtubePoints(float x, float 
     int capacity = Application::timeslices.getCapacity();
     vector<vector<float > > points;
 
-    vector<float> p;
-    p.resize(3);
-    p[0] = x;
-    p[1] = y;
-    p[2] = z;
-    points.push_back(p);
+
 
     for (int step = 0; step < maxLength; step++) {
         int x_point = floor(x / wn) - 1;
@@ -671,6 +694,15 @@ vector<vector<float > > Visualization::calculateStreamtubePoints(float x, float 
         pick_timevector_field_value(v[2], v111, z_point + 1);
         pick_timevector_field_value(v[1], v101, z_point + 1);
 
+        float sv000 = pick_timescalar_field_value(v[0], z_point);
+        float sv010 = pick_timescalar_field_value(v[3], z_point);
+        float sv110 = pick_timescalar_field_value(v[2], z_point);
+        float sv100 = pick_timescalar_field_value(v[1], z_point);
+        float sv001 = pick_timescalar_field_value(v[0], z_point + 1);
+        float sv011 = pick_timescalar_field_value(v[3], z_point + 1);
+        float sv111 = pick_timescalar_field_value(v[2], z_point + 1);
+        float sv101 = pick_timescalar_field_value(v[1], z_point + 1);
+
         // trilinear interpolation
         float x0, y0, z0, x1, y1, z1;
         x0 = wn + (fftw_real) (x_point) * wn;
@@ -703,19 +735,30 @@ vector<vector<float > > Visualization::calculateStreamtubePoints(float x, float 
         interpolated[1] = c0 * (1 - zd) + c1*zd;
         interpolated[2] = 1;
 
+        c00 = sv000 * (1 - xd) + sv100 * xd;
+        c10 = sv010 * (1 - xd) + sv110 * xd;
+        c01 = sv001 * (1 - xd) + sv101 * xd;
+        c11 = sv011 * (1 - xd) + sv111 * xd;
+        c0 = c00 * (1 - yd) + c10*yd;
+        c1 = c01 * (1 - yd) + c11*yd;
+        float scalarValue = c0 * (1 - zd) + c1*zd;
+
+
         normalize2(interpolated);
         normalize3(interpolated);
+
+        vector<float> stp;
+        stp.resize(4);
+        stp[0] = x;
+        stp[1] = y;
+        stp[2] = z;
+        stp[3] = scalarValue;
+        points.push_back(stp);
 
         x = x + interpolated[0] * dt;
         y = y + interpolated[1] * dt;
         z = z + interpolated[2] * dt;
 
-        vector<float> stp;
-        stp.resize(3);
-        stp[0] = x;
-        stp[1] = y;
-        stp[2] = z;
-        points.push_back(stp);
 
         delete[] v;
         delete[] interpolated;
