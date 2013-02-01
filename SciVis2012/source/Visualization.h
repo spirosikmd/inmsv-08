@@ -158,7 +158,7 @@ private:
     int sample_x, sample_y;
 
     float getHeight(float vy, float maxheight);
-    void draw_streamtubes(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
+    void draw_timedependent_vector_field(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);
     void draw_streamtube(std::vector<std::vector<float > > points);
     std::vector<std::vector<float > > calculateStreamtubePoints(float x, float y, float z, float dt, int maxLength, int DIM, float wn, float hn, float zn);
     void draw_heightplot(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn);

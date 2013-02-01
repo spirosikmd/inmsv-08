@@ -238,7 +238,7 @@ void Visualization::visualize3D(Simulation const &simulation, int winWidth, int 
         draw_heightplot(simulation, DIM, wn, hn);
     }
     if (options[DRAW_STREAMTUBES]) {
-        draw_streamtubes(simulation, DIM, wn, hn);
+        draw_timedependent_vector_field(simulation, DIM, wn, hn);
     }
 
 }
@@ -486,7 +486,7 @@ void printPoint(float *xyz_new) {
     cout << "(" << xyz_new[0] << "|" << xyz_new[1] << "|" << xyz_new[2] << ")\n";
 }
 
-void Visualization::draw_streamtubes(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
+void Visualization::draw_timedependent_vector_field(Simulation const &simulation, const int DIM, const fftw_real wn, const fftw_real hn) {
 
     double px, py, pz;
 
@@ -548,7 +548,7 @@ void Visualization::draw_streamtubes(Simulation const &simulation, const int DIM
     glVertex3f(x_max - wn, y_max - hn, z_max);
     glEnd();
 
-    float dt = 5;
+    float dt = 10;
     int maxLength = 1000;
     float x = 500;
     float y = 500;
@@ -560,12 +560,71 @@ void Visualization::draw_streamtubes(Simulation const &simulation, const int DIM
 }
 
 void Visualization::draw_streamtube(vector<vector<float > > points) {
-    for (int sp = 0; sp < points.size(); sp++) {
-        glColor3f(0, 1, 0);
+    for (int sp = 0; sp < points.size() - 1; sp++) {
+
+
+        //glTranslatef(points[sp][0], points[sp][1], points[sp][2]);
+        float target[3] = {points[sp + 1][0] - points[sp][0], points[sp + 1][1] - points[sp][1], points[sp + 1][2] - points[sp][2]};
+        normalize3(target);
+
+        float previous[3] = {0, 0, 1};
+        if (sp != 0) {
+            previous[0] = points[sp][0] - points[sp - 1][0];
+            previous[1] = points[sp][1] - points[sp - 1][1];
+            previous[2] = points[sp][2] - points[sp - 1][2];
+        }
+        normalize3(previous);
+
+        float up[3];
+        crossproduct(previous, target, up);
+        normalize3(up);
+
+        float local[3];
+        crossproduct(target, up, local);
+        normalize3(local);
+
+
+        GLfloat R[16] = {0}; 
+        
+        glGetFloatv (GL_MODELVIEW_MATRIX, R);
+                
+        R[0] = local[0];
+        R[1] = local[1];
+        R[2] = local[2];
+        R[4] = up[0];
+        R[5] = up[1];
+        R[6] = up[2];
+        R[8] = target[0];
+        R[9] = target[1];
+        R[10] = target[2];
+        R[15] = 1;
+        
+//        Lx  Ux  Tx  0
+//        Ly  Uy  Ty  0
+//        Lz  Uz  Tz  0
+//        0   0   0  1
+        
         glPushMatrix();
-        glTranslatef(points[sp][0], points[sp][1], points[sp][2]);
-        glutSolidCube(10);
+        glColor3f(0, 1, 0);
+        glMultMatrixf(R);
+        //glTranslatef(points[sp][0], points[sp][1], points[sp][2]);
+        //glScalef(1, 1, 3);
+        glutSolidCube(40);
         glPopMatrix();
+
+
+        glBegin(GL_LINES);
+        glColor3f(0, 1, 0);
+        glVertex3f(points[sp][0], points[sp][1], points[sp][2]);
+        glVertex3f(points[sp][0] + target[0]*10, points[sp][1] + target[1]*10, points[sp][2] + target[2]*10);
+        glColor3f(1, 0, 0);
+        glVertex3f(points[sp][0], points[sp][1], points[sp][2]);
+        glVertex3f(points[sp][0] + up[0]*10, points[sp][1] + up[1]*10, points[sp][2] + up[2]*10);
+        glColor3f(0, 0, 1);
+        glVertex3f(points[sp][0], points[sp][1], points[sp][2]);
+        glVertex3f(points[sp][0] + local[0]*10, points[sp][1] + local[1]*10, points[sp][2] + local[2]*10);
+        glEnd();
+
     }
 }
 
@@ -1400,4 +1459,44 @@ void Visualization::setDensityRHO2Isoline(float di) {
 
 void Visualization::setNumIsolines(int n) {
     numIsolines = n;
-}
+}//                
+//        GLfloat X[16] = {0}; 
+//        GLfloat Y[16] = {0}; 
+//        GLfloat Z[16] = {0}; 
+//        GLfloat R[16] = {0}; 
+//        
+//        glGetFloatv (GL_MODELVIEW_MATRIX, R);
+//                
+//        X[0] = 1;
+//        X[5] = cos(tx);
+//        X[9] = -sin(tx);
+//        X[6] = sin(tx);
+//        X[10] = cos(tx);
+//        X[15] = 1;
+//        
+//        Y[0] = cos(ty);
+//        Y[8] = sin(ty);
+//        Y[5] = 1;
+//        Y[2] = -sin(ty);
+//        Y[10] = cos(ty);
+//        Y[15] = 1;
+//        
+//        Z[0] = cos(tz);
+//        Z[4] = -sin(tz);
+//        Z[1] = sin(tz);
+//        Z[5] = cos(ty);
+//        Z[10] = 1;
+//        Z[15] = 1;
+//        
+//        glMultMatrixf(Z);
+//        glMultMatrixf(Y);
+//        glMultMatrixf(X);
+//        //glMultMatrixf(R);
+//        
+//        GLfloat matrix[16]; 
+//        glGetFloatv (GL_MODELVIEW_MATRIX, matrix);
+//        
+//        cout << "one \n";
+//        for (int i = 0; i<4;i++) {
+//            cout << matrix[i] << " " << matrix[i+4] << " " <<matrix[i+8] << " " <<matrix[i+12] << "\n";
+//        }

@@ -99,3 +99,19 @@ float magnitude(float x, float y) {
 GLfloat magnitude(float v[2]) {
     return sqrt(pow(v[0], 2) + pow(v[1], 2));
 }
+
+GLfloat magnitude3(float v[3]) {
+    return sqrt(pow(v[0], 2) + pow(v[1], 2)+ pow(v[2], 2));
+}
+
+float dotproduct3(float u[3],float v[3]) {
+    return u[0]*v[0]+u[1]*v[1]+u[2]*v[2];
+}
+
+
+float angleVec(float v[3], float u[3]) {
+        float m_u = magnitude3(u);
+        float m_v = magnitude3(v);
+        float dp = dotproduct3(u,v);
+        return acos(dp/(m_u+m_v));
+}

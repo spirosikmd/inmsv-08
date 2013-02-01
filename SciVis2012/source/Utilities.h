@@ -14,7 +14,9 @@ void rgb2hsv(float r, float g, float b, float& h, float& s, float& v);
 float scale(float v, float f_min, float f_max, float min, float max);
 float magnitude(float x, float y);
 GLfloat magnitude(float v[]);
-
+GLfloat magnitude3(float v[3]);
+float dotproduct3(float u[3],float v[3]);
+float angleVec(float v[3], float u[3]);
 void printText(GLfloat x, GLfloat y, std::string text);
 
 #endif
