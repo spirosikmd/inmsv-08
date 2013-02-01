@@ -150,7 +150,7 @@ void Application::display() {
     glMatrixMode(GL_MODELVIEW);
     glLoadIdentity();
     glPushMatrix();
-    gluLookAt(0.0, 3000.0 - distance, 3000.0 - distance,
+    gluLookAt(0.0, 1500.0 - distance, 1000.0 - distance,
             0.0 + translate_x, 0.0 + translate_y, 0.0 + translate_z,
             0.0, 1.0, 0.0);
 
@@ -168,8 +168,12 @@ void Application::display() {
     glLightfv(GL_LIGHT0, GL_SPECULAR, white);
     glLightfv(GL_LIGHT0, GL_POSITION, direction);
 
-
-
+    if (visualization.options[Visualization::DRAW_FIXPOINT]) {
+        glPushMatrix();
+        glTranslatef(0.0 + translate_x, 0.0 + translate_y, 0.0 + translate_z);
+        glutSolidSphere(10, 10, 10);
+        glPopMatrix();
+    }
 
     glRotatef(angle, 1, 0, 0);
     glPushMatrix();
@@ -177,7 +181,7 @@ void Application::display() {
 
     //glutSolidTeapot(50);
     glPushMatrix();
-    glScalef(-2, 2, 2);
+    glScalef(-1, 1, 1);
     glRotatef(180, 0, 1, 0);
     glTranslatef(-winWidth / 2, 0, -winHeight / 2);
     visualization.visualize3D(simulation, winWidth, winHeight);
@@ -580,33 +584,37 @@ void Application::initUI() {
     GLUI_Checkbox *normals_box = new GLUI_Checkbox(heightplot_options, "Draw Normals", &visualization.options[Visualization::DRAW_NORMALS]);
     normals_box->set_alignment(GLUI_ALIGN_RIGHT);
     glui->add_statictext_to_panel(heightplot_options, "                                              ");
-    
-    
-     GLUI_Panel *streamtube_options = new GLUI_Panel(glui, "Streamtubes");
+
+
+    GLUI_Panel *streamtube_options = new GLUI_Panel(glui, "Streamtubes");
     streamtube_options->set_alignment(GLUI_ALIGN_LEFT);
     GLUI_Checkbox *field3dbox = new GLUI_Checkbox(streamtube_options, "Show 3D Field", &visualization.options[Visualization::DRAW_3DFIELD]);
-    field3dbox->set_alignment(GLUI_ALIGN_RIGHT);
+    field3dbox->set_alignment(GLUI_ALIGN_LEFT);
     GLUI_Checkbox *thickTubes = new GLUI_Checkbox(streamtube_options, "Thick Tubes", &visualization.options[Visualization::DRAW_THICKTUBES]);
-    thickTubes->set_alignment(GLUI_ALIGN_RIGHT);
-    
-    
-    
+    thickTubes->set_alignment(GLUI_ALIGN_LEFT);
+
+
+
     glui->add_column(false);
     // visualization technique
     GLUI_Panel *visualization_options = new GLUI_Panel(glui, "Options");
     visualization_options->set_alignment(GLUI_ALIGN_LEFT);
     GLUI_Checkbox *glyphs_box = new GLUI_Checkbox(visualization_options, "Glyphs", &visualization.options[Visualization::DRAW_GLYPHS]);
-    glyphs_box->set_alignment(GLUI_ALIGN_RIGHT);
+    glyphs_box->set_alignment(GLUI_ALIGN_LEFT);
     GLUI_Checkbox *smoke_box = new GLUI_Checkbox(visualization_options, "Smoke", &visualization.options[Visualization::DRAW_SMOKE]);
-    smoke_box->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Checkbox *isoline_box = new GLUI_Checkbox(visualization_options, "Draw Isolines ", &visualization.options[Visualization::DRAW_ISOLINES]);
-    isoline_box->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Checkbox *height_box = new GLUI_Checkbox(visualization_options, "Draw Heightplot ", &visualization.options[Visualization::DRAW_HEIGHTPLOT]);
-    height_box->set_alignment(GLUI_ALIGN_RIGHT);
-    GLUI_Checkbox *streamtubes_box = new GLUI_Checkbox(visualization_options, "Draw Streamtubes ", &visualization.options[Visualization::DRAW_STREAMTUBES]);
-    streamtubes_box->set_alignment(GLUI_ALIGN_RIGHT);
+    smoke_box->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *isoline_box = new GLUI_Checkbox(visualization_options, "Isolines ", &visualization.options[Visualization::DRAW_ISOLINES]);
+    isoline_box->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *height_box = new GLUI_Checkbox(visualization_options, "Heightplot ", &visualization.options[Visualization::DRAW_HEIGHTPLOT]);
+    height_box->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *streamtubes_box = new GLUI_Checkbox(visualization_options, "Streamtubes ", &visualization.options[Visualization::DRAW_STREAMTUBES]);
+    streamtubes_box->set_alignment(GLUI_ALIGN_LEFT);
+    GLUI_Checkbox *orient = new GLUI_Checkbox(visualization_options, "Orientation Point", &visualization.options[Visualization::DRAW_FIXPOINT]);
+    orient->set_alignment(GLUI_ALIGN_LEFT);
+    
     GLUI_Listbox *glyphTypeList = new GLUI_Listbox(visualization_options, "Glyph ", (int*) &glyphType, GLYPH_TYPE_LIST, buttonHandler);
-    glyphTypeList->set_alignment(GLUI_ALIGN_RIGHT);
+    glyphTypeList->set_alignment(GLUI_ALIGN_LEFT);
+    
     glyphTypeList->add_item(Visualization::HEDGEHOGS, "Hedgehogs");
     glyphTypeList->add_item(Visualization::SIMPLE_ARROWS, "Simple Arrows");
     glyphTypeList->add_item(Visualization::CONES_3D, "3D Cones");

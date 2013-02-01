@@ -201,7 +201,7 @@ void Visualization::setColor(float vy, ColorType t) {
 float Visualization::scaleScalar(float vy, float smin, float smax) {
 
     Dataset dataset = datasets[scalarDataset];
-    float colorIndex = 0, min, max;
+    float min, max;
     switch (dataset.mode) {
         case CLAMPING:
             if (vy > dataset.max) vy = dataset.max;
@@ -561,7 +561,7 @@ void Visualization::draw_timedependent_vector_field(Simulation const &simulation
 }
 
 void Visualization::draw_streamtube(vector<vector<float > > points) {
-    for (int sp = 0; sp < points.size() - 1; sp++) {
+    for (size_t sp = 0; sp < points.size() - 1; sp++) {
         float target[3] = {points[sp + 1][0] - points[sp][0], points[sp + 1][1] - points[sp][1], points[sp + 1][2] - points[sp][2]};
         normalize3(target);
 
@@ -937,7 +937,7 @@ void Visualization::draw_heightplot(Simulation const &simulation, const int DIM,
             glBegin(GL_LINES);
             setColor(1, TEXTURE);
             glVertex3f(px, pz, py);
-            glVertex3f(px + vertexNormals[idx][0] * 10, pz + vertexNormals[idx][2]* 10, py + vertexNormals[idx][1]* 10);
+            glVertex3f(px + vertexNormals[idx][0] * 20, pz + vertexNormals[idx][2]* 20, py + vertexNormals[idx][1]* 20);
             glEnd();
         }
     }

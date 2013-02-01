@@ -52,6 +52,7 @@ public:
         DRAW_NORMALS,
         DRAW_STREAMTUBES,
         DRAW_3DFIELD,
+        DRAW_FIXPOINT,
         DRAW_THICKTUBES,
         OptionsCount // (automatically assigned)
     };
