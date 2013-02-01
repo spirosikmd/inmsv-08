@@ -323,19 +323,12 @@ void Visualization::visualize(Simulation const &simulation, int winWidth, int wi
         }
     }
 
-    //        glEnable(GL_LIGHTING); // so the renderer considers light
-    //        glEnable(GL_LIGHT0); // turn LIGHT0 on
-    //        glEnable(GL_DEPTH_TEST); // so the renderer considers depth
-    //        glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
-    //        glShadeModel(GL_SMOOTH);
+
     if (options[DRAW_GLYPHS]) {
         draw_glyphs(simulation, DIM, wn, hn, wn_sample, hn_sample);
         draw_streamlines(simulation, DIM, wn, hn);
     }
-    //        glDisable(GL_COLOR_MATERIAL);
-    //        glDisable(GL_DEPTH_TEST);
-    //        glDisable(GL_LIGHT0);
-    //        glDisable(GL_LIGHTING); // so the renderer considers light
+
 
 }
 
@@ -887,7 +880,7 @@ void Visualization::draw_heightplot(Simulation const &simulation, const int DIM,
         x = x / N;
         y = y / N;
         z = z / N;
-        float m = sqrt(pow(x,2)+pow(y,2)+pow(z,2));
+        float m = sqrt(pow(x, 2) + pow(y, 2) + pow(z, 2));
         vertexNormals[vertexIndex][0] = x / m;
         vertexNormals[vertexIndex][1] = y / m;
         vertexNormals[vertexIndex][2] = z / m;
@@ -1128,10 +1121,29 @@ void Visualization::draw_glyphs_on_comp_grid(Simulation const &simulation, const
                     draw_simple_arrow(magn, x_start, y_start, angle, value_for_color);
                     break;
                 case CONES_3D:
+                    glEnable(GL_LIGHTING); // so the renderer considers light
+                    glEnable(GL_LIGHT0); // turn LIGHT0 on
+                    glEnable(GL_DEPTH_TEST); // so the renderer considers depth
+                    glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
+                    glShadeModel(GL_SMOOTH);
+
                     draw_3d_cone(magn, x_start, y_start, angle, value_for_color);
+                    glDisable(GL_COLOR_MATERIAL);
+                    glDisable(GL_DEPTH_TEST);
+                    glDisable(GL_LIGHT0);
+                    glDisable(GL_LIGHTING); // so the renderer considers light
                     break;
                 case ARROWS_3D:
+                    glEnable(GL_LIGHTING); // so the renderer considers light
+                    glEnable(GL_LIGHT0); // turn LIGHT0 on
+                    glEnable(GL_DEPTH_TEST); // so the renderer considers depth
+                    glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
+                    glShadeModel(GL_SMOOTH);
                     draw_3d_arrow(magn, x_start, y_start, angle, value_for_color);
+                    glDisable(GL_COLOR_MATERIAL);
+                    glDisable(GL_DEPTH_TEST);
+                    glDisable(GL_LIGHT0);
+                    glDisable(GL_LIGHTING); // so the renderer considers lightow(magn, x_start, y_start, angle, value_for_color);
 
                     break;
             }
@@ -1208,11 +1220,30 @@ void Visualization::draw_glyphs_on_sampled_grid(Simulation const &simulation, co
                     draw_simple_arrow(magn, x_start, y_start, angle, value_for_color);
                     break;
                 case CONES_3D:
+                    glEnable(GL_LIGHTING); // so the renderer considers light
+                    glEnable(GL_LIGHT0); // turn LIGHT0 on
+                    glEnable(GL_DEPTH_TEST); // so the renderer considers depth
+                    glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
+                    glShadeModel(GL_SMOOTH);
+
                     draw_3d_cone(magn, x_start, y_start, angle, value_for_color);
+                    glDisable(GL_COLOR_MATERIAL);
+                    glDisable(GL_DEPTH_TEST);
+                    glDisable(GL_LIGHT0);
+                    glDisable(GL_LIGHTING);
                     break;
                 case ARROWS_3D:
-                    draw_3d_arrow(magn, x_start, y_start, angle, value_for_color);
+                    glEnable(GL_LIGHTING); // so the renderer considers light
+                    glEnable(GL_LIGHT0); // turn LIGHT0 on
+                    glEnable(GL_DEPTH_TEST); // so the renderer considers depth
+                    glEnable(GL_COLOR_MATERIAL); // to be able to color objects when lighting is on
+                    glShadeModel(GL_SMOOTH);
 
+                    draw_3d_arrow(magn, x_start, y_start, angle, value_for_color);
+                    glDisable(GL_COLOR_MATERIAL);
+                    glDisable(GL_DEPTH_TEST);
+                    glDisable(GL_LIGHT0);
+                    glDisable(GL_LIGHTING);
                     break;
             }
         }
