@@ -44,7 +44,7 @@ fftw_real DataBuffer::getValue(int time, DATATYPE type, int idx) {
 }
 
 void DataBuffer::addTimeslice(fftw_real rho[], fftw_real vx[], fftw_real vy[], fftw_real fx[], fftw_real fy[]) {
-    vector<vector<fftw_real> > timeslice;
+    vector<vector<fftw_real> > timeslice;       
     int numberOfValues = DIM*DIM;
     timeslice.resize(DATATYPE_SIZE);
     for (int j = 0; j < DATATYPE_SIZE; ++j) {
